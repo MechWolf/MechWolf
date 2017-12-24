@@ -20,7 +20,10 @@ class Apparatus(object):
 	
 	def add(self, from_component, to_component, tube):
 		'''add a connection in the apparatus'''
-		assert issubclass(from_component.__class__, Component) and issubclass(to_component.__class__, Component)
+		assert issubclass(from_component.__class__, Component)
+		assert issubclass(to_component.__class__, Component)
+		assert issubclass(tube.__class__, Tube)
+		
 		self.network.append((from_component, to_component, tube))
 		self.components.update([from_component, to_component])
 
