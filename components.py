@@ -66,12 +66,10 @@ class Sensor(ActiveComponent):
 
 	def is_valid_attribute(self, **kwargs):
 		try:
-			if type(kwargs["active"]) == bool:
-				return True
-			else:
-				return False
-		except KeyError:
+			assert type(kwargs["active"]) == bool
+		except AssertionError:
 			raise ValueError("Invalid sensor activation setting. Must be boolean.")
+		return True
 		
 
 class Tube(object):
@@ -101,3 +99,18 @@ class Tube(object):
 	
 	def __repr__(self):
 		return f"Tube of length {self.length}, ID {self.outer_diameter}, OD {self.outer_diameter}"
+
+class Valve(ActiveComponent):
+	id_counter = 0
+
+	def __init__(self, address, mapping, name=None):
+		super().__init__(address, name=name)
+		self.mapping = mapping
+		assert type(mapping) == dict
+
+	def is_valid_attribute(self, **kwargs):
+		try:
+			self.mapping[kwargs["setting"]]
+		except KeyError:
+			raise ValueError("Invalid valve setting.")
+		return True

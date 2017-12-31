@@ -102,6 +102,14 @@ class Apparatus(object):
 		if not nx.is_connected(G): # make sure that all of the components are connected
 			raise ValueError("Unable to compile: not all components connected")
 
+		# make sure that each valve only has one output and that its mapping is valid
+		for valve in list(set([x[0] for x in self.network if issubclass(x[0].__class__, Valve)])):
+			for name in valve.mapping.keys():
+				if name not in valve.used_names:
+					raise ValueError(f"Invalid mapping for Valve {valve}. No component named {name} exists.")
+			if len([x for x in self.network if x[0] == valve]) != 1:
+				raise ValueError(f"Valve {valve} has multiple outputs.")
+
 class Protocol(object):
 	def __init__(self, apparatus, duration=None, name=None):
 		assert type(apparatus) == Apparatus
