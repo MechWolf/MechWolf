@@ -79,9 +79,11 @@ class Tube(object):
 		self.outer_diameter = ureg.parse_expression(outer_diameter)
 		
 		# ensure diameters are valid
-		if outer_diameter < inner_diameter:
+		if outer_diameter <= inner_diameter:
 			raise ValueError("Outer diameter must be greater than inner diameter")
-		
+		if length <= outer_diameter or length <= inner_diameter:
+			raise Warning("Tube length is less than diameter. Make sure that this is not in error.")
+			
 		self.material = material
 
 		if temp:
