@@ -1,10 +1,11 @@
-from components import *
-
+from components import Component, ActiveComponent, Tube, Valve, ureg
 from graphviz import Digraph
 import networkx as nx
 from terminaltables import SingleTable
 from pint import UnitRegistry
 import json
+from warnings import warn
+from datetime import datetime, timedelta
 
 class Apparatus(object):
 	id_counter = 0
@@ -119,52 +120,105 @@ class Protocol(object):
 		self.apparatus = apparatus
 		self.apparatus.compile() # ensure apparatus is valid
 		self.procedures = []
-		self.continuous_procedures = []
 		self.name = name
 
 		# check duration, if given
-		if duration is not None:
+		if duration not in [None, "auto"]:
 			duration = ureg.parse_expression(duration)
 			if duration.dimensionality != ureg.hours.dimensionality:
-				raise ValueError("Incorrect dimensionality for duration.")
+				raise ValueError("Incorrect dimensionality for duration. Must be a unit of time such as \"seconds\" or \"hours\".")
 		self.duration = duration
 
 	def _is_valid_to_add(self, component, **kwargs):
 		# make sure that the component being added to the protocol is part of the apparatus
 		if component not in self.apparatus.components:
-			raise ValueError(f"{component} is not a component of {self.apparatus.name}")
+			raise ValueError(f"{component} is not a component of {self.apparatus.name}.")
 
 		# check that the keyword is a valid attribute of the component
 		if not component.is_valid_attribute(**kwargs):
 			raise ValueError(f"Invalid attributes present for {component.name}.")
-
-		return True
 		
-	def add(self, start_time, stop_time, component, **kwargs):
+	def add(self, component, start_time="0 seconds", stop_time=None, **kwargs):
 		'''add a procedure to the protocol for an apparatus'''
+
 		# make sure the component is valid to add
-		if self._is_valid_to_add(component, **kwargs):
-			start_time, stop_time = ureg.parse_expression(start_time), ureg.parse_expression(stop_time)
+		self._is_valid_to_add(component, **kwargs)
 
-		# ensure that the start time is before the stop time
-		if start_time > stop_time:
-			raise ValueError("Start time must be less than or equal to stop time.")
+		# parse the start and stop times if given
+		start_time = ureg.parse_expression(start_time)
+		if stop_time is None and self.duration is None:
+			raise ValueError("Must specify protocol duration during instantiation in order to omit stop_time. " \
+				"To automatically set duration as end of last procedure in protocol, use duration=\"auto\".")
+		elif stop_time is not None:
+			stop_time = ureg.parse_expression(stop_time)
 
-		if self.duration is not None and stop_time > self.duration:
-			raise ValueError(f"Procedure cannot end after {self.duration} (the duration of the experiment)")
+		# perform the mapping for valves
+		if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
+			kwargs["setting"] = component.mapping[kwargs["setting"]]
 
-		self.procedures.append((start_time, stop_time, component, kwargs))
-
-	def continuous(self, component, **kwargs):
-		'''add a component that be continuously active for the entire duration of the protocol'''
-		if not self.duration:
-			raise ValueError("Must set experiment duration.")
-		if self._is_valid_to_add(component, **kwargs):
-			self.continuous_procedures.append((component, kwargs))
+		# add the procedure to the procedure list
+		self.procedures.append(dict(start_time=start_time, stop_time=stop_time, component=component, params=kwargs))
 
 	def compile(self):
 
-		# make sure all active components are activated, raising warning if not
+		output = {}
+
+		# infer the duration of the protocol
+		if self.duration == "auto":
+			self.duration = sorted([x["stop_time"] for x in self.procedures], key=lambda z: z.to_base_units().magnitude if type(z) == ureg.Quantity else 0)
+			if all([x == None for x in self.duration]):
+				raise ValueError("Unable to automatically infer duration of protocol. Must define stop_time for at least one procedure to use duration=\"auto\".")
+			self.duration = self.duration[-1]
+
+		
 		for component in [x for x in self.apparatus.components if issubclass(x.__class__, ActiveComponent)]:
-			if component not in [x[2] for x in self.procedures] and component not in [x[0] for x in self.continuous_procedures]:
-				raise Warning("Not all active components activated.")
+
+			# make sure all active components are activated, raising warning if not
+			if component not in [x["component"] for x in self.procedures]:
+				warn(f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning.")
+
+			# determine the procedures for each component
+			component_procedures = sorted([x for x in self.procedures if x["component"] == component], key=lambda x: x["start_time"])
+
+			# skip compilation of components with no procedures added
+			if not len(component_procedures):
+				continue
+
+			if len([x for x in component_procedures if x["start_time"] is None and x["stop_time"] is None]) > 1:
+				raise ValueError((f"{component} cannot have two procedures for the entire duration of the protocol. " 
+					"If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "  
+					"Otherwise, reduce ambiguity by defining start and stop times for each procedure."))
+
+			for i, procedure in enumerate(component_procedures):
+				# ensure that the start time is before the stop time if given
+				if procedure["stop_time"] is not None and procedure["start_time"] > procedure["stop_time"]:
+					raise ValueError("Start time must be less than or equal to stop time.")
+
+				# make sure that the start time isn't outside the duration
+				if self.duration is not None and procedure["start_time"] is not None and procedure["start_time"] > self.duration:
+					raise ValueError(f"Procedure cannot start at {procedure['start_time']}, which is outside the duration of the experiment ({self.duration}).")
+
+				# make sure that the end time isn't outside the duration
+				if self.duration is not None and procedure["stop_time"] is not None and procedure["stop_time"] > self.duration:
+					raise ValueError(f"Procedure cannot end at {procedure['stop_time']}, which is outside the duration of the experiment ({self.duration}).")
+				
+				try:
+					if component_procedures[i+1]["start_time"] == ureg.parse_expression("0 seconds"):
+						raise ValueError(f"Ambiguous start time for {procedure['component']}.")
+					elif component_procedures[i+1]["start_time"] is None:
+						procedure["stop_time"] = component_procedures[i+1]["start_time"]
+				except IndexError:
+					if procedure["stop_time"] is None:
+						procedure["stop_time"] = self.duration 
+
+
+				component_procedures[i]["start_time"] = str(component_procedures[i]["start_time"].to_base_units())
+				component_procedures[i]["stop_time"] = str(component_procedures[i]["stop_time"].to_base_units())
+				component_procedures[i]["component"] = str(component_procedures[i]["component"])
+
+			output[str(component)] = component_procedures
+
+		return output
+
+	def json(self):
+		return json.dumps(self.compile(), sort_keys=True, indent=4)

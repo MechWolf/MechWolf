@@ -16,9 +16,9 @@ class Component(object):
 			self.__class__.id_counter += 1
 		elif name not in self.__class__.used_names:
 			self.name = name
-			self.__class__.used_names.add(name)
 		else:
 			raise ValueError("Cannot have two components with the same name.")
+		self.__class__.used_names.add(self.name)
 
 	def __repr__(self):
 		return self.name
@@ -36,9 +36,6 @@ class ActiveComponent(Component):
 
 	def __repr__(self):
 		return self.name
-
-	def connect(self):
-		pass # need help from Alex to implement
 
 	def is_valid_attribute(self, **kwargs):
 		return False if kwargs else True # active components have no configurable attributes by themselves
@@ -112,7 +109,9 @@ class Valve(ActiveComponent):
 
 	def is_valid_attribute(self, **kwargs):
 		try:
-			self.mapping[kwargs["setting"]]
+			assert type(self.mapping[kwargs["setting"]]) == str
 		except KeyError:
 			raise ValueError("Invalid valve setting.")
+		except AssertionError:
+			raise ValueError("Valve setting must be a string.")
 		return True

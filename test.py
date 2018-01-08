@@ -4,10 +4,9 @@ from components import Component, Tube, Pump, Sensor, Valve
 # define the components
 bottle_A = Component(name="bottle_A")
 bottle_B = Component(name="bottle_B")
-pump0 = Pump("localhost:8888", name="pump0")
-pump1 = Pump("localhost:8889", name="pump1")
-# manifold = Component(name="manifold")
-valve = Valve("localhost:8999", dict(pump0="A", pump1="B"))
+pump0 = Pump("localhost:8888")
+pump1 = Pump("localhost:8889")
+valve = Valve("localhost:8999", dict(Pump_0="A", Pump_1="B"))
 uv_spec = Sensor("localhost:8890", name="uv_spec")
 collection_bottle = Component(name="collection_bottle")
 
@@ -27,8 +26,9 @@ apparatus.compile()
 
 # define the protocol
 protocol = Protocol(apparatus, duration="1 hour")
-protocol.continuous(uv_spec, active=True)
-protocol.add("0 secs", "1 hour", pump0, rate="20.0 ml/min")
-protocol.add("0 secs", "1 hour", pump1, rate="30.0 ml/min")
+protocol.add(uv_spec, active=True)
+protocol.add(pump0, rate="20.0 ml/min", stop_time="30 mins")
+protocol.add(valve, setting="Pump_1", start_time="30 mins")
+protocol.add(pump1, rate="30.0 ml/min", start_time="30 mins")
 
-protocol.compile()
+print(protocol.json())
