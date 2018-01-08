@@ -60,31 +60,30 @@ Initialize the `Protocol` object.
 
 ###### Attributes
 * **apparatus**: Apparatus object that the protocol is for.
-* **duration**: String. The duration of the protocol. Required if using `continuous`. Inferred from the last time given by `add` if not explicitly defined.
+* **duration**: String. The duration of the protocol. If not given, all `stop_time`s must be given when adding procedures to the protocol. If set to `auto`, duration is inferred from the last time given by `add`.
 * **name**: String. Name of the protocol.
 
 ##### add
-`add(self, start_time, stop_time, component, **kwargs)`
+`add(self, component, start_time="0 seconds", stop_time=None, **kwargs)`
 
 Add a procedure to the protocol. 
 
 ###### Attributes
+* **component**: Component. The component which the procedure being added to the protocol if for.
 * **start_time**: String. The start time of the procedure relative to time 0 (the start time of the experiment).
 * **stop_time**: String. The stop time of the procedure relative to time 0 (the start time of the experiment).
-* **component**: Component. The component which the procedure being added to the protocol if for.
 * **\*\*kwargs**: The parameters of the component that are being modified.
 
-##### continuous
-`continuous(self, component, **kwargs)`
+**If `start_time` is not given, it will be assumed to be the beginning of the protocol. Similarly, if `stop_time` is not given, it will be assumed to be the end of the protocol or the next time a procedure is added, whichever is first.**
 
-Add a procedure to be run for the entire duration of the protocol. Useful for activating sensors to collect data. If used, the duration of the experiment must be explicitly defined when the Protocol object is instantiated.
-
-###### Attributes
-* **component**:  Component.
-* **\*\*kwargs**: The parameters of the component that are being modified for the entire protocol.
 
 ##### compile
 `compile(self)`
 
 Ensures that the protocol is valid. While you can call it yourself, this is done automatically before any protocol is executed.
+
+##### json
+`json(self)`
+
+Returns a JSON-formatted string of the compiled protocol.
 
