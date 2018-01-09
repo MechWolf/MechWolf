@@ -30,7 +30,7 @@ class Apparatus(object):
 		self.network.append((from_component, to_component, tube))
 		self.components.update([from_component, to_component])
 
-	def visualize(self, label=True, node_attr={}, edge_attr={}, graph_attr={}, format="pdf", filename=None):
+	def visualize(self, title=True, label_tubes=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho",  nodesep="1"), format="pdf", filename=None):
 		'''generate a visualization of the graph of an apparatus'''
 		self.compile() # ensure apparatus is valid
 		f = Digraph(name=self.name, 
@@ -44,12 +44,13 @@ class Apparatus(object):
 		f.attr(rankdir='LR')
 		f.attr('node', shape='circle')
 		for x in self.network:
-			f.edge(x[0].name, x[1].name, label=f"Length {x[2].length}\nID {x[2].inner_diameter}\nOD {x[2].outer_diameter}")
+			tube_label = f"Length {x[2].length}\nID {x[2].inner_diameter}\nOD {x[2].outer_diameter}" if label_tubes else ""
+			f.edge(x[0].name, x[1].name, label=tube_label)
 
 		# show the title of the graph
-		if label:
-			label = label if label != True else self.name
-			f.attr(label=label)
+		if title:
+			title = title if title != True else self.name
+			f.attr(label=title)
 
 		f.view(cleanup=True)
 
@@ -108,19 +109,28 @@ class Apparatus(object):
 		if not nx.is_connected(G): # make sure that all of the components are connected
 			raise ValueError("Unable to compile: not all components connected")
 
-		# make sure that each valve only has one output and that its mapping is valid
+		# valve checking
 		for valve in list(set([x[0] for x in self.network if issubclass(x[0].__class__, Valve)])):
 			for name in valve.mapping.keys():
+				# ensure that valve's mapping components are part of apparatus
 				if name not in valve.used_names:
 					raise ValueError(f"Invalid mapping for Valve {valve}. No component named {name} exists.")
+			# no more than one output from a valve (might have to change this)
 			if len([x for x in self.network if x[0] == valve]) != 1:
 				raise ValueError(f"Valve {valve} has multiple outputs.")
+
+			# make sure valve's mapping is complete
+			non_mapped_components = [x[0] for x in self.network if x[1] == valve and valve.mapping.get(x[0].name) is None]
+			if non_mapped_components:
+				raise ValueError(f"Valve {valve} has incomplete mapping. No mapping for {non_mapped_components}")
+				
+		return True
 
 class Protocol(object):
 	def __init__(self, apparatus, duration=None, name=None):
 		assert type(apparatus) == Apparatus
-		self.apparatus = apparatus
-		self.apparatus.compile() # ensure apparatus is valid
+		if apparatus.compile(): # ensure apparatus is valid
+			self.apparatus = apparatus
 		self.procedures = []
 		self.name = name
 
