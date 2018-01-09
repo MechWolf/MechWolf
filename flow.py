@@ -1,11 +1,12 @@
-from components import Component, ActiveComponent, Tube, Valve, ureg
+from components import *
 from graphviz import Digraph
 import networkx as nx
 from terminaltables import SingleTable
 from pint import UnitRegistry
-import json
+import yaml
 from warnings import warn
 from datetime import datetime, timedelta
+from copy import deepcopy
 
 class Apparatus(object):
 	id_counter = 0
@@ -172,7 +173,6 @@ class Protocol(object):
 
 		
 		for component in [x for x in self.apparatus.components if issubclass(x.__class__, ActiveComponent)]:
-
 			# make sure all active components are activated, raising warning if not
 			if component not in [x["component"] for x in self.procedures]:
 				warn(f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning.")
@@ -212,13 +212,16 @@ class Protocol(object):
 						procedure["stop_time"] = self.duration 
 
 
-				component_procedures[i]["start_time"] = str(component_procedures[i]["start_time"].to_base_units())
-				component_procedures[i]["stop_time"] = str(component_procedures[i]["stop_time"].to_base_units())
-				component_procedures[i]["component"] = str(component_procedures[i]["component"])
-
-			output[str(component)] = component_procedures
+			output[component] = component_procedures
 
 		return output
 
-	def json(self):
-		return json.dumps(self.compile(), sort_keys=True, indent=4)
+	def yaml(self):
+		compiled = deepcopy(self.compile())
+		for item in compiled.items():
+			for procedure in item[1]:
+				procedure["start_time"] = procedure["start_time"].to_timedelta()
+				procedure["stop_time"] = procedure["stop_time"].to_timedelta()
+				del procedure["component"]
+		compiled = {str(k): v for (k, v) in compiled.items()}
+		return yaml.dump(compiled)
