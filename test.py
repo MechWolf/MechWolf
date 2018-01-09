@@ -25,17 +25,20 @@ apparatus.add(bottle_C, pump2, Tube("50 mm", "1/16 in", "2/16 in"))
 apparatus.add(pump2, valve, Tube("50 mm", "1/16 in", "2/16 in"))
 
 # check the apparatus
-apparatus.compile()
+# apparatus.compile()
 # apparatus.summarize()
-apparatus.visualize()
+# apparatus.visualize()
 
 # define the protocol
-protocol = Protocol(apparatus, duration="1 hour")
+protocol = Protocol(apparatus, duration="1 min")
 protocol.add(uv_spec, active=True)
-protocol.add(pump0, rate="20.0 ml/min", stop_time="30 mins")
-protocol.add(valve, setting="Pump_1", start_time="30 mins")
-protocol.add(pump1, rate="30.0 ml/min", start_time="30 mins")
-protocol.add(pump1, rate="40.0 ml/min", start_time="20 mins")
+protocol.add(pump0, rate="20.0 ml/min", stop_time="30 secs")
 
-print(protocol.compile())
-print(protocol.yaml())
+protocol.add(valve, setting="Pump_0", stop_time="30 secs")
+protocol.add(valve, setting="Pump_1", start_time="30 secs")
+
+protocol.add(pump1, rate="30.0 ml/min", start_time="30 secs")
+
+
+protocol.visualize()
+# print(protocol.json())

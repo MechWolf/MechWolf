@@ -8,6 +8,10 @@ import json
 from warnings import warn
 from datetime import datetime, timedelta
 from copy import deepcopy
+import plotly as py
+import plotly.figure_factory as ff
+from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
+from datetime import datetime, timedelta
 
 class Apparatus(object):
 	id_counter = 0
@@ -123,16 +127,21 @@ class Apparatus(object):
 			non_mapped_components = [x[0] for x in self.network if x[1] == valve and valve.mapping.get(x[0].name) is None]
 			if non_mapped_components:
 				raise ValueError(f"Valve {valve} has incomplete mapping. No mapping for {non_mapped_components}")
-				
+
 		return True
 
 class Protocol(object):
+	id_counter = 0
 	def __init__(self, apparatus, duration=None, name=None):
 		assert type(apparatus) == Apparatus
 		if apparatus.compile(): # ensure apparatus is valid
 			self.apparatus = apparatus
 		self.procedures = []
-		self.name = name
+		if name is not None:
+			self.name = name
+		else:
+			self.name = "Protocol_" + str(Protocol.id_counter)
+			Protocol.id_counter += 1
 
 		# check duration, if given
 		if duration not in [None, "auto"]:
@@ -247,3 +256,31 @@ class Protocol(object):
 				del procedure["component"]
 		compiled = {str(k): v for (k, v) in compiled.items()}
 		return json.dumps(compiled, indent=4, sort_keys=True)
+
+	def visualize(self):
+		df = []
+		for component, procedures in self.compile().items():
+			for procedure in procedures:
+				df.append(dict(
+					Task=str(component),
+					Start=str(datetime(2000, 1, 1) + procedure["start_time"].to_timedelta()),
+					Finish=str(datetime(2000, 1, 1) + procedure["stop_time"].to_timedelta()),
+					Resource=str(procedure["params"])))
+		df.sort(key=lambda x: x["Task"])
+
+		# ensure that color coding keeps color consistent for params
+		colors_dict = {}
+		color_idx = 0
+		for params in list(set([str(x["params"]) for x in self.procedures])):
+			colors_dict[params] = colors[color_idx % len(colors)]
+			color_idx += 1
+
+		# create the graph
+		fig = ff.create_gantt(df, group_tasks=True, colors=colors_dict, index_col='Resource', showgrid_x=True, title=self.name)
+
+		# add the hovertext
+		for i in range(len(fig["data"])):
+			fig["data"][i].update(text=df[i]["Resource"], hoverinfo="text")
+
+		# plot it
+		py.offline.plot(fig, filename=f'{self.name}')
