@@ -185,6 +185,7 @@ class Protocol(object):
 			if not len(component_procedures):
 				continue
 
+			# check for conflicting continuous procedures
 			if len([x for x in component_procedures if x["start_time"] is None and x["stop_time"] is None]) > 1:
 				raise ValueError((f"{component} cannot have two procedures for the entire duration of the protocol. " 
 					"If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "  
@@ -203,15 +204,15 @@ class Protocol(object):
 				if self.duration is not None and procedure["stop_time"] is not None and procedure["stop_time"] > self.duration:
 					raise ValueError(f"Procedure cannot end at {procedure['stop_time']}, which is outside the duration of the experiment ({self.duration}).")
 				
+				# automatically infer start and stop times
 				try:
 					if component_procedures[i+1]["start_time"] == ureg.parse_expression("0 seconds"):
 						raise ValueError(f"Ambiguous start time for {procedure['component']}.")
-					elif component_procedures[i+1]["start_time"] is None:
+					elif component_procedures[i+1]["start_time"] is not None:
 						procedure["stop_time"] = component_procedures[i+1]["start_time"]
 				except IndexError:
 					if procedure["stop_time"] is None:
 						procedure["stop_time"] = self.duration 
-
 
 			output[component] = component_procedures
 
