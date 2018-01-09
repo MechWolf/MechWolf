@@ -4,6 +4,7 @@ import networkx as nx
 from terminaltables import SingleTable
 from pint import UnitRegistry
 import yaml
+import json
 from warnings import warn
 from datetime import datetime, timedelta
 from copy import deepcopy
@@ -225,3 +226,13 @@ class Protocol(object):
 				del procedure["component"]
 		compiled = {str(k): v for (k, v) in compiled.items()}
 		return yaml.dump(compiled)
+
+	def json(self):
+		compiled = deepcopy(self.compile())
+		for item in compiled.items():
+			for procedure in item[1]:
+				procedure["start_time"] = str(procedure["start_time"].to_timedelta())
+				procedure["stop_time"] = str(procedure["stop_time"].to_timedelta())
+				del procedure["component"]
+		compiled = {str(k): v for (k, v) in compiled.items()}
+		return json.dumps(compiled, indent=4, sort_keys=True)
