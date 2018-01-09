@@ -3,3 +3,4 @@ terminaltables
 pyyaml
 pint
 plotly
+networkx
