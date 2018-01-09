@@ -283,4 +283,4 @@ class Protocol(object):
 			fig["data"][i].update(text=df[i]["Resource"], hoverinfo="text")
 
 		# plot it
-		py.offline.plot(fig, filename=f'{self.name}')
+		py.offline.plot(fig, filename=f'{self.name}.html')
