@@ -166,11 +166,15 @@ class Protocol(object):
 		self._is_valid_to_add(component, **kwargs)
 
 		# parse the start and stop times if given
+		if isinstance(start_time, timedelta):
+			start_time = str(start_time.total_seconds()) + " seconds"
 		start_time = ureg.parse_expression(start_time)
 		if stop_time is None and self.duration is None:
 			raise ValueError("Must specify protocol duration during instantiation in order to omit stop_time. " \
 				"To automatically set duration as end of last procedure in protocol, use duration=\"auto\".")
 		elif stop_time is not None:
+			if isinstance(stop_time, timedelta):
+				stop_time = str(stop_time.total_seconds()) + " seconds"
 			stop_time = ureg.parse_expression(stop_time)
 
 		# perform the mapping for valves
@@ -180,7 +184,7 @@ class Protocol(object):
 		# add the procedure to the procedure list
 		self.procedures.append(dict(start_time=start_time, stop_time=stop_time, component=component, params=kwargs))
 
-	def compile(self):
+	def compile(self, warnings=True):
 
 		output = {}
 
@@ -195,7 +199,7 @@ class Protocol(object):
 		for component in [x for x in self.apparatus.components if issubclass(x.__class__, ActiveComponent)]:
 			# make sure all active components are activated, raising warning if not
 			if component not in [x["component"] for x in self.procedures]:
-				warn(f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning.")
+				if warnings: warn(f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning.")
 
 			# determine the procedures for each component
 			component_procedures = sorted([x for x in self.procedures if x["component"] == component], key=lambda x: x["start_time"])
@@ -227,10 +231,12 @@ class Protocol(object):
 				try:
 					if component_procedures[i+1]["start_time"] == ureg.parse_expression("0 seconds"):
 						raise ValueError(f"Ambiguous start time for {procedure['component']}.")
-					elif component_procedures[i+1]["start_time"] is not None:
+					elif component_procedures[i+1]["start_time"] is not None and procedure["stop_time"] is None:
+						if warnings: warn(f"Automatically inferring start time for {procedure['component']} as beginning of {procedure['component']}'s next procedure.")
 						procedure["stop_time"] = component_procedures[i+1]["start_time"]
 				except IndexError:
 					if procedure["stop_time"] is None:
+						if warnings: warn(f"Automatically inferring stop_time for {procedure['component']} as the end of the protocol. To override, provide stop_time in your call to add().")
 						procedure["stop_time"] = self.duration 
 
 			output[component] = component_procedures
@@ -258,6 +264,7 @@ class Protocol(object):
 		return json.dumps(compiled, indent=4, sort_keys=True)
 
 	def visualize(self):
+		# convert protocol to df for plotting
 		df = []
 		for component, procedures in self.compile().items():
 			for procedure in procedures:
@@ -281,6 +288,7 @@ class Protocol(object):
 		# add the hovertext
 		for i in range(len(fig["data"])):
 			fig["data"][i].update(text=df[i]["Resource"], hoverinfo="text")
+		fig['layout'].update(margin=dict(l=110))
 
 		# plot it
 		py.offline.plot(fig, filename=f'{self.name}.html')

@@ -111,8 +111,6 @@ class Valve(ActiveComponent):
 	def is_valid_attribute(self, **kwargs):
 		try:
 			assert type(self.mapping[kwargs["setting"]]) == str
-		except KeyError:
-			raise ValueError("Invalid valve setting.")
-		except AssertionError:
-			raise ValueError("Valve setting must be a string.")
+		except (KeyError, AssertionError):
+			raise ValueError(f"Invalid valve setting: {kwargs['setting']}. Valid settings are {list(self.mapping.keys())}. Note that valve settings must be strings, not Component objects.")
 		return True

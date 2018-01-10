@@ -70,8 +70,8 @@ Add a procedure to the protocol.
 
 ###### Attributes
 * **component**: Component. The component which the procedure being added to the protocol if for.
-* **start_time**: String. The start time of the procedure relative to time 0 (the start time of the experiment).
-* **stop_time**: String. The stop time of the procedure relative to time 0 (the start time of the experiment).
+* **start_time**: String or timedelta. The start time of the procedure relative to time 0 (the start time of the experiment).
+* **stop_time**: String or timedelta. The stop time of the procedure relative to time 0 (the start time of the experiment).
 * **\*\*kwargs**: The parameters of the component that are being modified.
 
 **If `start_time` is not given, it will be assumed to be the beginning of the protocol. Similarly, if `stop_time` is not given, it will be assumed to be the end of the protocol or the next time a procedure is added, whichever is first.**
