@@ -243,8 +243,8 @@ class Protocol(object):
 
 		return output
 
-	def yaml(self):
-		compiled = deepcopy(self.compile())
+	def yaml(self, warnings=True):
+		compiled = deepcopy(self.compile(warnings=warnings))
 		for item in compiled.items():
 			for procedure in item[1]:
 				procedure["start_time"] = procedure["start_time"].to_timedelta()
@@ -253,8 +253,8 @@ class Protocol(object):
 		compiled = {str(k): v for (k, v) in compiled.items()}
 		return yaml.dump(compiled)
 
-	def json(self):
-		compiled = deepcopy(self.compile())
+	def json(self, warnings=True):
+		compiled = deepcopy(self.compile(warnings=warnings))
 		for item in compiled.items():
 			for procedure in item[1]:
 				procedure["start_time"] = str(procedure["start_time"].to_timedelta())
@@ -263,10 +263,10 @@ class Protocol(object):
 		compiled = {str(k): v for (k, v) in compiled.items()}
 		return json.dumps(compiled, indent=4, sort_keys=True)
 
-	def visualize(self):
+	def visualize(self, warnings=True):
 		# convert protocol to df for plotting
 		df = []
-		for component, procedures in self.compile().items():
+		for component, procedures in self.compile(warnings=warnings).items():
 			for procedure in procedures:
 				df.append(dict(
 					Task=str(component),

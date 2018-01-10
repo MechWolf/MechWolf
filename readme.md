@@ -58,7 +58,7 @@ Ensures that the apparatus is valid. While you can call it yourself, creating a 
 
 Initialize the `Protocol` object.
 
-###### Attributes
+###### Arguments
 * **apparatus**: Apparatus object that the protocol is for.
 * **duration**: String. The duration of the protocol. If not given, all `stop_time`s must be given when adding procedures to the protocol. If set to `auto`, duration is inferred from the last time given by `add`.
 * **name**: String. Name of the protocol.
@@ -68,7 +68,7 @@ Initialize the `Protocol` object.
 
 Add a procedure to the protocol. 
 
-###### Attributes
+###### Arguments
 * **component**: Component. The component which the procedure being added to the protocol if for.
 * **start_time**: String or timedelta. The start time of the procedure relative to time 0 (the start time of the experiment).
 * **stop_time**: String or timedelta. The stop time of the procedure relative to time 0 (the start time of the experiment).
@@ -78,12 +78,19 @@ Add a procedure to the protocol.
 
 
 ##### compile
-`compile(self)`
+`compile(self, warnings=True)`
 
 Ensures that the protocol is valid. While you can call it yourself, this is done automatically before any protocol is executed.
 
+###### Arguments
+* **warnings**: Boolean. Set to False to suppress warnings.
+
+
 ##### json
-`json(self)`
+`json(self, warnings=True)`
 
 Returns a JSON-formatted string of the compiled protocol.
+
+###### Arguments
+* **warnings**: Boolean. Set to False to suppress warnings.
 
