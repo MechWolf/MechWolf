@@ -1,0 +1,1 @@
+{"region": "us-east-1", "akey": "AKIAIBF6EO63EZS346JQ", "skey": "Z9E+hPKQ0iAOeM/g1o3jbWCWBpH61gB/Q0dU6BxW", "endpt_prefix": "a365awttlmyft7"}
