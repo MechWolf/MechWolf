@@ -163,7 +163,13 @@ class Protocol(object):
 		'''add a procedure to the protocol for an apparatus'''
 
 		# make sure the component is valid to add
-		self._is_valid_to_add(component, **kwargs)
+		for kwarg, value in kwargs.items():
+			if not hasattr(component, kwarg):
+				raise ValueError(f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x not in ['name', 'address']]}")
+			if type(component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
+				raise ValueError(f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
+			elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
+				raise ValueError(f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {type(value)}")
 
 		# parse the start and stop times if given
 		if isinstance(start_time, timedelta):

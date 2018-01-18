@@ -23,11 +23,11 @@ peptide_synthesizer.add(uv_spec, collection_bottle, Tube("5 in", "1/16 in", "2/1
 
 amino_acid_mapping = dict(C=cysteine_pump, A=alanine_pump)
 protocol = Protocol(peptide_synthesizer, duration="auto")
-protocol.add(uv_spec, active=True)
+protocol.add(uv_spec, active="True")
 
 elapsed = timedelta(seconds=0)
 
-for amino_acid in "CAACA":
+for amino_acid in "CAACAAAACACACA":
 	duration = timedelta(seconds=15)
 
 	start_time = elapsed
@@ -39,4 +39,5 @@ for amino_acid in "CAACA":
 
 	elapsed += duration
 
-protocol.visualize()
+print(protocol.yaml())
+
