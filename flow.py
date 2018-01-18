@@ -263,8 +263,8 @@ class Protocol(object):
 		compiled = deepcopy(self.compile(warnings=warnings))
 		for item in compiled.items():
 			for procedure in item[1]:
-				procedure["start_time"] = str(procedure["start_time"].to_timedelta())
-				procedure["stop_time"] = str(procedure["stop_time"].to_timedelta())
+				procedure["start_time"] = str(procedure["start_time"].to_timedelta().total_seconds())
+				procedure["stop_time"] = str(procedure["stop_time"].to_timedelta().total_seconds())
 				del procedure["component"]
 		compiled = {str(k): v for (k, v) in compiled.items()}
 		return json.dumps(compiled, indent=4, sort_keys=True)

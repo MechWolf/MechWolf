@@ -36,15 +36,11 @@ class ActiveComponent(Component):
 		return self.name
 
 class Pump(ActiveComponent):
-	id_counter = 0
-
 	def __init__(self, address, name=None):
 		super().__init__(address, name=name)
 		self.rate = ureg.parse_expression("0 ml/min")
 
 class Sensor(ActiveComponent):
-	id_counter = 0
-
 	def __init__(self, address, name=None):
 		super().__init__(address, name=name)
 		self.active = False		
@@ -80,8 +76,6 @@ class Tube(object):
 		return f"Tube of length {self.length}, ID {self.outer_diameter}, OD {self.outer_diameter}"
 
 class Valve(ActiveComponent):
-	id_counter = 0
-
 	def __init__(self, address, mapping, name=None):
 		super().__init__(address, name=name)
 		self.mapping = mapping
