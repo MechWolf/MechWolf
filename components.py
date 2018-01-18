@@ -23,9 +23,6 @@ class Component(object):
 
 	def __repr__(self):
 		return self.name
-
-	def is_valid_attribute(self, **kwargs):
-		return False if kwargs else True # base components have no configurable attributes
 		
 class ActiveComponent(Component):
 	"""A connected, controllable component. Must have an address"""
@@ -38,37 +35,15 @@ class ActiveComponent(Component):
 	def __repr__(self):
 		return self.name
 
-	def is_valid_attribute(self, **kwargs):
-		return False if kwargs else True # active components have no configurable attributes by themselves
-
 class Pump(ActiveComponent):
-	id_counter = 0
-
 	def __init__(self, address, name=None):
 		super().__init__(address, name=name)
-
-	def is_valid_attribute(self, **kwargs):
-		try:
-			assert ureg.parse_expression(kwargs["rate"]).dimensionality == ureg.parse_expression("1 ml/min").dimensionality
-		except KeyError:
-			raise(ValueError(f"Invalid attribute for {self.__class__.__name__}. Please provide \"rate\"."))
-		except (AssertionError, AttributeError):
-			raise ValueError("Invalid dimensionality. Rate must be volume/time.")
-		return True
+		self.rate = ureg.parse_expression("0 ml/min")
 
 class Sensor(ActiveComponent):
-	id_counter = 0
-
 	def __init__(self, address, name=None):
 		super().__init__(address, name=name)
-
-	def is_valid_attribute(self, **kwargs):
-		try:
-			assert type(kwargs["active"]) == bool
-		except AssertionError:
-			raise ValueError("Invalid sensor activation setting. Must be boolean.")
-		return True
-		
+		self.active = False		
 
 class Tube(object):
 	def __init__(self, length, inner_diameter, outer_diameter, material=None, temp=None):
@@ -101,16 +76,8 @@ class Tube(object):
 		return f"Tube of length {self.length}, ID {self.outer_diameter}, OD {self.outer_diameter}"
 
 class Valve(ActiveComponent):
-	id_counter = 0
-
 	def __init__(self, address, mapping, name=None):
 		super().__init__(address, name=name)
 		self.mapping = mapping
+		self.setting = ""
 		assert type(mapping) == dict
-
-	def is_valid_attribute(self, **kwargs):
-		try:
-			assert type(self.mapping[kwargs["setting"]]) == str
-		except (KeyError, AssertionError):
-			raise ValueError(f"Invalid valve setting: {kwargs['setting']}. Valid settings are {list(self.mapping.keys())}. Note that valve settings must be strings, not Component objects.")
-		return True

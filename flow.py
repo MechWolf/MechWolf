@@ -163,12 +163,20 @@ class Protocol(object):
 		'''add a procedure to the protocol for an apparatus'''
 
 		# make sure the component is valid to add
-		self._is_valid_to_add(component, **kwargs)
+		for kwarg, value in kwargs.items():
+			if not hasattr(component, kwarg):
+				raise ValueError(f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x not in ['name', 'address']]}")
+			if type(component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
+				raise ValueError(f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
+			elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
+				raise ValueError(f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {type(value)}")
 
-		# parse the start and stop times if given
+		# parse the start time if given
 		if isinstance(start_time, timedelta):
 			start_time = str(start_time.total_seconds()) + " seconds"
 		start_time = ureg.parse_expression(start_time)
+
+		# parse stop time
 		if stop_time is None and self.duration is None:
 			raise ValueError("Must specify protocol duration during instantiation in order to omit stop_time. " \
 				"To automatically set duration as end of last procedure in protocol, use duration=\"auto\".")
@@ -257,8 +265,8 @@ class Protocol(object):
 		compiled = deepcopy(self.compile(warnings=warnings))
 		for item in compiled.items():
 			for procedure in item[1]:
-				procedure["start_time"] = str(procedure["start_time"].to_timedelta())
-				procedure["stop_time"] = str(procedure["stop_time"].to_timedelta())
+				procedure["start_time"] = str(procedure["start_time"].to_timedelta().total_seconds())
+				procedure["stop_time"] = str(procedure["stop_time"].to_timedelta().total_seconds())
 				del procedure["component"]
 		compiled = {str(k): v for (k, v) in compiled.items()}
 		return json.dumps(compiled, indent=4, sort_keys=True)
