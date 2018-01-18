@@ -171,10 +171,12 @@ class Protocol(object):
 			elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
 				raise ValueError(f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {type(value)}")
 
-		# parse the start and stop times if given
+		# parse the start time if given
 		if isinstance(start_time, timedelta):
 			start_time = str(start_time.total_seconds()) + " seconds"
 		start_time = ureg.parse_expression(start_time)
+
+		# parse stop time
 		if stop_time is None and self.duration is None:
 			raise ValueError("Must specify protocol duration during instantiation in order to omit stop_time. " \
 				"To automatically set duration as end of last procedure in protocol, use duration=\"auto\".")
