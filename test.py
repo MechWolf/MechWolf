@@ -26,19 +26,13 @@ amino_acid_mapping = dict(C=cysteine_pump, A=alanine_pump)
 protocol = Protocol(peptide_synthesizer, duration="auto")
 protocol.add(uv_spec, active=True)
 
-elapsed = timedelta(seconds=0)
+start_time = timedelta(seconds=0)
 
 for amino_acid in "CAACAAAACACACA":
-	duration = timedelta(seconds=15)
+	protocol.add(amino_acid_mapping[amino_acid], start_time=start_time, duration="15 seconds", rate="15 ml/min")
+	protocol.add(valve, start_time=start_time, duration="15 seconds", setting=str(amino_acid_mapping[amino_acid]))
 
-	start_time = elapsed
-	stop_time = elapsed + duration
-	# print(amino_acid, start_time, stop_time)
-
-	protocol.add(amino_acid_mapping[amino_acid], start_time=start_time, stop_time=stop_time, rate="15 ml/min")
-	protocol.add(valve, start_time=start_time, stop_time=stop_time, setting=str(amino_acid_mapping[amino_acid]))
-
-	elapsed += duration
+	start_time += timedelta(seconds=15)
 
 print(protocol.json())
 

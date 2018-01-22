@@ -159,7 +159,7 @@ class Protocol(object):
 		if not component.is_valid_attribute(**kwargs):
 			raise ValueError(f"Invalid attributes present for {component.name}.")
 		
-	def add(self, component, start_time="0 seconds", stop_time=None, **kwargs):
+	def add(self, component, start_time="0 seconds", stop_time=None, duration=None, **kwargs):
 		'''add a procedure to the protocol for an apparatus'''
 
 		# make sure the component is valid to add
@@ -171,19 +171,29 @@ class Protocol(object):
 			elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
 				raise ValueError(f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {type(value)}")
 
+		if stop_time is not None and duration is not None:
+			raise ValueError("Must provide one of stop_time and duration, not both.")
+
 		# parse the start time if given
 		if isinstance(start_time, timedelta):
 			start_time = str(start_time.total_seconds()) + " seconds"
 		start_time = ureg.parse_expression(start_time)
 
-		# parse stop time
-		if stop_time is None and self.duration is None:
+		# parse duration if given
+		if duration is not None:
+			if isinstance(duration, timedelta):
+				duration = str(duration.total_seconds()) + " seconds"
+			stop_time = start_time + ureg.parse_expression(duration)
+
+		# determine stop time
+		if stop_time is None and self.duration is None and duration is None:
 			raise ValueError("Must specify protocol duration during instantiation in order to omit stop_time. " \
-				"To automatically set duration as end of last procedure in protocol, use duration=\"auto\".")
+				f"To automatically set duration as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
 		elif stop_time is not None:
 			if isinstance(stop_time, timedelta):
 				stop_time = str(stop_time.total_seconds()) + " seconds"
-			stop_time = ureg.parse_expression(stop_time)
+			if type(stop_time) == str:
+				stop_time = ureg.parse_expression(stop_time)
 
 		# perform the mapping for valves
 		if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
@@ -265,8 +275,8 @@ class Protocol(object):
 		compiled = deepcopy(self.compile(warnings=warnings))
 		for item in compiled.items():
 			for procedure in item[1]:
-				procedure["start_time"] = str(procedure["start_time"].to_timedelta().total_seconds())
-				procedure["stop_time"] = str(procedure["stop_time"].to_timedelta().total_seconds())
+				procedure["start_time"] = procedure["start_time"].to_timedelta().total_seconds()
+				procedure["stop_time"] = procedure["stop_time"].to_timedelta().total_seconds()
 				del procedure["component"]
 		compiled = {str(k): v for (k, v) in compiled.items()}
 		return json.dumps(compiled, indent=4, sort_keys=True)
