@@ -46,7 +46,7 @@ class Sensor(ActiveComponent):
 		self.active = False		
 
 class Tube(object):
-	def __init__(self, length, inner_diameter, outer_diameter, material=None, temp=None):
+	def __init__(self, length, inner_diameter, outer_diameter, material, temp=None):
 		self.length = ureg.parse_expression(length)
 		self.inner_diameter = ureg.parse_expression(inner_diameter)
 		self.outer_diameter = ureg.parse_expression(outer_diameter)
@@ -56,7 +56,9 @@ class Tube(object):
 			raise ValueError("Outer diameter must be greater than inner diameter")
 		if length <= outer_diameter or length <= inner_diameter:
 			warn("Tube length is less than diameter. Make sure that this is not in error.")
-			
+		
+		if type(material) != str:
+			raise TypeError("Material must be a string")
 		self.material = material
 
 		if temp:

@@ -111,22 +111,22 @@ class Apparatus(object):
 		G = nx.Graph() # convert the network to an undirected NetworkX graph
 		G.add_edges_from([(x[0], x[1]) for x in self.network])
 		if not nx.is_connected(G): # make sure that all of the components are connected
-			raise ValueError("Unable to compile: not all components connected")
+			raise RuntimeError("Unable to compile: not all components connected")
 
 		# valve checking
 		for valve in list(set([x[0] for x in self.network if issubclass(x[0].__class__, Valve)])):
 			for name in valve.mapping.keys():
 				# ensure that valve's mapping components are part of apparatus
 				if name not in valve.used_names:
-					raise ValueError(f"Invalid mapping for Valve {valve}. No component named {name} exists.")
+					raise RuntimeError(f"Invalid mapping for Valve {valve}. No component named {name} exists.")
 			# no more than one output from a valve (might have to change this)
 			if len([x for x in self.network if x[0] == valve]) != 1:
-				raise ValueError(f"Valve {valve} has multiple outputs.")
+				raise RuntimeError(f"Valve {valve} has multiple outputs.")
 
 			# make sure valve's mapping is complete
 			non_mapped_components = [x[0] for x in self.network if x[1] == valve and valve.mapping.get(x[0].name) is None]
 			if non_mapped_components:
-				raise ValueError(f"Valve {valve} has incomplete mapping. No mapping for {non_mapped_components}")
+				raise RuntimeError(f"Valve {valve} has incomplete mapping. No mapping for {non_mapped_components}")
 
 		return True
 
@@ -172,7 +172,7 @@ class Protocol(object):
 				raise ValueError(f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {type(value)}")
 
 		if stop_time is not None and duration is not None:
-			raise ValueError("Must provide one of stop_time and duration, not both.")
+			raise RuntimeError("Must provide one of stop_time and duration, not both.")
 
 		# parse the start time if given
 		if isinstance(start_time, timedelta):
@@ -187,7 +187,7 @@ class Protocol(object):
 
 		# determine stop time
 		if stop_time is None and self.duration is None and duration is None:
-			raise ValueError("Must specify protocol duration during instantiation in order to omit stop_time. " \
+			raise RuntimeError("Must specify protocol duration during instantiation in order to omit stop_time. " \
 				f"To automatically set duration as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
 		elif stop_time is not None:
 			if isinstance(stop_time, timedelta):
@@ -210,7 +210,7 @@ class Protocol(object):
 		if self.duration == "auto":
 			self.duration = sorted([x["stop_time"] for x in self.procedures], key=lambda z: z.to_base_units().magnitude if type(z) == ureg.Quantity else 0)
 			if all([x == None for x in self.duration]):
-				raise ValueError("Unable to automatically infer duration of protocol. Must define stop_time for at least one procedure to use duration=\"auto\".")
+				raise RuntimeError("Unable to automatically infer duration of protocol. Must define stop_time for at least one procedure to use duration=\"auto\".")
 			self.duration = self.duration[-1]
 
 		
@@ -228,14 +228,14 @@ class Protocol(object):
 
 			# check for conflicting continuous procedures
 			if len([x for x in component_procedures if x["start_time"] is None and x["stop_time"] is None]) > 1:
-				raise ValueError((f"{component} cannot have two procedures for the entire duration of the protocol. " 
+				raise RuntimeError((f"{component} cannot have two procedures for the entire duration of the protocol. " 
 					"If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "  
 					"Otherwise, reduce ambiguity by defining start and stop times for each procedure."))
 
 			for i, procedure in enumerate(component_procedures):
 				# ensure that the start time is before the stop time if given
 				if procedure["stop_time"] is not None and procedure["start_time"] > procedure["stop_time"]:
-					raise ValueError("Start time must be less than or equal to stop time.")
+					raise RuntimeError("Start time must be less than or equal to stop time.")
 
 				# make sure that the start time isn't outside the duration
 				if self.duration is not None and procedure["start_time"] is not None and procedure["start_time"] > self.duration:
@@ -248,7 +248,7 @@ class Protocol(object):
 				# automatically infer start and stop times
 				try:
 					if component_procedures[i+1]["start_time"] == ureg.parse_expression("0 seconds"):
-						raise ValueError(f"Ambiguous start time for {procedure['component']}.")
+						raise RuntimeError(f"Ambiguous start time for {procedure['component']}.")
 					elif component_procedures[i+1]["start_time"] is not None and procedure["stop_time"] is None:
 						if warnings: warn(f"Automatically inferring start time for {procedure['component']} as beginning of {procedure['component']}'s next procedure.")
 						procedure["stop_time"] = component_procedures[i+1]["start_time"]
