@@ -18,7 +18,7 @@ class Apparatus(object):
 	def __init__(self, name=None):
 		self.network = []
 		self.components = set()
-		# if given a name, then name the appartus, else default to a sequential name
+		# if given a name, then name the apparatus, else default to a sequential name
 		if name is not None:
 			self.name = name
 		else:
@@ -203,7 +203,7 @@ class Protocol(object):
 		self.procedures.append(dict(start_time=start_time, stop_time=stop_time, component=component, params=kwargs))
 
 	def compile(self, warnings=True):
-
+		'''compile the protocol into a dict of devices and lists of their procedures'''
 		output = {}
 
 		# infer the duration of the protocol
@@ -262,6 +262,7 @@ class Protocol(object):
 		return output
 
 	def yaml(self, warnings=True):
+		'''convert compiled protocol to yaml'''
 		compiled = deepcopy(self.compile(warnings=warnings))
 		for item in compiled.items():
 			for procedure in item[1]:
@@ -272,6 +273,7 @@ class Protocol(object):
 		return yaml.dump(compiled)
 
 	def json(self, warnings=True):
+		'''convert compiled protocol to json'''
 		compiled = deepcopy(self.compile(warnings=warnings))
 		for item in compiled.items():
 			for procedure in item[1]:
@@ -282,7 +284,7 @@ class Protocol(object):
 		return json.dumps(compiled, indent=4, sort_keys=True)
 
 	def visualize(self, warnings=True):
-		# convert protocol to df for plotting
+		'''convert protocol to df for plotting'''
 		df = []
 		for component, procedures in self.compile(warnings=warnings).items():
 			for procedure in procedures:
@@ -310,3 +312,10 @@ class Protocol(object):
 
 		# plot it
 		py.offline.plot(fig, filename=f'{self.name}.html')
+
+	# def execute(self):
+		# compiled = self.compile()
+		# for device in list(self.apparatus.components):
+		# 	device.send(device, compiled[device])
+		# if all([device.recieved for device in list(self.apparatus.components)]):
+		# 	device.send(device, start_time)
