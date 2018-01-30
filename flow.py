@@ -276,7 +276,6 @@ class Protocol(object):
 				compiled.append(dict(time=procedure["stop_time"], params=component.base_state()))
 
 			output[component] = compiled
-
 		return output
 
 	def json(self, warnings=True):
@@ -318,16 +317,20 @@ class Protocol(object):
 		# plot it
 		py.offline.plot(fig, filename=f'{self.name}.html')
 
-	# def execute(self):
-	# 	c = Connection()
-	# 	c.connect()
-	# 	e = DeviceExecutor(c)
+	def execute(self):
+		c = Connection()
+		c.connect()
+		e = DeviceExecutor(c)
 
-	# 	connections = []
+		tasks = []
 
-	# 	compiled = self.compile()
-	# 	for device in [x for x in list(self.apparatus.components) if issubclass(x.__class__, ActiveComponent)]:
-	# 		connections.append(e.submit(device.address, procedures=compiled[device]))
-	# 	if all([connection._state == "RECEIVED" for connection in connections]):
-	# 		connections = []
+		compiled = json.loads(self.json()) # i hate this
+
+		pprint(compiled)
+		for device in list(self.apparatus.components):
+			if issubclass(device.__class__, ActiveComponent):
+				tasks.extend([e.submit(device.address, procedure) for procedure in compiled[device.name]])
+		# if all([connection._state == "RECEIVED" for connection in connections]):
+		# 	connections = []
+		print(tasks)
 

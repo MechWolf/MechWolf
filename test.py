@@ -34,4 +34,5 @@ for amino_acid in "CAACAAAACACACAA":
 
 	start_time += timedelta(seconds=15)
 
-print(protocol.json())
+# print(protocol.json())
+protocol.execute()
