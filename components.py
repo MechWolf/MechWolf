@@ -1,6 +1,7 @@
 from math import pi
 from pint import UnitRegistry
 from warnings import warn
+from abc import ABCMeta, abstractmethod
 
 # unit registry for unit conversion and parsing
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
@@ -24,26 +25,37 @@ class Component(object):
 	def __repr__(self):
 		return self.name
 		
-class ActiveComponent(Component):
+class ActiveComponent(Component, metaclass=ABCMeta):
 	"""A connected, controllable component. Must have an address"""
 	id_counter = 0
 
 	def __init__(self, address, name):
 		super().__init__(name=name)
 		self.address = address
-
+ 
 	def __repr__(self):
 		return self.name
+
+	@abstractmethod
+	def base_state():
+		'''All subclasses of ActiveComponent must implement a function that returns a dictionary of its base state'''
+		return
 
 class Pump(ActiveComponent):
 	def __init__(self, address, name=None):
 		super().__init__(address, name=name)
 		self.rate = ureg.parse_expression("0 ml/min")
 
+	def base_state(self):
+		return dict(rate="0 ml/min")
+
 class Sensor(ActiveComponent):
 	def __init__(self, address, name=None):
 		super().__init__(address, name=name)
-		self.active = False		
+		self.active = False	
+
+	def base_state(self):
+		return dict(active=False)
 
 class Tube(object):
 	def __init__(self, length, inner_diameter, outer_diameter, material, temp=None):
@@ -83,3 +95,7 @@ class Valve(ActiveComponent):
 		self.mapping = mapping
 		self.setting = ""
 		assert type(mapping) == dict
+
+	def base_state(self):
+		# an arbitrary state
+		return dict(setting=list(self.mapping.items())[0][1])

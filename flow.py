@@ -1,4 +1,6 @@
 from components import *
+from connection import Connection, DeviceExecutor
+
 from graphviz import Digraph
 import networkx as nx
 from terminaltables import SingleTable
@@ -12,6 +14,7 @@ import plotly as py
 import plotly.figure_factory as ff
 from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
 from datetime import datetime, timedelta
+from pprint import pprint
 
 class Apparatus(object):
 	id_counter = 0
@@ -257,29 +260,31 @@ class Protocol(object):
 						if warnings: warn(f"Automatically inferring stop_time for {procedure['component']} as the end of the protocol. To override, provide stop_time in your call to add().")
 						procedure["stop_time"] = self.duration 
 
-			output[component] = component_procedures
+			# give the component instructions at all times
+			compiled = []
+			for i, procedure in enumerate(component_procedures):
+				compiled.append(dict(time=procedure["start_time"], params=procedure["params"]))
+				
+				# if the procedure is over at the same time as the next procedure begins, do go back to the base state
+				try:
+					if component_procedures[i+1]["start_time"] == procedure["stop_time"]:
+						continue
+				except IndexError:
+					pass
+
+				# otherwise, go back to base state
+				compiled.append(dict(time=procedure["stop_time"], params=component.base_state()))
+
+			output[component] = compiled
 
 		return output
-
-	def yaml(self, warnings=True):
-		'''convert compiled protocol to yaml'''
-		compiled = deepcopy(self.compile(warnings=warnings))
-		for item in compiled.items():
-			for procedure in item[1]:
-				procedure["start_time"] = procedure["start_time"].to_timedelta()
-				procedure["stop_time"] = procedure["stop_time"].to_timedelta()
-				del procedure["component"]
-		compiled = {str(k): v for (k, v) in compiled.items()}
-		return yaml.dump(compiled)
 
 	def json(self, warnings=True):
 		'''convert compiled protocol to json'''
 		compiled = deepcopy(self.compile(warnings=warnings))
 		for item in compiled.items():
 			for procedure in item[1]:
-				procedure["start_time"] = procedure["start_time"].to_timedelta().total_seconds()
-				procedure["stop_time"] = procedure["stop_time"].to_timedelta().total_seconds()
-				del procedure["component"]
+				procedure["time"] = procedure["time"].to_timedelta().total_seconds()
 		compiled = {str(k): v for (k, v) in compiled.items()}
 		return json.dumps(compiled, indent=4, sort_keys=True)
 
@@ -314,8 +319,15 @@ class Protocol(object):
 		py.offline.plot(fig, filename=f'{self.name}.html')
 
 	# def execute(self):
-		# compiled = self.compile()
-		# for device in list(self.apparatus.components):
-		# 	device.send(device, compiled[device])
-		# if all([device.recieved for device in list(self.apparatus.components)]):
-		# 	device.send(device, start_time)
+	# 	c = Connection()
+	# 	c.connect()
+	# 	e = DeviceExecutor(c)
+
+	# 	connections = []
+
+	# 	compiled = self.compile()
+	# 	for device in [x for x in list(self.apparatus.components) if issubclass(x.__class__, ActiveComponent)]:
+	# 		connections.append(e.submit(device.address, procedures=compiled[device]))
+	# 	if all([connection._state == "RECEIVED" for connection in connections]):
+	# 		connections = []
+
