@@ -8,10 +8,11 @@ from collections import deque
 import json
 
 class _DeviceWorkItem(object):
-    def __init__(self, *, future, device_id, task_id, kwargs):
+    def __init__(self, *, future, device_id, task_id, args, kwargs):
         self.future = future
         self.device_id = device_id
         self.task_id = task_id
+        self.args = args
         self.kwargs = kwargs
 
     def run(self):
@@ -29,15 +30,19 @@ class DeviceExecutor(_base.Executor):
     def submit(self, device_id, *args, **kwargs):
         task_id = uuid.uuid1().hex
         f = _base.Future()
-        self._task_queue.append(_DeviceWorkItem(future=f, device_id=device_id, task_id=task_id, kwargs=kwargs))
-        self.send_to_devices()
+        task = _DeviceWorkItem(future=f, device_id=device_id, task_id=task_id, args=args, kwargs=kwargs)
+        self._task_queue.append(task)
+        self.send_to_devices(task)
         return f
 
-    def send_to_devices(self):
+    def send_to_devices(self,task):
+        self.connection.send(device_id=task.device_id, task_id=task.task_id, message=task.args, callback=self.state_callback)
+
+    def resend_all(self):
         for task in self._task_queue:
             if task.future._state == 'PENDING':
-                self.connection.send(device_id=task.device_id, task_id=task.task_id, message=task.kwargs, callback=self.state_callback)
-
+                self.send_to_devices(task)
+    
     def state_callback(self, task_id, state):
         #Optimize?
         for task in self._task_queue:
@@ -70,7 +75,7 @@ class Connection(object):
         
         self.register(task_id = task_id, callback = callback)
 
-        if not self.client.publish(device_id, json.dumps(dict(task_id=task_id, device_id=device_id)), 1):
+        if not self.client.publish(device_id, json.dumps(dict(message[0], task_id=task_id)), 0):
             raise RuntimeError('unable to send message')
 
         return True
@@ -79,9 +84,8 @@ class Connection(object):
     def on_message(self, client, userdata, message):
         try:
             message_content = json.loads(message.payload)
-            device_id = message_content['device_id']
         except:
-            raise Warning('Received message contained invalid json or did not contain device_id key.')
+            raise Warning('Received message contained invalid json')
         
         if 'task_id' and 'state' in message_content:
             task_id = message_content['task_id']
