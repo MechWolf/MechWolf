@@ -24,4 +24,4 @@ protocol.add(led, start_time="3 seconds", stop_time="6 seconds", active=False)
 protocol.add(led, start_time="6 seconds", stop_time="9 seconds", active=True)
 
 print(protocol.json())
-protocol.execute()
+tasks = protocol.execute()

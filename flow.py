@@ -15,6 +15,7 @@ import plotly.figure_factory as ff
 from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
 from datetime import datetime, timedelta
 from pprint import pprint
+import time
 
 class Apparatus(object):
 	id_counter = 0
@@ -330,7 +331,14 @@ class Protocol(object):
 		for device in list(self.apparatus.components):
 			if issubclass(device.__class__, ActiveComponent):
 				tasks.extend([e.submit(device.address, procedure) for procedure in compiled[device.name]])
-		# if all([connection._state == "RECEIVED" for connection in connections]):
-		# 	connections = []
+		
+		
 		print(tasks)
 
+		while not all([task._state == "RECEIVED" for task in tasks]):
+			time.sleep(3)
+			e.resend_all()
+
+		for device in list(self.apparatus.components):
+			e.submit(device.name,{'run':True})
+		return tasks
