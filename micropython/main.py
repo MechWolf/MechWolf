@@ -37,24 +37,13 @@ def messageReceived(client, userdata, message):
     gc.collect()
     return True
 
-def add_task(client, task_id, **kwargs):
+def add_task(client, task_id, time, **kwargs):
     #TODO: Make sure tasks that are sent twice don't get added twice!!
     global tasks
-    
-    if 'start_time' in kwargs:
-        start_time = kwargs['start_time']
-    else:
-        print('no start time in task')
-        return False
-
-    if 'stop_time' in kwargs:
-        stop_time = kwargs['stop_time']
-    else:
-        stop_time = None
 
     if 'active' in kwargs:
-        params = kwargs['switch']
-        tasks[task_id] = {'function': active, 'params': params, 'time': start_time, 'client':client}
+        params = kwargs['active']
+        tasks[task_id] = {'function': active, 'params': params, 'time': time, 'client':client}
         return True
 
 def active(value):
