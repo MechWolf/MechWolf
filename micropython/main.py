@@ -76,14 +76,13 @@ def run():
             completed_tasks = []
 
 
-def test(client,userdata,message):
+def test(client, userdata, message):
     global tasks
     message = json.loads(message.payload)
     tasks[message['task_id']] = message
     gc.collect()
 
 def awsconfigure():
-
     # awsconfigure the MQTT client
     pycomAwsMQTTClient = AWSIoTMQTTClient(awsconfig.CLIENT_ID)
     pycomAwsMQTTClient.configureEndpoint(awsconfig.AWS_HOST, awsconfig.AWS_PORT)

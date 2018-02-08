@@ -22,7 +22,6 @@ class _DeviceWorkItem(object):
     #TODO Fill in the rest here
 
 class DeviceExecutor(_base.Executor):
-
     def __init__(self, connection=None):
         self.connection=connection
         self._task_queue = deque()
@@ -35,7 +34,7 @@ class DeviceExecutor(_base.Executor):
         self.send_to_devices(task)
         return f
 
-    def send_to_devices(self,task):
+    def send_to_devices(self, task):
         self.connection.send(device_id=task.device_id, task_id=task.task_id, message=task.args, callback=self.state_callback)
 
     def resend_all(self):
