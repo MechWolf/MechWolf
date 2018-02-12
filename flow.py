@@ -65,14 +65,9 @@ class Apparatus(object):
     def summarize(self):
         '''print a summary table of the apppartus'''
         self.compile() # ensure apparatus is valid
-        summary = [["Name", "Type", "Address"]] # header rows of components table
+        summary = [["Name", "Type"]] # header rows of components table
         for component in list(self.components):
-            component_summary = [component.name, component.__class__.__name__]
-            if issubclass(component.__class__, ActiveComponent): # add the address if it has one
-                component_summary.append(component.address)
-            else:
-                component_summary.append("")
-            summary.append(component_summary)
+            summary.append([component.name, component.__class__.__name__])
 
         # generate the components table
         table = SingleTable(summary)
@@ -87,14 +82,15 @@ class Apparatus(object):
             total_volume += tube.volume
 
         # summarize the tubing
-        summary = [["From", "To", "Length", "Inner Diameter", "Outer Diameter", "Volume", "Temp"]] # header row
+        summary = [["From", "To", "Length", "Inner Diameter", "Outer Diameter", "Volume", "Material", "Temp"]] # header row
         for edge in self.network:
             summary.append([edge[0].name, 
                             edge[1].name, 
                             round(edge[2].length, 4), 
                             round(edge[2].inner_diameter, 4), 
                             round(edge[2].outer_diameter, 4), 
-                            round(edge[2].volume.to("ml"), 4)])
+                            round(edge[2].volume.to("ml"), 4),
+                            edge[2].material])
             if edge[2].temp is not None:
                 summary[-1].append(round(edge[2].temp, 4))
             else:
@@ -134,6 +130,23 @@ class Apparatus(object):
 
         return True
 
+    def describe(self):
+
+        def _description(element):
+            if issubclass(element.__class__, Vessel):
+                vessel_content = element.molecule.iupac_name if element.molecule.iupac_name else element.content
+                return f"A vessel containing {str(element.volume)} of {vessel_content}{' (' + element.content + ')' if vessel_content != element.content else ''}"
+            else:
+                return element.__class__.__name__ + " " + element.name
+
+        for element in self.network:
+            from_component = _description(element[0])
+            to_component = _description(element[1])
+            tube = element[2]
+
+            
+            print(f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {element[2].length}, ID {element[2].inner_diameter}, OD {element[2].outer_diameter}).", end=" ")
+        print()
 class Protocol(object):
     id_counter = 0
     def __init__(self, apparatus, duration=None, name=None):
@@ -203,14 +216,14 @@ class Protocol(object):
         if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
             kwargs["setting"] = component.mapping[kwargs["setting"]]
 
-        # a little magic for heaters
-        if issubclass(component.__class__, Heater):
+        # a little magic for temperature controllers
+        if issubclass(component.__class__, TempControl):
             if kwargs.get("temp") is not None and kwargs.get("active") is None:
                 kwargs["active"] = True
             elif kwargs.get("active") == False and kwargs.get("temp") is None:
                 kwargs["temp"] = "0 degC"
             elif kwargs["active"] and kwargs.get("temp") is None:
-                raise RuntimeError(f"Heater {component} is activated but heat setting is not given. Specify 'temp' in your call to add().")
+                raise RuntimeError(f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add().")
 
         # add the procedure to the procedure list
         self.procedures.append(dict(start_time=start_time, stop_time=stop_time, component=component, params=kwargs))

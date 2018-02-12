@@ -1,7 +1,7 @@
 graphviz
 terminaltables
-pyyaml
 pint
 plotly
 networkx
 AWSIoTMQTTClient
+cirpy

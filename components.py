@@ -2,6 +2,7 @@ from math import pi
 from pint import UnitRegistry
 from warnings import warn
 from abc import ABCMeta, abstractmethod
+from cirpy import Molecule
 
 # unit registry for unit conversion and parsing
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
@@ -19,7 +20,7 @@ class Component(object):
         elif name not in self.__class__.used_names:
             self.name = name
         else:
-            raise ValueError("Cannot have two components with the same name.")
+            raise ValueError(f"Cannot have two components with the name {name}.")
         self.__class__.used_names.add(self.name)
 
     def __repr__(self):
@@ -33,9 +34,6 @@ class ActiveComponent(Component, metaclass=ABCMeta):
         if name is None:
             raise ValueError("No name given for ActiveComponent. Specify the name of the component by adding name=\"[name of component]\" to the line that generated this error.")
         super().__init__(name=name)
- 
-    def __repr__(self):
-        return self.name
 
     @abstractmethod
     def base_state():
@@ -50,11 +48,11 @@ class Pump(ActiveComponent):
     def base_state(self):
         return dict(rate="0 ml/min")
  
-class Heater(ActiveComponent):
+class TempControl(ActiveComponent):
     def __init__(self, internal_tubing, name=None):
         super().__init__(name=name)
         if type(internal_tubing) != Tube:
-            raise TypeError("Heater must have internal_tubing of type Tube.")
+            raise TypeError("TempControl must have internal_tubing of type Tube.")
         self.temp = ureg.parse_expression("0 degC")
         self.active = False
 
@@ -111,3 +109,19 @@ class Valve(ActiveComponent):
     def base_state(self):
         # an arbitrary state
         return dict(setting=list(self.mapping.items())[0][1])
+
+class Vessel(Component):
+    def __init__(self, volume, content):
+        super().__init__(name=content)
+
+        self.content = content
+        # attempt to gather information about the molecule
+        try:
+            self.molecule = Molecule(content)
+        except:
+            pass
+
+        self.volume = ureg.parse_expression(volume)
+        if self.volume.dimensionality != ureg.ml.dimensionality:
+            raise ValueError(f"Invalid unit of measurement for volume.")
+
