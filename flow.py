@@ -5,20 +5,21 @@ from graphviz import Digraph
 import networkx as nx
 from terminaltables import SingleTable
 from pint import UnitRegistry
-import yaml
-import json
-from warnings import warn
-from datetime import datetime, timedelta
-from copy import deepcopy
 import plotly as py
 import plotly.figure_factory as ff
 from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
+
+from copy import deepcopy
 from datetime import datetime, timedelta
 from pprint import pprint
 import time
+import json
+from warnings import warn
+from datetime import datetime, timedelta
 
 class Apparatus(object):
     id_counter = 0
+
     def __init__(self, name=None):
         self.network = []
         self.components = set()
@@ -28,6 +29,9 @@ class Apparatus(object):
         else:
             self.name = "Apparatus_" + str(Apparatus.id_counter)
             Apparatus.id_counter += 1
+
+    def __repr__(self):
+        return self.name  
     
     def add(self, from_component, to_component, tube):
         '''add a connection in the apparatus'''
@@ -40,7 +44,7 @@ class Apparatus(object):
 
     def visualize(self, title=True, label_tubes=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho",  nodesep="1"), format="pdf", filename=None):
         '''generate a visualization of the graph of an apparatus'''
-        self.compile() # ensure apparatus is valid
+        self.validate() # ensure apparatus is valid
         f = Digraph(name=self.name, 
                     node_attr=node_attr, 
                     edge_attr=edge_attr, 
@@ -64,7 +68,7 @@ class Apparatus(object):
 
     def summarize(self):
         '''print a summary table of the apppartus'''
-        self.compile() # ensure apparatus is valid
+        self.validate() # ensure apparatus is valid
         summary = [["Name", "Type"]] # header rows of components table
         for component in list(self.components):
             summary.append([component.name, component.__class__.__name__])
@@ -101,17 +105,14 @@ class Apparatus(object):
         table = SingleTable(summary)
         table.title = "Tubing"
         table.inner_footing_row_border = "True"
-        print(table.table)  
+        print(table.table)    
 
-    def __repr__(self):
-        return self.name    
-
-    def compile(self):
+    def validate(self):
         '''make sure that the apparatus is valid'''
         G = nx.Graph() # convert the network to an undirected NetworkX graph
         G.add_edges_from([(x[0], x[1]) for x in self.network])
         if not nx.is_connected(G): # make sure that all of the components are connected
-            raise RuntimeError("Unable to compile: not all components connected")
+            raise RuntimeError("Unable to validate: not all components connected")
 
         # valve checking
         for valve in list(set([x[0] for x in self.network if issubclass(x[0].__class__, Valve)])):
@@ -131,27 +132,33 @@ class Apparatus(object):
         return True
 
     def describe(self):
-
+        '''generate a human readable description of the apparatus'''
         def _description(element):
+            '''takes a component and converts it to a string description'''
             if issubclass(element.__class__, Vessel):
                 vessel_content = element.molecule.iupac_name if element.molecule.iupac_name else element.content
                 return f"A vessel containing {str(element.volume)} of {vessel_content}{' (' + element.content + ')' if vessel_content != element.content else ''}"
-            else:
+            elif issubclass(element.__class__, Component):
                 return element.__class__.__name__ + " " + element.name
+            else:
+                raise RuntimeError(f"{element} cannot be described.")
 
+        # iterate over the network and describe the connections
         for element in self.network:
-            from_component = _description(element[0])
-            to_component = _description(element[1])
-            tube = element[2]
-
-            
-            print(f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {element[2].length}, ID {element[2].inner_diameter}, OD {element[2].outer_diameter}).", end=" ")
+            from_component, to_component, tube = _description(element[0]), _description(element[1]), element[2]
+            print(
+                f"{from_component} was connected to {to_component}"
+                f"using {element[2].material} tubing "
+                f"(length {element[2].length}, ID {element[2].inner_diameter}, OD {element[2].outer_diameter}).", 
+                end=" ")
         print()
+
 class Protocol(object):
     id_counter = 0
+
     def __init__(self, apparatus, duration=None, name=None):
         assert type(apparatus) == Apparatus
-        if apparatus.compile(): # ensure apparatus is valid
+        if apparatus.validate(): # ensure apparatus is valid
             self.apparatus = apparatus
         self.procedures = []
         if name is not None:
@@ -164,7 +171,7 @@ class Protocol(object):
         if duration not in [None, "auto"]:
             duration = ureg.parse_expression(duration)
             if duration.dimensionality != ureg.hours.dimensionality:
-                raise ValueError("Incorrect dimensionality for duration. Must be a unit of time such as \"seconds\" or \"hours\".")
+                raise ValueError(f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}")
         self.duration = duration
 
     def _is_valid_to_add(self, component, **kwargs):
@@ -182,9 +189,11 @@ class Protocol(object):
         # make sure the component is valid to add
         for kwarg, value in kwargs.items():
             if not hasattr(component, kwarg):
-                raise ValueError(f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x not in ['name', 'address']]}")
+                raise ValueError(f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}")
+            
             if type(component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
                 raise ValueError(f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
+            
             elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
                 raise ValueError(f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {type(value)}")
 

@@ -92,7 +92,7 @@ class Tube(object):
         # check to make sure units are valid
         for measurement in [self.length, self.inner_diameter, self.outer_diameter]:
             if measurement.dimensionality != ureg.mm.dimensionality:
-                raise ValueError(f"Invalid unit of measurement for {measurement}. Must be a length.")
+                raise ValueError(f"{measurement.dimensionality} is an invalid unit of measurement for {measurement}. Must be a {ureg.mm.dimensionality}.")
         if self.temp is not None and self.temp.dimensionality != ureg.degC.dimensionality:
             raise ValueError("Invalid temperature unit. Use \"degC\", \"degF\" or \"degK\".")
     
@@ -111,17 +111,27 @@ class Valve(ActiveComponent):
         return dict(setting=list(self.mapping.items())[0][1])
 
 class Vessel(Component):
-    def __init__(self, volume, content):
-        super().__init__(name=content)
+    def __init__(self, solution_volume, solvent, solute_mass, solute, name=None):
+        super().__init__(name=name)
 
-        self.content = content
-        # attempt to gather information about the molecule
+        self.solution_volume = ureg.parse_expression(solution_volume)
+        if self.solution_volume.dimensionality != ureg.ml.dimensionality:
+            raise ValueError(f"{self.solution_volume.dimensionality} is an invalid unit of measurement for solution_volume. Must be {ureg.ml.dimensionality}.")
+
         try:
-            self.molecule = Molecule(content)
+            self.solvent = Molecule(solvent)
+            assert self.solvent is not None
         except:
-            pass
+            self.solvent = solvent
 
-        self.volume = ureg.parse_expression(volume)
-        if self.volume.dimensionality != ureg.ml.dimensionality:
-            raise ValueError(f"Invalid unit of measurement for volume.")
+        self.solute_mass = ureg.parse_expression(solute_mass)
+        if self.solute_mass.dimensionality != ureg.kg.dimensionality:
+            raise ValueError(f"{self.solute_mass.dimensionality} is an invalid unit of measurement for solute_mass. Must be {ureg.kg.dimensionality}.")
+
+        try:
+            self.solute = Molecule(solute)
+            assert self.solute is not None
+        except:
+            self.solute = solute
+        
 

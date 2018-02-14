@@ -42,10 +42,10 @@ Creates a graphical visualization of the apparatus. For full list of acceptable 
 
 Prints a tabular summary of the apparatus.
 
-#### compile
-`compile(self)`
+#### validate
+`validate(self)`
 
-Ensures that the apparatus is valid. While you can call it yourself, creating a protocol automatically checks that the apparatus can be compiled.
+Ensures that the apparatus is valid. While you can call it yourself, creating a protocol automatically checks that the apparatus is valid.
 
 
 
