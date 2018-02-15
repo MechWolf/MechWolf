@@ -111,27 +111,8 @@ class Valve(ActiveComponent):
         return dict(setting=list(self.mapping.items())[0][1])
 
 class Vessel(Component):
-    def __init__(self, solution_volume, solvent, solute_mass, solute, name=None):
-        super().__init__(name=name)
-
-        self.solution_volume = ureg.parse_expression(solution_volume)
-        if self.solution_volume.dimensionality != ureg.ml.dimensionality:
-            raise ValueError(f"{self.solution_volume.dimensionality} is an invalid unit of measurement for solution_volume. Must be {ureg.ml.dimensionality}.")
-
-        try:
-            self.solvent = Molecule(solvent)
-            assert self.solvent is not None
-        except:
-            self.solvent = solvent
-
-        self.solute_mass = ureg.parse_expression(solute_mass)
-        if self.solute_mass.dimensionality != ureg.kg.dimensionality:
-            raise ValueError(f"{self.solute_mass.dimensionality} is an invalid unit of measurement for solute_mass. Must be {ureg.kg.dimensionality}.")
-
-        try:
-            self.solute = Molecule(solute)
-            assert self.solute is not None
-        except:
-            self.solute = solute
+    def __init__(self, description):
+        super().__init__(name=description)
+        self.description = description
         
 

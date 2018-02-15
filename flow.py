@@ -136,8 +136,7 @@ class Apparatus(object):
         def _description(element):
             '''takes a component and converts it to a string description'''
             if issubclass(element.__class__, Vessel):
-                vessel_content = element.molecule.iupac_name if element.molecule.iupac_name else element.content
-                return f"A vessel containing {str(element.volume)} of {vessel_content}{' (' + element.content + ')' if vessel_content != element.content else ''}"
+                return f"A vessel containing {element.description}"
             elif issubclass(element.__class__, Component):
                 return element.__class__.__name__ + " " + element.name
             else:
@@ -147,7 +146,7 @@ class Apparatus(object):
         for element in self.network:
             from_component, to_component, tube = _description(element[0]), _description(element[1]), element[2]
             print(
-                f"{from_component} was connected to {to_component}"
+                f"{from_component} was connected to {to_component} "
                 f"using {element[2].material} tubing "
                 f"(length {element[2].length}, ID {element[2].inner_diameter}, OD {element[2].outer_diameter}).", 
                 end=" ")

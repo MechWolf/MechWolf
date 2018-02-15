@@ -3,8 +3,8 @@ from components import Component, Tube, Pump, Sensor, Valve, TempControl, Vessel
 from datetime import timedelta, datetime
 
 #define the components
-alanine = Vessel("15 ml", "fmoc-L-Alanine", "15 g", "water")
-cysteine = Vessel("20 ml", "cysteine", "30 g", "water")
+alanine = Vessel("15 ml fmoc-L-Alanine")
+cysteine = Vessel("20 ml cysteine")
 alanine_pump = Pump(name="A")
 cysteine_pump = Pump(name="C")
 valve = Valve(dict(A="A", C="B"), name="valve")
