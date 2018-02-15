@@ -111,7 +111,7 @@ class Valve(ActiveComponent):
 
 class Vessel(Component):
     def __init__(self, description):
-        super().__init__(name=description)
+        super().__init__(name=None)
         self.description = description
         
 
