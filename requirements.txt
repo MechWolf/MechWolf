@@ -4,4 +4,3 @@ pint
 plotly
 networkx
 AWSIoTMQTTClient
-cirpy

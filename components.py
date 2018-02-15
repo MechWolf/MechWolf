@@ -2,7 +2,6 @@ from math import pi
 from pint import UnitRegistry
 from warnings import warn
 from abc import ABCMeta, abstractmethod
-from cirpy import Molecule
 
 # unit registry for unit conversion and parsing
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
