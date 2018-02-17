@@ -3,8 +3,8 @@ from components import Component, Tube, Pump, Sensor, Valve, TempControl, Vessel
 from datetime import timedelta, datetime
 
 #define the components
-alanine = Vessel("15 ml fmoc-L-Alanine")
-cysteine = Vessel("20 ml cysteine")
+alanine = Vessel("15 ml fmoc-L-Alanine in 10 g of salt")
+cysteine = Vessel("20 ml water")
 alanine_pump = Pump(name="A")
 cysteine_pump = Pump(name="C")
 valve = Valve(dict(A="A", C="B"), name="valve")
@@ -32,10 +32,7 @@ start_time = timedelta(seconds=0)
 for amino_acid in "CAACAAAACACACAA":
 	P.add(amino_acid_mapping[amino_acid], start_time=start_time, duration="15 seconds", rate="15 ml/min")
 	P.add(valve, start_time=start_time, duration="15 seconds", setting=str(amino_acid_mapping[amino_acid]))
-
 	start_time += timedelta(seconds=15)
 
-A.visualize()
-A.summarize()
-A.validate()
-A.describe()
+# print(P.json())
+print(A.description())

@@ -1,7 +1,16 @@
 from math import pi
-from pint import UnitRegistry
+import re
 from warnings import warn
 from abc import ABCMeta, abstractmethod
+
+from pint import UnitRegistry
+from cirpy import Molecule
+from colorama import init, Fore, Back, Style
+from terminaltables import SingleTable
+
+
+# initialize colored printing
+init(autoreset=True)
 
 # unit registry for unit conversion and parsing
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
@@ -73,13 +82,11 @@ class Tube(object):
         self.outer_diameter = ureg.parse_expression(outer_diameter)
         
         # ensure diameters are valid
-        if outer_diameter <= inner_diameter:
-            raise ValueError("Outer diameter must be greater than inner diameter")
-        if length <= outer_diameter or length <= inner_diameter:
-            warn("Tube length is less than diameter. Make sure that this is not in error.")
+        if self.outer_diameter <= self.inner_diameter:
+            raise ValueError(f"Outer diameter {outer_diameter} must be greater than inner diameter {inner_diameter}")
+        if self.length < self.outer_diameter or self.length < self.inner_diameter:
+            warn(Fore.YELLOW + f"Tube length ({length}) is less than diameter. Make sure that this is not in error.")
         
-        if type(material) != str:
-            raise TypeError("Material must be a string")
         self.material = material
 
         if temp:
@@ -110,8 +117,23 @@ class Valve(ActiveComponent):
         return dict(setting=list(self.mapping.items())[0][1])
 
 class Vessel(Component):
-    def __init__(self, description):
-        super().__init__(name=None)
+    def __init__(self, description, name=None, auto_resolve=True, warnings=True):
+        super().__init__(name=name)
+        if auto_resolve:
+            hits = list(re.findall(r"`(.+?)`", description))
+            for hit in hits:
+                M = Molecule(hit)
+                description = description.replace(f"`{hit}`", f"{hit} ({M.iupac_name})")
+
+                if warnings:
+                    table = SingleTable([
+                        ["IUPAC Name", M.iupac_name], 
+                        ["CAS", M.cas], 
+                        ["Formula", M.formula]])
+                    table.title = "Resolved: " + hit
+                    table.inner_heading_row_border = False
+                    print(table.table)
+
         self.description = description
         
 
