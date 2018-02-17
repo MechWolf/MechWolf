@@ -47,7 +47,10 @@ Prints a tabular summary of the apparatus.
 
 Ensures that the apparatus is valid. While you can call it yourself, creating a protocol automatically checks that the apparatus is valid.
 
+#### description
+`description(self)`
 
+Returns a plaintext description of the apparatus.
 
 ### Protocol
 
