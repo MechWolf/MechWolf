@@ -6,6 +6,7 @@ from concurrent.futures import _base
 from collections import deque
 import json
 import asyncio
+import pyro4
 
 class _DeviceWorkItem(object):
     def __init__(self, *, future, device, task_id, time, func, args, kwargs):
@@ -25,6 +26,8 @@ class _DeviceWorkItem(object):
         print("Finished:",self.future.done(),"Result:",self.future.result())
     #TODO Fill in the rest here
 
+@Pyro4.expose
+@Pyro4.behavior(instance_mode="single")  
 class DeviceExecutor(_base.Executor):
     def __init__(self):
         self._task_queue = deque()
@@ -43,13 +46,3 @@ class DeviceExecutor(_base.Executor):
             coros.append(task.run())
         loop.run_until_complete(asyncio.wait(coros))
 
-
-def test():
-    print('hello!')
-    with Valve('/dev/tty.usbserial') as v:
-        e = DeviceExecutor()
-        for i in range(100):
-            e.submit(v, i, v.set_position, (i%9)+1)
-        e.submit(v, 4.5, v.set_position, 8)
-        print (e._task_queue)
-        e.run()
