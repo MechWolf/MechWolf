@@ -3,6 +3,8 @@ terminaltables
 pint
 plotly
 networkx
-AWSIoTMQTTClient
 CIRpy
 colorama
+pyserial
+pyro4
+pyyaml

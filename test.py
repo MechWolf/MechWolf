@@ -1,10 +1,11 @@
-from flow import Apparatus, Protocol
-from components import Component, Tube, Pump, Sensor, Valve, TempControl, Vessel
 from datetime import timedelta, datetime
 
+from flow import Apparatus, Protocol
+from components import Component, Tube, Pump, Sensor, Valve, TempControl, Vessel
+
 #define the components
-alanine = Vessel("15 ml fmoc-L-Alanine in 10 g of salt")
-cysteine = Vessel("20 ml water")
+alanine = Vessel("15 ml `fmoc-L-Alanine` in 10 g of `salt`", resolve=False)
+cysteine = Vessel("20 ml `water`", resolve=False)
 alanine_pump = Pump(name="A")
 cysteine_pump = Pump(name="C")
 valve = Valve(dict(A="A", C="B"), name="valve")
@@ -14,7 +15,7 @@ collection_bottle = Component(name="collection_bottle")
 
 #define apparatus
 A = Apparatus(name="peptide_synthesizer")
-A.add(alanine, alanine_pump, Tube("5 in", "1/16 in", "2/16 in", "PVC"))
+A.add(alanine, alanine_pump, Tube("1 in", "1/16 in", "2/16 in", "PVC"))
 A.add(cysteine, cysteine_pump, Tube("5 in", "1/16 in", "2/16 in", "PVC"))
 A.add(cysteine_pump, valve, Tube("5 in", "1/16 in", "2/16 in", "PVC"))
 A.add(alanine_pump, valve, Tube("5 in", "1/16 in", "2/16 in", "PVC"))
@@ -35,4 +36,3 @@ for amino_acid in "CAACAAAACACACAA":
 	start_time += timedelta(seconds=15)
 
 # print(P.json())
-print(A.description())

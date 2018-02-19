@@ -1,3 +1,11 @@
+from copy import deepcopy
+from datetime import datetime, timedelta
+from pprint import pprint
+import time
+import json
+from warnings import warn
+from datetime import datetime, timedelta
+
 from components import *
 from connection import Connection, DeviceExecutor
 
@@ -8,14 +16,10 @@ from pint import UnitRegistry
 import plotly as py
 import plotly.figure_factory as ff
 from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
+from colorama import init, Fore, Back, Style
 
-from copy import deepcopy
-from datetime import datetime, timedelta
-from pprint import pprint
-import time
-import json
-from warnings import warn
-from datetime import datetime, timedelta
+# initialize colored printing
+init(autoreset=True)
 
 class Apparatus(object):
     id_counter = 0
@@ -246,11 +250,11 @@ class Protocol(object):
                 raise RuntimeError("Unable to automatically infer duration of protocol. Must define stop_time for at least one procedure to use duration=\"auto\".")
             self.duration = self.duration[-1]
 
-        
+        # deal only with compiling active components
         for component in [x for x in self.apparatus.components if issubclass(x.__class__, ActiveComponent)]:
             # make sure all active components are activated, raising warning if not
             if component not in [x["component"] for x in self.procedures]:
-                if warnings: warn(f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning. To suppress this warning, use warnings=False.")
+                if warnings: warn(Fore.YELLOW + f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning. To suppress this warning, use warnings=False.")
 
             # determine the procedures for each component
             component_procedures = sorted([x for x in self.procedures if x["component"] == component], key=lambda x: x["start_time"])
@@ -283,11 +287,11 @@ class Protocol(object):
                     if component_procedures[i+1]["start_time"] == ureg.parse_expression("0 seconds"):
                         raise RuntimeError(f"Ambiguous start time for {procedure['component']}.")
                     elif component_procedures[i+1]["start_time"] is not None and procedure["stop_time"] is None:
-                        if warnings: warn(f"Automatically inferring start time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False.")
+                        if warnings: warn(Fore.YELLOW + f"Automatically inferring start time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False.")
                         procedure["stop_time"] = component_procedures[i+1]["start_time"]
                 except IndexError:
                     if procedure["stop_time"] is None:
-                        if warnings: warn(f"Automatically inferring stop_time for {procedure['component']} as the end of the protocol. To override, provide stop_time in your call to add(). To suppress this warning, use warnings=False.")
+                        if warnings: warn(Fore.YELLOW + f"Automatically inferring stop_time for {procedure['component']} as the end of the protocol. To override, provide stop_time in your call to add(). To suppress this warning, use warnings=False.")
                         procedure["stop_time"] = self.duration 
 
             # give the component instructions at all times

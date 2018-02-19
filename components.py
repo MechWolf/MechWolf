@@ -2,12 +2,14 @@ from math import pi
 import re
 from warnings import warn
 from abc import ABCMeta, abstractmethod
+import time
+import serial
 
 from pint import UnitRegistry
 from cirpy import Molecule
 from colorama import init, Fore, Back, Style
 from terminaltables import SingleTable
-
+import Pyro4
 
 # initialize colored printing
 init(autoreset=True)
@@ -33,7 +35,9 @@ class Component(object):
 
     def __repr__(self):
         return self.name
-        
+
+@Pyro4.expose
+@Pyro4.behavior(instance_mode="single")    
 class ActiveComponent(Component, metaclass=ABCMeta):
     """A connected, controllable component."""
     id_counter = 0
@@ -46,7 +50,7 @@ class ActiveComponent(Component, metaclass=ABCMeta):
     @abstractmethod
     def base_state():
         '''All subclasses of ActiveComponent must implement a function that returns a dictionary of its base state'''
-        return
+        pass
 
 class Pump(ActiveComponent):
     def __init__(self, name=None):
@@ -85,7 +89,7 @@ class Tube(object):
         if self.outer_diameter <= self.inner_diameter:
             raise ValueError(f"Outer diameter {outer_diameter} must be greater than inner diameter {inner_diameter}")
         if self.length < self.outer_diameter or self.length < self.inner_diameter:
-            warn(Fore.YELLOW + f"Tube length ({length}) is less than diameter. Make sure that this is not in error.")
+            warn(Fore.YELLOW + f"Tube length ({self.length}) is less than diameter. Make sure that this is not in error.")
         
         self.material = material
 
@@ -105,21 +109,65 @@ class Tube(object):
     def __repr__(self):
         return f"Tube of length {self.length}, ID {self.outer_diameter}, OD {self.outer_diameter}"
 
-class Valve(ActiveComponent):
-    def __init__(self, mapping, name=None):
+class Valve(ActiveComponent, metaclass=ABCMeta):
+    def __init__(self, mapping=None, name=None):
         super().__init__(name=name)
         self.mapping = mapping
-        self.setting = ""
-        assert type(mapping) == dict
+        self.setting = 0
 
     def base_state(self):
         # an arbitrary state
         return dict(setting=list(self.mapping.items())[0][1])
 
+class ViciValve(Valve):
+    '''Controls a VICI Valco Valve'''
+
+    def __init__(self, mapping=None, name=None):
+        super().__init__(mapping=mapping, name=name)
+        self.mapping = mapping
+        self.setting = None
+
+    def __enter__(self):
+        self.ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
+        return self
+        
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.ser.close()
+        return self
+
+        def connect(self, serial_port, positions=10, delay=0):
+        self.serial_port = serial_port
+        self.positions = positions
+        self.delay = delay    
+        
+    # def start(self):
+    #     self.ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
+
+    # def stop(self):
+    #     self.ser.close()
+
+    def get_position(self):
+        self.ser.write(b'CP\r')
+        response = self.ser.readline()
+        if response:
+            position = int(response[2:4]) # Response is in the form 'CPXX\r'
+            return position
+        else:
+            return False
+
+    def set_position(self, position):
+        if not position > 0 and position <= self.positions:
+            return False
+        else:
+            message = f'GO{position}\r'
+            self.ser.write(message.encode())
+            return True
+
+
 class Vessel(Component):
-    def __init__(self, description, name=None, auto_resolve=True, warnings=True):
+    def __init__(self, description, name=None, resolve=True, warnings=True):
         super().__init__(name=name)
-        if auto_resolve:
+        if resolve:
             hits = list(re.findall(r"`(.+?)`", description))
             for hit in hits:
                 M = Molecule(hit)

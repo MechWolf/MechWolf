@@ -44,46 +44,6 @@ class DeviceExecutor(_base.Executor):
         loop.run_until_complete(asyncio.wait(coros))
 
 
-import serial
-
-class Valve():
-    'Controls a VICI Valco Valve'
-
-    def __init__(self, serial_port, positions = 10):
-        self.serial_port = serial_port
-        self.positions = positions
-
-    def __enter__(self):
-        self.ser = serial.Serial(self.serial_port, 115200, parity = serial.PARITY_NONE, stopbits=1, timeout = 0.1)
-        return self
-        
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.ser.close()
-        return self
-        
-    def start(self):
-        self.ser = serial.Serial(self.serial_port, 115200, parity = serial.PARITY_NONE, stopbits=1, timeout = 0.1)
-
-    def stop(self):
-        self.ser.close()
-
-    def get_position(self):
-        self.ser.write(b'CP\r')
-        response = self.ser.readline()
-        if response:
-            position = int(response[2:4]) # Response is in the form 'CPXX\r'
-            return position
-        else:
-            return False
-
-    def set_position(self, position):
-        if not position > 0 and position <= self.positions:
-            return False
-        else:
-            message = f'GO{position}\r'
-            self.ser.write(message.encode())
-            return True
-
 def test():
     print('hello!')
     with Valve('/dev/tty.usbserial') as v:
