@@ -11,4 +11,4 @@ with Pyro4.Daemon() as daemon:
     my_uri = daemon.register(my_executor)
     with Pyro4.locateNS() as ns:
         ns.register("de", my_uri)
-    daemon.requestLoop()
+        daemon.requestLoop()
