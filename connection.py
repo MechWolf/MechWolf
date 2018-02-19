@@ -3,109 +3,93 @@
 
 import uuid
 from concurrent.futures import _base
-from AWSIoTPythonSDK import MQTTLib
 from collections import deque
 import json
+import asyncio
 
 class _DeviceWorkItem(object):
-    def __init__(self, *, future, device_id, task_id, args, kwargs):
+    def __init__(self, *, future, device, task_id, time, func, args, kwargs):
         self.future = future
-        self.device_id = device_id
+        self.device = device
         self.task_id = task_id
+        self.func = func
         self.args = args
         self.kwargs = kwargs
+        self.time = time
 
-    def run(self):
-        if not self.future.set_running_or_notify_cancel():
-            return
-
+    async def run(self):
+        # TODO: Add in a "with self._condition lock
+        await asyncio.sleep(self.time)
+        result = self.func(*self.args)
+        self.future.set_result(result)
+        print("Finished:",self.future.done(),"Result:",self.future.result())
     #TODO Fill in the rest here
 
 class DeviceExecutor(_base.Executor):
-    def __init__(self, connection=None):
-        self.connection=connection
+    def __init__(self):
         self._task_queue = deque()
 
-    def submit(self, device_id, *args, **kwargs):
+    def submit(self, device, time, func, *args, **kwargs):
         task_id = uuid.uuid1().hex
         f = _base.Future()
-        task = _DeviceWorkItem(future=f, device_id=device_id, task_id=task_id, args=args, kwargs=kwargs)
+        task = _DeviceWorkItem(future = f, device=device, task_id=task_id, time=time, func=func, args=args, kwargs=kwargs)
         self._task_queue.append(task)
-        self.send_to_devices(task)
         return f
-
-    def send_to_devices(self, task):
-        self.connection.send(device_id=task.device_id, task_id=task.task_id, message=task.args, callback=self.state_callback)
-
-    def resend_all(self):
-        for task in self._task_queue:
-            if task.future._state == 'PENDING':
-                self.send_to_devices(task)
-    
-    def state_callback(self, task_id, state):
-        #Optimize?
-        for task in self._task_queue:
-            if task.task_id == task_id:
-                task.future._state = state
         
+    def run(self):
+        loop = asyncio.get_event_loop()
+        coros = []
+        for task in self._task_queue:
+            coros.append(task.run())
+        loop.run_until_complete(asyncio.wait(coros))
 
-class Connection(object):
-    # Manages the connection to the AWS message broker.
-    def __init__(self, certificate='cert/aws_root_auth.pem', endpoint_url='a365awttlmyft7.iot.us-east-1.amazonaws.com'): 
-        self.components = {}
-        self.client = MQTTLib.AWSIoTMQTTClient('server', useWebsocket=True)
-        self.client.configureCredentials(certificate)
-        self.client.configureEndpoint(endpoint_url, 443)
-        self.tasks = {}
+
+import serial
+
+class Valve():
+    'Controls a VICI Valco Valve'
+
+    def __init__(self, serial_port, positions = 10):
+        self.serial_port = serial_port
+        self.positions = positions
+
+    def __enter__(self):
+        self.ser = serial.Serial(self.serial_port, 115200, parity = serial.PARITY_NONE, stopbits=1, timeout = 0.1)
+        return self
         
-    def connect(self):
-        self.client.connect()  
-        if not self.client.subscribe('server', 1, self.on_message):
-            raise RuntimeError("Unable to subscribe to server topic")
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.ser.close()
+        return self
+        
+    def start(self):
+        self.ser = serial.Serial(self.serial_port, 115200, parity = serial.PARITY_NONE, stopbits=1, timeout = 0.1)
 
-    def register(self, *, task_id, callback):
-        if task_id in self.tasks:
+    def stop(self):
+        self.ser.close()
+
+    def get_position(self):
+        self.ser.write(b'CP\r')
+        response = self.ser.readline()
+        if response:
+            position = int(response[2:4]) # Response is in the form 'CPXX\r'
+            return position
+        else:
+            return False
+
+    def set_position(self, position):
+        if not position > 0 and position <= self.positions:
             return False
         else:
-            self.tasks[task_id] = callback
+            message = f'GO{position}\r'
+            self.ser.write(message.encode())
             return True
 
-    def send(self, device_id, task_id, message, callback):
-        
-        self.register(task_id = task_id, callback = callback)
-
-        if not self.client.publish(device_id, json.dumps(dict(message[0], task_id=task_id)), 0):
-            raise RuntimeError('unable to send message')
-
-        return True
-
-    
-    def on_message(self, client, userdata, message):
-        try:
-            message_content = json.loads(message.payload)
-        except:
-            raise Warning('Received message contained invalid json')
-        
-        if 'task_id' and 'state' in message_content:
-            task_id = message_content['task_id']
-            state = message_content['state']
-            print('received task update!')
-            callback = self.tasks[task_id]
-            callback(task_id, state)
-
-        if 'connected' in message_content:
-            if component_name in self.components:
-                self.components[component_name].connected = True
-        elif 'some other keyword' in message_content:
-            pass
-
-    def is_connected(self, component):
-        if component.name in self.components:
-            return self.components[component.name].connected
-        return False
-
-    def _connect_component(self, component, quality_of_service=0):
-        self.components[component.name] = component
-        if not self.client.publish(component.name, '{"ping":1}', 1):
-            raise RuntimeError('Unable to send message')
-
+def test():
+    print('hello!')
+    with Valve('/dev/tty.usbserial') as v:
+        e = DeviceExecutor()
+        for i in range(100):
+            e.submit(v, i, v.set_position, (i%9)+1)
+        e.submit(v, 4.5, v.set_position, 8)
+        print (e._task_queue)
+        e.run()
