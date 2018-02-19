@@ -6,7 +6,7 @@ from concurrent.futures import _base
 from collections import deque
 import json
 import asyncio
-import pyro4
+import Pyro4
 
 class _DeviceWorkItem(object):
     def __init__(self, *, future, device, task_id, time, func, args, kwargs):

@@ -6,5 +6,5 @@ networkx
 CIRpy
 colorama
 pyserial
-pyro4
+Pyro4
 pyyaml
