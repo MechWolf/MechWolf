@@ -135,7 +135,7 @@ class ViciValve(Valve):
         self.ser.close()
         return self
 
-        def connect(self, serial_port, positions=10, delay=0):
+    def connect(self, serial_port, positions=10, delay=0):
         self.serial_port = serial_port
         self.positions = positions
         self.delay = delay    
