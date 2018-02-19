@@ -122,10 +122,13 @@ class Valve(ActiveComponent, metaclass=ABCMeta):
 class ViciValve(Valve):
     '''Controls a VICI Valco Valve'''
 
-    def __init__(self, mapping=None, name=None):
+    def __init__(self, mapping=None, name=None, serial_port=None, positions=10):
         super().__init__(mapping=mapping, name=name)
         self.mapping = mapping
         self.setting = None
+
+        self.serial_port = serial_port
+        self.positions = positions
 
     def __enter__(self):
         self.ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
@@ -133,12 +136,7 @@ class ViciValve(Valve):
         
     def __exit__(self, exc_type, exc_value, traceback):
         self.ser.close()
-        return self
-
-    def connect(self, serial_port, positions=10, delay=0):
-        self.serial_port = serial_port
-        self.positions = positions
-        self.delay = delay    
+        return self  
         
     # def start(self):
     #     self.ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
