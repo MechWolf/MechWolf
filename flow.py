@@ -5,9 +5,10 @@ import time
 import json
 from warnings import warn
 from datetime import datetime, timedelta
+import sys
 
 from components import *
-from connection import Connection, DeviceExecutor
+from connection import DeviceExecutor
 
 from graphviz import Digraph
 import networkx as nx
@@ -17,6 +18,11 @@ import plotly as py
 import plotly.figure_factory as ff
 from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
 from colorama import init, Fore, Back, Style
+import Pyro4
+import Pyro4.util
+
+# exception handling for remote objects
+sys.excepthook = Pyro4.util.excepthook
 
 # initialize colored printing
 init(autoreset=True)
@@ -39,9 +45,12 @@ class Apparatus(object):
     
     def add(self, from_component, to_component, tube):
         '''add a connection in the apparatus'''
-        assert issubclass(from_component.__class__, Component)
-        assert issubclass(to_component.__class__, Component)
-        assert issubclass(tube.__class__, Tube)
+        if not issubclass(from_component.__class__, Component):
+            raise ValueError(Fore.RED + "From component must be a subclass of Component")
+        if not issubclass(to_component.__class__, Component):
+            raise ValueError(Fore.RED + "To component must be a subclass of Component")
+        if not issubclass(tube.__class__, Tube):
+            raise ValueError(Fore.RED + "Tube must be an instance of Tube")
         
         self.network.append((from_component, to_component, tube))
         self.components.update([from_component, to_component])
@@ -116,22 +125,22 @@ class Apparatus(object):
         G = nx.Graph() # convert the network to an undirected NetworkX graph
         G.add_edges_from([(x[0], x[1]) for x in self.network])
         if not nx.is_connected(G): # make sure that all of the components are connected
-            raise RuntimeError("Unable to validate: not all components connected")
+            raise RuntimeError(Fore.RED + "Unable to validate: not all components connected")
 
         # valve checking
         for valve in list(set([x[0] for x in self.network if issubclass(x[0].__class__, Valve)])):
             for name in valve.mapping.keys():
                 # ensure that valve's mapping components are part of apparatus
                 if name not in valve.used_names:
-                    raise RuntimeError(f"Invalid mapping for Valve {valve}. No component named {name} exists.")
+                    raise RuntimeError(Fore.RED + f"Invalid mapping for Valve {valve}. No component named {name} exists.")
             # no more than one output from a valve (might have to change this)
             if len([x for x in self.network if x[0] == valve]) != 1:
-                raise RuntimeError(f"Valve {valve} has multiple outputs.")
+                raise RuntimeError(Fore.RED + f"Valve {valve} has multiple outputs.")
 
             # make sure valve's mapping is complete
             non_mapped_components = [x[0] for x in self.network if x[1] == valve and valve.mapping.get(x[0].name) is None]
             if non_mapped_components:
-                raise RuntimeError(f"Valve {valve} has incomplete mapping. No mapping for {non_mapped_components}")
+                raise RuntimeError(Fore.RED + f"Valve {valve} has incomplete mapping. No mapping for {non_mapped_components}")
 
         return True
 
@@ -144,7 +153,7 @@ class Apparatus(object):
             elif issubclass(element.__class__, Component):
                 return element.__class__.__name__ + " " + element.name
             else:
-                raise RuntimeError(f"{element} cannot be described.")
+                raise RuntimeError(Fore.RED + f"{element} cannot be described.")
 
         result = ""
 
@@ -173,34 +182,40 @@ class Protocol(object):
         if duration not in [None, "auto"]:
             duration = ureg.parse_expression(duration)
             if duration.dimensionality != ureg.hours.dimensionality:
-                raise ValueError(f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}")
+                raise ValueError(Fore.RED + f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}")
         self.duration = duration
 
     def _is_valid_to_add(self, component, **kwargs):
         # make sure that the component being added to the protocol is part of the apparatus
         if component not in self.apparatus.components:
-            raise ValueError(f"{component} is not a component of {self.apparatus.name}.")
+            raise ValueError(Fore.RED + f"{component} is not a component of {self.apparatus.name}.")
 
         # check that the keyword is a valid attribute of the component
         if not component.is_valid_attribute(**kwargs):
-            raise ValueError(f"Invalid attributes present for {component.name}.")
+            raise ValueError(Fore.RED + f"Invalid attributes present for {component.name}.")
         
     def add(self, component, start_time="0 seconds", stop_time=None, duration=None, **kwargs):
         '''add a procedure to the protocol for an apparatus'''
 
+        # perform the mapping for valves
+        if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
+            kwargs["setting"] = component.mapping[kwargs["setting"]]
+
         # make sure the component is valid to add
         for kwarg, value in kwargs.items():
+            if isinstance(component, type):
+                raise ValueError(Fore.RED + f"Must add an instance of {component}, not the class itself.")
             if not hasattr(component, kwarg):
-                raise ValueError(f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}")
+                raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}")
             
             if type(component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
-                raise ValueError(f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
+                raise ValueError(Fore.RED + f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
             
             elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
-                raise ValueError(f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {type(value)}")
+                raise ValueError(Fore.RED + f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}")
 
         if stop_time is not None and duration is not None:
-            raise RuntimeError("Must provide one of stop_time and duration, not both.")
+            raise RuntimeError(Fore.RED + "Must provide one of stop_time and duration, not both.")
 
         # parse the start time if given
         if isinstance(start_time, timedelta):
@@ -215,17 +230,13 @@ class Protocol(object):
 
         # determine stop time
         if stop_time is None and self.duration is None and duration is None:
-            raise RuntimeError("Must specify protocol duration during instantiation in order to omit stop_time. " \
+            raise RuntimeError(Fore.RED + "Must specify protocol duration during instantiation in order to omit stop_time. " \
                 f"To automatically set duration as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
         elif stop_time is not None:
             if isinstance(stop_time, timedelta):
                 stop_time = str(stop_time.total_seconds()) + " seconds"
             if type(stop_time) == str:
                 stop_time = ureg.parse_expression(stop_time)
-
-        # perform the mapping for valves
-        if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
-            kwargs["setting"] = component.mapping[kwargs["setting"]]
 
         # a little magic for temperature controllers
         if issubclass(component.__class__, TempControl):
@@ -234,7 +245,7 @@ class Protocol(object):
             elif kwargs.get("active") == False and kwargs.get("temp") is None:
                 kwargs["temp"] = "0 degC"
             elif kwargs["active"] and kwargs.get("temp") is None:
-                raise RuntimeError(f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add().")
+                raise RuntimeError(Fore.RED + f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add().")
 
         # add the procedure to the procedure list
         self.procedures.append(dict(start_time=start_time, stop_time=stop_time, component=component, params=kwargs))
@@ -247,7 +258,7 @@ class Protocol(object):
         if self.duration == "auto":
             self.duration = sorted([x["stop_time"] for x in self.procedures], key=lambda z: z.to_base_units().magnitude if type(z) == ureg.Quantity else 0)
             if all([x == None for x in self.duration]):
-                raise RuntimeError("Unable to automatically infer duration of protocol. Must define stop_time for at least one procedure to use duration=\"auto\".")
+                raise RuntimeError(Fore.RED + "Unable to automatically infer duration of protocol. Must define stop_time for at least one procedure to use duration=\"auto\".")
             self.duration = self.duration[-1]
 
         # deal only with compiling active components
@@ -265,27 +276,27 @@ class Protocol(object):
 
             # check for conflicting continuous procedures
             if len([x for x in component_procedures if x["start_time"] is None and x["stop_time"] is None]) > 1:
-                raise RuntimeError((f"{component} cannot have two procedures for the entire duration of the protocol. " 
+                raise RuntimeError(Fore.RED + (f"{component} cannot have two procedures for the entire duration of the protocol. " 
                     "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "  
                     "Otherwise, reduce ambiguity by defining start and stop times for each procedure."))
 
             for i, procedure in enumerate(component_procedures):
                 # ensure that the start time is before the stop time if given
                 if procedure["stop_time"] is not None and procedure["start_time"] > procedure["stop_time"]:
-                    raise RuntimeError("Start time must be less than or equal to stop time.")
+                    raise RuntimeError(Fore.RED + "Start time must be less than or equal to stop time.")
 
                 # make sure that the start time isn't outside the duration
                 if self.duration is not None and procedure["start_time"] is not None and procedure["start_time"] > self.duration:
-                    raise ValueError(f"Procedure cannot start at {procedure['start_time']}, which is outside the duration of the experiment ({self.duration}).")
+                    raise ValueError(Fore.RED + f"Procedure cannot start at {procedure['start_time']}, which is outside the duration of the experiment ({self.duration}).")
 
                 # make sure that the end time isn't outside the duration
                 if self.duration is not None and procedure["stop_time"] is not None and procedure["stop_time"] > self.duration:
-                    raise ValueError(f"Procedure cannot end at {procedure['stop_time']}, which is outside the duration of the experiment ({self.duration}).")
+                    raise ValueError(Fore.RED + f"Procedure cannot end at {procedure['stop_time']}, which is outside the duration of the experiment ({self.duration}).")
                 
                 # automatically infer start and stop times
                 try:
                     if component_procedures[i+1]["start_time"] == ureg.parse_expression("0 seconds"):
-                        raise RuntimeError(f"Ambiguous start time for {procedure['component']}.")
+                        raise RuntimeError(Fore.RED + f"Ambiguous start time for {procedure['component']}.")
                     elif component_procedures[i+1]["start_time"] is not None and procedure["stop_time"] is None:
                         if warnings: warn(Fore.YELLOW + f"Automatically inferring start time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False.")
                         procedure["stop_time"] = component_procedures[i+1]["start_time"]
@@ -352,26 +363,11 @@ class Protocol(object):
         py.offline.plot(fig, filename=f'{self.name}.html')
 
     def execute(self):
-        c = Connection()
-        c.connect()
-        e = DeviceExecutor(c)
-
-        tasks = []
-
-        compiled = json.loads(self.json()) # i hate this
-
-        pprint(compiled)
-        for device in list(self.apparatus.components):
-            if issubclass(device.__class__, ActiveComponent):
-                tasks.extend([e.submit(device.address, procedure) for procedure in compiled[device.name]])
-        
-        print(tasks)
-
-        while not all([task._state == "RECEIVED" for task in tasks]):
-            time.sleep(3)
-            e.resend_all()
-
-        for device in list(self.apparatus.components):
-            e.submit(device.name,{'run':True})
-        return tasks
+        compiled = self.compile()
+        for component in self.apparatus.components:
+            if component in [x["component"] for x in self.procedures]:
+                e = Pyro4.Proxy(f"PYRONAME:{component.name}")
+                for procedure in compiled[component]:
+                    e.submit(time=procedure["time"].to_timedelta().total_seconds(), params=procedure["params"])
+                    e.run()
 

@@ -9,33 +9,31 @@ import asyncio
 import Pyro4
 
 class _DeviceWorkItem(object):
-    def __init__(self, *, future, device, task_id, time, func, args, kwargs):
+    def __init__(self, future, component, time, params):
         self.future = future
-        self.device = device
-        self.task_id = task_id
-        self.func = func
-        self.args = args
-        self.kwargs = kwargs
+        self.component = component
         self.time = time
+        self.params = params
 
     async def run(self):
         # TODO: Add in a "with self._condition lock
         await asyncio.sleep(self.time)
-        result = self.func(*self.args)
+        self.component.update_from_params(self.params)
+        result = self.component.update()
         self.future.set_result(result)
-        print("Finished:",self.future.done(),"Result:",self.future.result())
+        print(f"Finished:\t{self.future.done()}\nResult:\t{self.future.result()}\n".expandtabs(10))
     #TODO Fill in the rest here
 
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single")  
 class DeviceExecutor(_base.Executor):
-    def __init__(self):
+    def __init__(self, component):
         self._task_queue = deque()
+        self.component = component
 
-    def submit(self, device, time, func, *args, **kwargs):
-        task_id = uuid.uuid1().hex
+    def submit(self, time, params):
         f = _base.Future()
-        task = _DeviceWorkItem(future = f, device=device, task_id=task_id, time=time, func=func, args=args, kwargs=kwargs)
+        task = _DeviceWorkItem(future=f, component=self.component, time=time, params=params)
         self._task_queue.append(task)
         return f
         

@@ -30,7 +30,7 @@ class Component(object):
         elif name not in self.__class__.used_names:
             self.name = name
         else:
-            raise ValueError(f"Cannot have two components with the name {name}.")
+            raise ValueError(Fore.RED + f"Cannot have two components with the name {name}.")
         self.__class__.used_names.add(self.name)
 
     def __repr__(self):
@@ -44,8 +44,12 @@ class ActiveComponent(Component, metaclass=ABCMeta):
 
     def __init__(self, name=None):
         if name is None:
-            raise ValueError("No name given for ActiveComponent. Specify the name of the component by adding name=\"[name of component]\" to the line that generated this error.")
+            raise ValueError(Fore.RED + "No name given for ActiveComponent. Specify the name of the component by adding name=\"[name of component]\" to the line that generated this error.")
         super().__init__(name=name)
+
+    def update_from_params(self, params):
+        for key, value in params.items():
+            setattr(self, key, value)
 
     @abstractmethod
     def base_state():
@@ -64,7 +68,7 @@ class TempControl(ActiveComponent):
     def __init__(self, internal_tubing, name=None):
         super().__init__(name=name)
         if type(internal_tubing) != Tube:
-            raise TypeError("TempControl must have internal_tubing of type Tube.")
+            raise TypeError(Fore.RED + "TempControl must have internal_tubing of type Tube.")
         self.temp = ureg.parse_expression("0 degC")
         self.active = False
 
@@ -87,7 +91,7 @@ class Tube(object):
         
         # ensure diameters are valid
         if self.outer_diameter <= self.inner_diameter:
-            raise ValueError(f"Outer diameter {outer_diameter} must be greater than inner diameter {inner_diameter}")
+            raise ValueError(Fore.RED + f"Outer diameter {outer_diameter} must be greater than inner diameter {inner_diameter}")
         if self.length < self.outer_diameter or self.length < self.inner_diameter:
             warn(Fore.YELLOW + f"Tube length ({self.length}) is less than diameter. Make sure that this is not in error.")
         
@@ -102,15 +106,15 @@ class Tube(object):
         # check to make sure units are valid
         for measurement in [self.length, self.inner_diameter, self.outer_diameter]:
             if measurement.dimensionality != ureg.mm.dimensionality:
-                raise ValueError(f"{measurement.dimensionality} is an invalid unit of measurement for {measurement}. Must be a {ureg.mm.dimensionality}.")
+                raise ValueError(Fore.RED + f"{measurement.dimensionality} is an invalid unit of measurement for {measurement}. Must be a {ureg.mm.dimensionality}.")
         if self.temp is not None and self.temp.dimensionality != ureg.degC.dimensionality:
-            raise ValueError("Invalid temperature unit. Use \"degC\", \"degF\" or \"degK\".")
+            raise ValueError(Fore.RED + "Invalid temperature unit. Use \"degC\", \"degF\" or \"degK\".")
     
     def __repr__(self):
         return f"Tube of length {self.length}, ID {self.outer_diameter}, OD {self.outer_diameter}"
 
 class Valve(ActiveComponent, metaclass=ABCMeta):
-    def __init__(self, mapping=None, name=None):
+    def __init__(self, mapping={}, name=None):
         super().__init__(name=name)
         self.mapping = mapping
         self.setting = 0
@@ -181,5 +185,17 @@ class Vessel(Component):
                     print(table.table)
 
         self.description = description
-        
+
+class Test(ActiveComponent):
+    def __init__(self, name=None):
+        super().__init__(name=name)
+        self.active = False 
+
+    def base_state(self):
+        return dict(active=False)
+
+    def update(self):
+        if self.active:
+            print("Side effect!")
+        return self.__dict__
 

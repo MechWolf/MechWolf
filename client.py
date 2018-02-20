@@ -1,14 +1,14 @@
-from components import ViciValve
+from components import Test
 from connection import DeviceExecutor
 import Pyro4
 
 DEVICE_NAME = "valve1"
 
-my_executor = DeviceExecutor()
+me = Test(name=DEVICE_NAME)
+my_executor = DeviceExecutor(me)
 
-# for example purposes we will access the daemon and name server ourselves and not use serveSimple
 with Pyro4.Daemon() as daemon:
-    my_uri = daemon.register(my_executor)
+    uri = daemon.register(my_executor)
     with Pyro4.locateNS() as ns:
-        ns.register("de", my_uri)
+        ns.register(DEVICE_NAME, uri)
         daemon.requestLoop()
