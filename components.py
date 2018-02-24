@@ -171,18 +171,21 @@ class Vessel(Component):
         super().__init__(name=name)
         if resolve:
             hits = list(re.findall(r"`(.+?)`", description))
-            for hit in hits:
-                M = Molecule(hit)
-                description = description.replace(f"`{hit}`", f"{hit} ({M.iupac_name})")
+            try: # in case the resolver is down, don't break
+                for hit in hits:
+                    M = Molecule(hit)
+                    description = description.replace(f"`{hit}`", f"{hit} ({M.iupac_name})")
 
-                if warnings:
-                    table = SingleTable([
-                        ["IUPAC Name", M.iupac_name], 
-                        ["CAS", M.cas], 
-                        ["Formula", M.formula]])
-                    table.title = "Resolved: " + hit
-                    table.inner_heading_row_border = False
-                    print(table.table)
+                    if warnings:
+                        table = SingleTable([
+                            ["IUPAC Name", M.iupac_name], 
+                            ["CAS", M.cas], 
+                            ["Formula", M.formula]])
+                        table.title = "Resolved: " + hit
+                        table.inner_heading_row_border = False
+                        print(table.table)
+            except:
+                warn(fore.YELLOW + "Reolver failed. Continuing without resolving.")
 
         self.description = description
 

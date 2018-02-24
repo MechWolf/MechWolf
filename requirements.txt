@@ -6,5 +6,8 @@ networkx
 CIRpy
 colorama
 pyserial
-Pyro4
 pyyaml
+flask
+requests
+cython
+vedis

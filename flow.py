@@ -18,11 +18,7 @@ import plotly as py
 import plotly.figure_factory as ff
 from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
 from colorama import init, Fore, Back, Style
-import Pyro4
-import Pyro4.util
-
-# exception handling for remote objects
-sys.excepthook = Pyro4.util.excepthook
+import requests
 
 # initialize colored printing
 init(autoreset=True)
@@ -362,12 +358,6 @@ class Protocol(object):
         # plot it
         py.offline.plot(fig, filename=f'{self.name}.html')
 
-    def execute(self):
-        compiled = self.compile()
-        for component in self.apparatus.components:
-            if component in [x["component"] for x in self.procedures]:
-                e = Pyro4.Proxy(f"PYRONAME:{component.name}")
-                for procedure in compiled[component]:
-                    e.submit(time=procedure["time"].to_timedelta().total_seconds(), params=procedure["params"])
-                    e.run()
+    def execute(self, address):
+        requests.post(str(address), data=dict(protocol_json=self.json()))
 
