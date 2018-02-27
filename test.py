@@ -24,15 +24,16 @@ A.add(uv_spec, heater, Tube("5 in", "1/16 in", "2/16 in", "PVC"))
 A.add(heater, collection_bottle, Tube("5 in", "1/16 in", "2/16 in", "PVC"))
 
 amino_acid_mapping = dict(C=cysteine_pump, A=alanine_pump)
-P = Protocol(A, duration="30 secs")
-# P.add(uv_spec, active=True)
+P = Protocol(A, duration="auto")
+P.add(uv_spec, active=True)
 P.add(heater, temp="60 degC")
 
-# start_time = timedelta(seconds=0)
+start_time = timedelta(seconds=0)
 
-# for amino_acid in "CAACAAAACACACAA":
-# 	P.add(amino_acid_mapping[amino_acid], start_time=start_time, duration="15 seconds", rate="15 ml/min")
-# 	P.add(valve, start_time=start_time, duration="15 seconds", setting=str(amino_acid_mapping[amino_acid]))
-# 	start_time += timedelta(seconds=15)
+for amino_acid in "CAACAAAACACACAA":
+	P.add(amino_acid_mapping[amino_acid], start_time=start_time, duration="15 seconds", rate="15 ml/min")
+	P.add(valve, start_time=start_time, duration="15 seconds", setting="alanine_pump")
+	start_time += timedelta(seconds=15)
 
-P.execute("http://127.0.0.1:5000/submit_protcol")
+# P.execute("http://127.0.0.1:5000/submit_protcol")
+print(P.json())
