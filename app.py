@@ -22,7 +22,10 @@ def submit_protcol():
         db.Set("start_time_acks").pop()
     for i in range(db.llen("log")):
         db.lpop("log")
-    del db["start_time"]
+    try:
+        del db["start_time"]
+    except KeyError:
+        pass
 
     return "accepted"
 
