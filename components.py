@@ -36,8 +36,6 @@ class Component(object):
     def __repr__(self):
         return self.name
 
-@Pyro4.expose
-@Pyro4.behavior(instance_mode="single")    
 class ActiveComponent(Component, metaclass=ABCMeta):
     """A connected, controllable component."""
     id_counter = 0
