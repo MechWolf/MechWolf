@@ -185,7 +185,7 @@ class Vessel(Component):
                         table.inner_heading_row_border = False
                         print(table.table)
             except:
-                warn(fore.YELLOW + "Reolver failed. Continuing without resolving.")
+                warn(fore.YELLOW + "Resolver failed. Continuing without resolving.")
 
         self.description = description
 
@@ -199,6 +199,8 @@ class Test(ActiveComponent):
 
     def update(self):
         if self.active:
-            print("Side effect!")
+            print("Active!")
+        else:
+            print("Inactive.")
         return self.__dict__
 

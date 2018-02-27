@@ -1,15 +1,13 @@
 from flow import Apparatus, Protocol
-from components import Component, Tube, Pump, Sensor, Valve, TempControl, Vessel
+from components import Tube, Vessel, Test
 
 input_vessel = Vessel("`glucose`, `indium(iii) bromide`, and `triflic acid` in a 50/50 mix of `chloroform` and `acetonitrile`", warnings=False)
-pump = Pump("pump1")
-heater = Component(name="heater")
-output_vessel = Vessel("the output of the reaction")
+test = Test("test_1")
 
 A = Apparatus()
-A.add(input_vessel, pump, Tube("1 foot", "1/16 in", "2/16 in", "PVC"))
-A.add(pump, heater, Tube("1 foot", "1/16 in", "2/16 in", "PVC"))
-A.add(heater, output_vessel, Tube("1 foot", "1/16 in", "2/16 in", "PVC"))
+A.add(input_vessel, test, Tube("1 foot", "1/16 in", "2/16 in", "PVC"))
 
 P = Protocol(A)
-P.add(pump, rate="15 ml/min", duration="1 min")
+P.add(test, active=True, start_time="3 secs", stop_time="5 seconds")
+
+P.execute("http://127.0.0.1:5000/submit_protcol")

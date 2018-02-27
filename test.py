@@ -24,8 +24,8 @@ A.add(uv_spec, heater, Tube("5 in", "1/16 in", "2/16 in", "PVC"))
 A.add(heater, collection_bottle, Tube("5 in", "1/16 in", "2/16 in", "PVC"))
 
 amino_acid_mapping = dict(C=cysteine_pump, A=alanine_pump)
-P = Protocol(A, duration="1 hour")
-P.add(uv_spec, active=True)
+P = Protocol(A, duration="30 secs")
+# P.add(uv_spec, active=True)
 P.add(heater, temp="60 degC")
 
 # start_time = timedelta(seconds=0)

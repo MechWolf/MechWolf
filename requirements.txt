@@ -8,6 +8,7 @@ colorama
 pyserial
 pyyaml
 flask
+aiohttp
 requests
 cython
 vedis
