@@ -165,6 +165,9 @@ class ViciValve(Valve):
             self.ser.write(message.encode())
             return True
 
+    def update(self):
+        if self.get_position() != self.setting:
+            self.set_position(self.setting)
 
 class Vessel(Component):
     def __init__(self, description, name=None, resolve=True, warnings=True):
