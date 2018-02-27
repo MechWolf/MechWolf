@@ -102,4 +102,4 @@ ENV/
 
 # don't track dbs
 .db
-.db.*
+.db_vedis_journal
