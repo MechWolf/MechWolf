@@ -1,4 +1,4 @@
-from components import Test
+from components import ViciValve
 
 from json import dumps, loads
 import time
@@ -9,15 +9,6 @@ import aiohttp
 import asyncio
 import async_timeout
 from colorama import init, Fore, Back, Style
-
-# initialize colored printing
-init(autoreset=True)
-
-DEVICE_NAME = "test_1"
-me = Test(name=DEVICE_NAME)
-
-# print(requests.post("http://127.0.0.1:5000/log", json=dumps(dict(time=time()))).text)
-# print(requests.post("http://127.0.0.1:5000/protocol", data=dict(device_id=DEVICE_NAME)).text)
 
 async def execute_procedure(procedure, session):
         await asyncio.sleep(procedure["time"])
@@ -79,5 +70,19 @@ async def main(loop):
             await asyncio.gather(*coros)
             print("done with protocol")
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main(loop))
+
+
+# initialize colored printing
+init(autoreset=True)
+
+DEVICE_NAME = "test_1"
+
+# print(requests.post("http://127.0.0.1:5000/log", json=dumps(dict(time=time()))).text)
+# print(requests.post("http://127.0.0.1:5000/protocol", data=dict(device_id=DEVICE_NAME)).text)
+with ViciValve(mapping = None,
+                  name = DEVICE_NAME,
+           serial_port = '/dev/tty.usbserial',
+             positions = 10) as me:
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main(loop))

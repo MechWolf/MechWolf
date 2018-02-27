@@ -127,7 +127,7 @@ class ViciValve(Valve):
     def __init__(self, mapping=None, name=None, serial_port=None, positions=10):
         super().__init__(mapping=mapping, name=name)
         self.mapping = mapping
-        self.setting = None
+        self.setting = 1
 
         self.serial_port = serial_port
         self.positions = positions
