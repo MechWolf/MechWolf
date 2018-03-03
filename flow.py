@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 import sys
 
 from components import *
-from connection import DeviceExecutor
 
 from graphviz import Digraph
 import networkx as nx

@@ -115,19 +115,20 @@ class Valve(ActiveComponent, metaclass=ABCMeta):
     def __init__(self, mapping={}, name=None):
         super().__init__(name=name)
         self.mapping = mapping
-        self.setting = 0
+        self.setting = 1
 
     def base_state(self):
         # an arbitrary state
         return dict(setting=list(self.mapping.items())[0][1])
+    
+    def update(self):
+        print(f"Setting at {self.setting}")
 
 class ViciValve(Valve):
     '''Controls a VICI Valco Valve'''
 
-    def __init__(self, mapping=None, name=None, serial_port=None, positions=10):
+    def __init__(self, mapping={}, name=None, serial_port=None, positions=10):
         super().__init__(mapping=mapping, name=name)
-        self.mapping = mapping
-        self.setting = 1
 
         self.serial_port = serial_port
         self.positions = positions
@@ -139,12 +140,6 @@ class ViciValve(Valve):
     def __exit__(self, exc_type, exc_value, traceback):
         self.ser.close()
         return self  
-        
-    # def start(self):
-    #     self.ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
-
-    # def stop(self):
-    #     self.ser.close()
 
     def get_position(self):
         self.ser.write(b'CP\r')
