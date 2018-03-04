@@ -12,3 +12,4 @@ aiohttp
 cython
 vedis
 schedule
+requests

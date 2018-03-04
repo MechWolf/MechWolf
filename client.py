@@ -8,14 +8,21 @@ import aiohttp
 import asyncio
 import async_timeout
 from colorama import init, Fore, Back, Style
+import yaml
 
-async def execute_procedure(procedure, session):
+# initialize colored printing
+init(autoreset=True)
+
+async def execute_procedure(protocol_id, procedure, session):
         await asyncio.sleep(procedure["time"])
         print(Fore.GREEN + f"executing: {procedure} at {time.time()}")
         me.update_from_params(procedure["params"])
         me.update()
-        await log(session, dumps(dict(timestamp=time.time(), success=True, procedure=procedure)))
-
+        await log(session, dumps(dict(
+                protocol_id=protocol_id,
+                timestamp=time.time(), 
+                success=True, 
+                procedure=procedure)))
         
 async def get_protocol(session):
     try:
@@ -23,13 +30,15 @@ async def get_protocol(session):
             response = await resp.text()
             try:
                 response = loads(response)
+                return response["protocol_id"], response[DEVICE_NAME]
             except:
-                pass
-            return response
+                return "", response
+    
 
     except aiohttp.client_exceptions.ClientConnectorError:
-        print(Fore.YELLOW + "Unable to connect to server. Trying again...")
-        return False
+        print(Fore.YELLOW + "Unable to connect to server.")
+        find_server()
+        return "", False
 
 async def get_start_time(session):
     try:
@@ -56,9 +65,9 @@ async def main(loop):
         while True:
 
             # try to get a protocol
-            protocol = await get_protocol(session)
+            protocol = "no protocol"
             while protocol == "no protocol":
-                protocol = await get_protocol(session)
+                protocol_id, protocol = await get_protocol(session)
                 print("No new protocol received.")
                 time.sleep(5)
             if not protocol:
@@ -86,33 +95,44 @@ async def main(loop):
             time.sleep(start_time - time.time())
 
             # create futures for each procedure in the protocol and execute them
-            coros = [execute_procedure(procedure,session) for procedure in protocol]
+            coros = [execute_procedure(protocol_id, procedure, session) for procedure in protocol]
             await asyncio.gather(*coros)
 
             # upon completion, alert the user and begin the loop again
             print(Fore.GREEN + "Protocol executed successfully.")
 
-# initialize colored printing
-init(autoreset=True)
+def find_server():
+    # https://stackoverflow.com/questions/21089268/python-service-discovery-advertise-a-service-across-a-local-network
+    s = socket(AF_INET, SOCK_DGRAM) # create UDP socket
+    s.bind(('', PORT))
 
-DEVICE_NAME = "test_1"
-PORT = 1636
-KEY = "flow_chemistry" # to make sure we don't confuse or get confused by other programs
+    global SERVER
+    SERVER = ""
+    while not SERVER:
+        print("Finding server")
+        data, addr = s.recvfrom(1024) # wait for a packet
+        data = data.decode()
+        if data.startswith(KEY):
+            SERVER = f"http://{data[len(KEY):]}:5000"
+            print(Fore.GREEN + f"Got service announcement from {SERVER}")
 
-# https://stackoverflow.com/questions/21089268/python-service-discovery-advertise-a-service-across-a-local-network
-s = socket(AF_INET, SOCK_DGRAM) # create UDP socket
-s.bind(('', PORT))
-
+# placeholder global variable
 SERVER = ""
-while not SERVER:
-    data, addr = s.recvfrom(1024) # wait for a packet
-    data = data.decode()
-    if data.startswith(KEY):
-        SERVER = f"http://{data[len(KEY):]}:5000"
-        print(Fore.GREEN + f"Got service announcement from {SERVER}")
 
-me = Valve(name=DEVICE_NAME)
+# read the config file
+config = yaml.load(open('client_config.yaml', 'r'))
+DEVICE_NAME = config["device_info"]["device_name"]
+PORT = config["network_info"]["port"]
+KEY = config["network_info"]["key"] # to make sure we don't confuse or get confused by other programs
 
+# create the client object
+class_type = globals()[config["device_info"]["class"]]
+me = class_type(name=DEVICE_NAME)
+
+# locate the server address
+find_server()
+
+# get and execute protocols forever
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main(loop))
 

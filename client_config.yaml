@@ -1,0 +1,6 @@
+device_info:
+  device_name: test1
+  class: Valve # must be a valid component class
+network_info:
+  key: flow_chemistry # unique key to recognize your own system
+  port: 1636 # probably don't change this
