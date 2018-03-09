@@ -13,3 +13,4 @@ cython
 vedis
 schedule
 requests
+sphinx

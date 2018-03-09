@@ -18,10 +18,15 @@ def broadcast_ip(key="flow_chemistry", port=1636):
     s = socket(AF_INET, SOCK_DGRAM) # create UDP socket
     s.bind(('', 0))
     s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1) # this is a broadcast socket
-    my_ip = gethostbyname(gethostname()) # get our IP
+    
+    ip_socket = socket(AF_INET, SOCK_DGRAM)
+    ip_socket.connect(("8.8.8.8", 80))
+    my_ip = ip_socket.getsockname()[0]
+    ip_socket.close()
+
     data = key + my_ip
     s.sendto(data.encode(), ('<broadcast>', port))
-    print(f"Broadcasted IP {my_ip} with key {key} on port {port}")
+    print(f"Broadcasted IP {my_ip} with key \"{key}\" on port {port}")
 
 def run_schedule():
     while True:
@@ -51,8 +56,7 @@ def submit_protocol():
 
         # store the time when the protocol came in
         db["protocol_submit_time"] = time()
-
-    return jsonify(dict(protocol_id=db["protocol_id"]))
+        return jsonify(dict(protocol_id=db["protocol_id"]))
 
 @app.route("/protocol", methods=["GET", "POST"])
 def protocol():
@@ -82,7 +86,7 @@ def protocol():
                 status=200,
                 mimetype="application/json")
 
-    # if no protocol has been given, return Null
+    # if no protocol has been given
     except KeyError:
         return "no protocol"
 
@@ -130,3 +134,4 @@ if __name__ == "__main__":
     t = Thread(target=run_schedule)
     t.start()
     app.run(debug=True, host="0.0.0.0", use_reloader=True, threaded=True)
+

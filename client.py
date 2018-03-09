@@ -1,4 +1,4 @@
-from components import ViciValve, Valve
+from components import *
 
 from json import dumps, loads
 import time
@@ -9,9 +9,12 @@ import asyncio
 import async_timeout
 from colorama import init, Fore, Back, Style
 import yaml
+from vedis import Vedis
 
 # initialize colored printing
 init(autoreset=True)
+
+db = Vedis("client.db")
 
 async def execute_procedure(protocol_id, procedure, session):
         await asyncio.sleep(procedure["time"])
@@ -19,10 +22,10 @@ async def execute_procedure(protocol_id, procedure, session):
         me.update_from_params(procedure["params"])
         me.update()
         await log(session, dumps(dict(
-                protocol_id=protocol_id,
-                timestamp=time.time(), 
-                success=True, 
-                procedure=procedure)))
+                    protocol_id=protocol_id,
+                    timestamp=time.time(), 
+                    success=True, 
+                    procedure=procedure)))
         
 async def get_protocol(session):
     try:
@@ -53,11 +56,18 @@ async def get_start_time(session):
     # if the server is down, try again
     except aiohttp.client_exceptions.ClientConnectorError:
         print(Fore.YELLOW + "Unable to connect to server. Trying again...")
-        return "no start time"
+        find_server()
+        return False
 
-async def log(session, json):
-    async with session.post(f"{SERVER}/log", json=json) as resp:
-        return await resp.text()
+async def log(session, data):
+    try:
+        async with session.post(f"{SERVER}/log", json=data) as resp:
+            await resp.text()
+    except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
+        with db.transaction():
+            db.List("log").append(data)
+        print(Fore.RED + f"Failed to log {data}. Saved to database.")
+    return
 
 async def main(loop):
 
@@ -85,6 +95,10 @@ async def main(loop):
             if start_time == "abort":
                 print(Fore.RED + "Aborting upon command from server.")
                 continue
+            # handle connection failures
+            if not start_time:
+                time.sleep(5)
+                continue
             # verify start time hasn't happened yet
             if start_time < time.time():
                 print(Fore.RED + "Start time is in past. Aborting...")
@@ -100,6 +114,11 @@ async def main(loop):
 
             # upon completion, alert the user and begin the loop again
             print(Fore.GREEN + "Protocol executed successfully.")
+            
+            if len(db.List("log")):
+                print("Submitting failed logs")
+                for i in range(len(db.List("log"))):
+                    await log(session, db.List("log").pop())
 
 def find_server():
     # https://stackoverflow.com/questions/21089268/python-service-discovery-advertise-a-service-across-a-local-network
@@ -116,28 +135,33 @@ def find_server():
             SERVER = f"http://{data[len(KEY):]}:5000"
             print(Fore.GREEN + f"Got service announcement from {SERVER}")
 
-# placeholder global variable
-SERVER = ""
+if __name__ == "__main__":
+    # placeholder global variable
+    SERVER = ""
 
-# read the config file
-config = yaml.load(open('client_config.yaml', 'r'))
-DEVICE_NAME = config["device_info"]["device_name"]
-PORT = config["network_info"]["port"]
-KEY = config["network_info"]["key"] # to make sure we don't confuse or get confused by other programs
+    # read the config file
+    config = yaml.load(open('client_config.yaml', 'r'))
+    DEVICE_NAME = config["device_info"]["device_name"]
+    PORT = config["network_info"]["port"]
+    KEY = config["network_info"]["key"] # to make sure we don't confuse or get confused by other programs
 
-# create the client object
-class_type = globals()[config["device_info"]["class"]]
-me = class_type(name=DEVICE_NAME)
+    # create the client object
+    class_type = globals()[config["device_info"]["class"]]
+    
+    if config["device_info"]["settings"]:
+       me = class_type(name=DEVICE_NAME, **config["device_info"]["settings"]) 
+    else:
+        me = class_type(name=DEVICE_NAME,)
 
-# locate the server address
-find_server()
+    # locate the server address
+    find_server()
 
-# get and execute protocols forever
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main(loop))
+    # get and execute protocols forever
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main(loop))
 
 
-# with ViciValve(mapping = None,
-#                   name = DEVICE_NAME,
-#            serial_port = '/dev/tty.usbserial',
-#              positions = 10) as me:
+    # with ViciValve(mapping = None,
+    #                   name = DEVICE_NAME,
+    #            serial_port = '/dev/tty.usbserial',
+    #              positions = 10) as me:

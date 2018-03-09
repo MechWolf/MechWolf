@@ -100,6 +100,11 @@ ENV/
 # mypy
 .mypy_cache/
 
-# don't track dbs
+# databases
 .db
 .db_vedis_journal
+
+# documentation
+_build
+_static
+_templates
