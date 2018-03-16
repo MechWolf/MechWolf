@@ -1,7 +1,7 @@
 from components import VarianPump, TempControl, Tube, Vessel, Component
 from flow import Apparatus, Protocol
 
-start_materials = Vessel("start material", name="start_materials")
+start_materials = Vessel("`start` material", name="start_materials")
 pump_3 = VarianPump(name="pump_3")
 oil_bath = Component('oil bath with tube (describe the tube)')
 product = Vessel("", name="product")
@@ -14,4 +14,4 @@ A.add(oil_bath, product, Tube("2 ft", "1/32 in", "1/16 in", "material"))
 P = Protocol(A, duration="auto")
 P.add(pump_3, stop="1 second", rate="1 ml/min")
 
-P.execute()
+# P.execute()

@@ -18,7 +18,7 @@ def broadcast_ip(key="flow_chemistry", port=1636):
     s = socket(AF_INET, SOCK_DGRAM) # create UDP socket
     s.bind(('', 0))
     s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1) # this is a broadcast socket
-    
+
     ip_socket = socket(AF_INET, SOCK_DGRAM)
     ip_socket.connect(("8.8.8.8", 80))
     my_ip = ip_socket.getsockname()[0]
@@ -31,7 +31,7 @@ def broadcast_ip(key="flow_chemistry", port=1636):
 def run_schedule():
     while True:
         schedule.run_pending()
-        sleep(2.5) 
+        sleep(2.5)
 
 @app.route("/")
 def index():
@@ -71,7 +71,7 @@ def protocol():
             device_id = request.form["device_id"]
 
             # to allow easier introspection, let people view the protocol
-            if request.method == "GET": 
+            if request.method == "GET":
                 return jsonify(parsed_protocol)
 
             # only give the protocol once
@@ -99,7 +99,7 @@ def start_time():
 
         # if every device has gotten the protocol, give them the start time
         if all([x in db.Set("protocol_acks") for x in list(loads(db["protocol"]))]):
-            
+
             if request.args["device_id"] in db.Set("start_time_acks"):
                 return "no start time"
 
@@ -112,10 +112,10 @@ def start_time():
             # the first device after all have checked in will determine start time
             try:
                 return db["start_time"]
-            except KeyError: 
+            except KeyError:
                 db["start_time"] = time() + 5
                 return db["start_time"]
-            
+
         else:
             return "no start time"
 
@@ -134,4 +134,3 @@ if __name__ == "__main__":
     t = Thread(target=run_schedule)
     t.start()
     app.run(debug=True, host="0.0.0.0", use_reloader=True, threaded=True)
-

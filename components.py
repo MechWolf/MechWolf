@@ -47,7 +47,7 @@ class ActiveComponent(Component, metaclass=ABCMeta):
 
     All components beind manipulated in an :class:`flow.Protocol` must be of type :class:`ActiveComponent`.
     
-    Warning:
+    Note:
         Users should not directly instantiate an :class:`ActiveComponent` for use in a :class:`flow.Protocol` becuase
         it is not a functioning laboratory instrument.
 
@@ -74,19 +74,27 @@ class ActiveComponent(Component, metaclass=ABCMeta):
 
     @abstractmethod
     def base_state():
-        '''A placeholder method.
+        '''A placeholder method for the base state of the component.
+
+        All subclasses of ActiveComponent must implement a function that returns a dict of its base state.
+        At the end of a protocol, the component will return to this state.
 
         Note:
-            All subclasses of ActiveComponent must implement a function that returns a dict of its base state.
-
-        Warning:
-            The dict that :meth:`ActiveComponent.base_state` returns, must have values which can be parsed into values
-            of the 
+            The dict that :meth:`ActiveComponent.base_state` returns, must have values which can be parsed into compatible
+            units of the object's attributes, if applicable. For example, :meth:`Pump.base_state` returns 
+            ``{"rate": "0 ml/min"}``.
         '''
         pass
 
 class Pump(ActiveComponent):
     '''A pumping device whose primary attribute is that it moves fluid.
+
+    Note:
+        Users should not directly instantiate an :class:`Pump` for use in a :class:`flow.Protocol` becuase
+        it is not a functioning laboratory instrument
+
+    Attributes:
+        rate (str)
     '''
     def __init__(self, name=None):
         super().__init__(name=name)
@@ -230,7 +238,7 @@ class Vessel(Component):
                         table.inner_heading_row_border = False
                         print(table.table)
             except:
-                warn(fore.YELLOW + "Resolver failed. Continuing without resolving.")
+                warn(Fore.YELLOW + "Resolver failed. Continuing without resolving.")
 
         self.description = description
 
