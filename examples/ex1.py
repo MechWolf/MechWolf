@@ -1,5 +1,5 @@
-from components import VarianPump, TempControl, Tube, Vessel, Component
-from flow import Apparatus, Protocol
+from mechwolf.components import VarianPump, TempControl, Tube, Vessel, Component
+from mechwolf import Apparatus, Protocol
 
 start_materials = Vessel("`start` material", name="start_materials")
 pump_3 = VarianPump(name="pump_3")

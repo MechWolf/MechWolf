@@ -20,7 +20,7 @@ class Component(object):
     """One of the individial, irreducible parts of a flow chemistry setup.
 
     All components in an :class:`flow.Apparatus` must be of type :class:`Component`. However, it is unlikely that a user
-    will directly instantiate a :class:`Component`. 
+    will directly instantiate a :class:`Component`.
 
     Attributes:
         Name (str, optional): the name of the component.
@@ -31,7 +31,7 @@ class Component(object):
     def __init__(self, name=None):
         # name the object, either sequentially or with a given name
         if name is None:
-            self.name = self.__class__.__name__ + "_" + str(self.__class__._id_counter) 
+            self.name = self.__class__.__name__ + "_" + str(self.__class__._id_counter)
             self.__class__._id_counter += 1
         elif name not in self.__class__.used_names:
             self.name = name
@@ -46,7 +46,7 @@ class ActiveComponent(Component, metaclass=ABCMeta):
     """A connected, controllable component.
 
     All components beind manipulated in an :class:`flow.Protocol` must be of type :class:`ActiveComponent`.
-    
+
     Note:
         Users should not directly instantiate an :class:`ActiveComponent` for use in a :class:`flow.Protocol` becuase
         it is not a functioning laboratory instrument.
@@ -81,10 +81,10 @@ class ActiveComponent(Component, metaclass=ABCMeta):
 
         Note:
             The dict that :meth:`ActiveComponent.base_state` returns, must have values which can be parsed into compatible
-            units of the object's attributes, if applicable. For example, :meth:`Pump.base_state` returns 
+            units of the object's attributes, if applicable. For example, :meth:`Pump.base_state` returns
             ``{"rate": "0 ml/min"}``.
         '''
-        pass
+        # pass
 
 class Pump(ActiveComponent):
     '''A pumping device whose primary attribute is that it moves fluid.
@@ -128,45 +128,45 @@ class TempControl(ActiveComponent):
         self.active = False
 
     def base_state(self):
-        return dict(temp="0 degC", active=False)       
+        return dict(temp="0 degC", active=False)
 
 class Sensor(ActiveComponent):
     def __init__(self, name=None):
         super().__init__(name=name)
-        self.active = False 
+        self.active = False
 
     def base_state(self):
         return dict(active=False)
 
 class Tube(object):
-    def __init__(self, length, inner_diameter, outer_diameter, material, temp=None):
+    def __init__(self, length, ID, OD, material, temp=None):
         self.length = ureg.parse_expression(length)
-        self.inner_diameter = ureg.parse_expression(inner_diameter)
-        self.outer_diameter = ureg.parse_expression(outer_diameter)
-        
+        self.ID = ureg.parse_expression(ID)
+        self.OD = ureg.parse_expression(OD)
+
         # ensure diameters are valid
-        if self.outer_diameter <= self.inner_diameter:
-            raise ValueError(Fore.RED + f"Outer diameter {outer_diameter} must be greater than inner diameter {inner_diameter}")
-        if self.length < self.outer_diameter or self.length < self.inner_diameter:
+        if self.OD <= self.ID:
+            raise ValueError(Fore.RED + f"Outer diameter {OD} must be greater than inner diameter {ID}")
+        if self.length < self.OD or self.length < self.ID:
             warn(Fore.YELLOW + f"Tube length ({self.length}) is less than diameter. Make sure that this is not in error.")
-        
+
         self.material = material
 
         if temp:
             self.temp = ureg.parse_expression(temp)
         else:
             self.temp = None
-        self.volume = (pi * ((self.inner_diameter / 2)**2) * self.length)
+        self.volume = (pi * ((self.ID / 2)**2) * self.length)
 
         # check to make sure units are valid
-        for measurement in [self.length, self.inner_diameter, self.outer_diameter]:
+        for measurement in [self.length, self.ID, self.OD]:
             if measurement.dimensionality != ureg.mm.dimensionality:
                 raise ValueError(Fore.RED + f"{measurement.dimensionality} is an invalid unit of measurement for {measurement}. Must be a {ureg.mm.dimensionality}.")
         if self.temp is not None and self.temp.dimensionality != ureg.degC.dimensionality:
             raise ValueError(Fore.RED + "Invalid temperature unit. Use \"degC\", \"degF\" or \"degK\".")
-    
+
     def __repr__(self):
-        return f"Tube of length {self.length}, ID {self.outer_diameter}, OD {self.outer_diameter}"
+        return f"Tube of length {self.length}, ID {self.OD}, OD {self.OD}"
 
 class Valve(ActiveComponent, metaclass=ABCMeta):
     def __init__(self, mapping={}, name=None):
@@ -177,7 +177,7 @@ class Valve(ActiveComponent, metaclass=ABCMeta):
     def base_state(self):
         # an arbitrary state
         return dict(setting=list(self.mapping.items())[0][1])
-    
+
     def update(self):
         print(f"Setting at {self.setting}")
 
@@ -193,10 +193,10 @@ class ViciValve(Valve):
     def __enter__(self):
         self.ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
         return self
-        
+
     def __exit__(self, exc_type, exc_value, traceback):
         self.ser.close()
-        return self  
+        return self
 
     def get_position(self):
         self.ser.write(b'CP\r')
@@ -231,8 +231,8 @@ class Vessel(Component):
 
                     if warnings:
                         table = SingleTable([
-                            ["IUPAC Name", M.iupac_name], 
-                            ["CAS", M.cas], 
+                            ["IUPAC Name", M.iupac_name],
+                            ["CAS", M.cas],
                             ["Formula", M.formula]])
                         table.title = "Resolved: " + hit
                         table.inner_heading_row_border = False
@@ -245,7 +245,7 @@ class Vessel(Component):
 class Test(ActiveComponent):
     def __init__(self, name=None):
         super().__init__(name=name)
-        self.active = False 
+        self.active = False
 
     def base_state(self):
         return dict(active=False)
@@ -256,4 +256,3 @@ class Test(ActiveComponent):
         else:
             print("Inactive.")
         return self.__dict__
-

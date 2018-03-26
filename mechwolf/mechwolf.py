@@ -24,10 +24,10 @@ class Apparatus(object):
     '''A unique network of components.
 
     Note:
-        The same components may be organized into multiple distinct apparatuses, depending on the connections between them. 
+        The same components may be organized into multiple distinct apparatuses, depending on the connections between them.
 
     Attributes:
-        network (list): A list of tuples in the form (from_component, to_component, tube) describing the configuration 
+        network (list): A list of tuples in the form (from_component, to_component, tube) describing the configuration
             of the apparatus.
         components (set): The components that make up the apparatus.
         name (str): The name of the apparatus. Defaults to "Apparatus_X" where *X* is apparatus count.
@@ -45,8 +45,8 @@ class Apparatus(object):
             Apparatus._id_counter += 1
 
     def __repr__(self):
-        return self.name  
-    
+        return self.name
+
     def add(self, from_component, to_component, tube):
         '''Adds a connection to the apparatus.
 
@@ -61,14 +61,14 @@ class Apparatus(object):
             raise ValueError(Fore.RED + "To component must be a subclass of Component")
         if not issubclass(tube.__class__, Tube):
             raise ValueError(Fore.RED + "Tube must be an instance of Tube")
-        
+
         self.network.append((from_component, to_component, tube))
         self.components.update([from_component, to_component])
 
     def visualize(self, title=True, label_tubes=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho",  nodesep="1"), format="pdf", filename=None):
         '''Generates a visualization of the graph of an apparatus.
 
-        For full list of acceptable Graphviz attributes for see `here <http://www.graphviz.org/doc/info/attrs.html>`_ 
+        For full list of acceptable Graphviz attributes for see `here <http://www.graphviz.org/doc/info/attrs.html>`_
         and `here <http://graphviz.readthedocs.io/en/stable/manual.html#attributes>`_.
 
         Args:
@@ -79,25 +79,25 @@ class Apparatus(object):
                 {"attribute": "value"}.
             edge_attr (dict, optional): Controls the appearance of the edges of the graph. Must be of the form
                 {"attribute": "value"}.
-            graph_attr (dict, optional): Controls the appearance of the graph. Must be of the form 
+            graph_attr (dict, optional): Controls the appearance of the graph. Must be of the form
                 {"attribute": "value"}. Defaults to orthogonal splines and a node separation of 1.
             format (str, optional): The output format of the graph, either "pdf" or "png". Defaults to "pdf".
             filename (str, optional): The name of the output file. Defaults to the name of the apparatus.
             '''
 
         self.validate() # ensure apparatus is valid
-        f = Digraph(name=self.name, 
-                    node_attr=node_attr, 
-                    edge_attr=edge_attr, 
-                    graph_attr=graph_attr, 
-                    format=format, 
+        f = Digraph(name=self.name,
+                    node_attr=node_attr,
+                    edge_attr=edge_attr,
+                    graph_attr=graph_attr,
+                    format=format,
                     filename=filename)
 
         # go from left to right adding components and their tubing connections
         f.attr(rankdir='LR')
         f.attr('node', shape='circle')
         for x in self.network:
-            tube_label = f"Length {x[2].length}\nID {x[2].inner_diameter}\nOD {x[2].outer_diameter}" if label_tubes else ""
+            tube_label = f"Length {x[2].length}\nID {x[2].ID}\nOD {x[2].OD}" if label_tubes else ""
             f.edge(x[0].name, x[1].name, label=tube_label)
 
         # show the title of the graph
@@ -129,11 +129,11 @@ class Apparatus(object):
         # summarize the tubing
         summary = [["From", "To", "Length", "Inner Diameter", "Outer Diameter", "Volume", "Material", "Temp"]] # header row
         for edge in self.network:
-            summary.append([edge[0].name, 
-                            edge[1].name, 
-                            round(edge[2].length, 4), 
-                            round(edge[2].inner_diameter, 4), 
-                            round(edge[2].outer_diameter, 4), 
+            summary.append([edge[0].name,
+                            edge[1].name,
+                            round(edge[2].length, 4),
+                            round(edge[2].ID, 4),
+                            round(edge[2].OD, 4),
                             round(edge[2].volume.to("ml"), 4),
                             edge[2].material])
             if edge[2].temp is not None:
@@ -146,7 +146,7 @@ class Apparatus(object):
         table = SingleTable(summary)
         table.title = "Tubing"
         table.inner_footing_row_border = "True"
-        print(table.table)    
+        print(table.table)
 
     def validate(self):
         '''Ensures that the apparatus is valid.
@@ -183,15 +183,15 @@ class Apparatus(object):
 
         return True
 
-    def description(self):
+    def describe(self):
         '''Generates a human-readable description of the apparatus.
 
         Returns:
             String description of apparatus.'''
-        def _description(element):
+        def _description(element, capitalize=False):
             '''takes a component and converts it to a string description'''
             if issubclass(element.__class__, Vessel):
-                return f"A vessel containing {element.description}"
+                return f"{'A' if capitalize else 'a'} vessel containing {element.description}"
             elif issubclass(element.__class__, Component):
                 return element.__class__.__name__ + " " + element.name
             else:
@@ -201,15 +201,15 @@ class Apparatus(object):
 
         # iterate over the network and describe the connections
         for element in self.network:
-            from_component, to_component, tube = _description(element[0]), _description(element[1]), element[2]
-            result += f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {element[2].length}, ID {element[2].inner_diameter}, OD {element[2].outer_diameter}). "
+            from_component, to_component, tube = _description(element[0], capitalize=True), _description(element[1]), element[2]
+            result += f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {element[2].length}, ID {element[2].ID}, OD {element[2].OD}). "
 
         return result
 
 class Protocol(object):
     '''A set of procedures for an apparatus.
 
-    A protocol is defined as a list of procedures, atomic steps for the individual active components of an apparatus. 
+    A protocol is defined as a list of procedures, atomic steps for the individual active components of an apparatus.
 
     Note:
         The same :class:`Apparatus` object can create multiple distinct :class:`Protocol` objects.
@@ -242,7 +242,7 @@ class Protocol(object):
             if duration.dimensionality != ureg.hours.dimensionality:
                 raise ValueError(Fore.RED + f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}")
         self.duration = duration
-        
+
     def add(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
         '''Adds a procedure to the protocol
 
@@ -250,7 +250,7 @@ class Protocol(object):
             component (Component): The component which the procedure being added is for.
             start (str, optional): The start time of the procedure relative to the start of the protocol, such as
                 ``"5 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to ``"0 seconds"``, *i.e.* the
-                beginning of the protocol. 
+                beginning of the protocol.
             stop (str, optional): The stop time of the procedure relative to the start of the protocol, such as
                 ``"30 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to None.
             duration (str, optional): The duration of the procedure, such as "1 hour". May also be a
@@ -284,10 +284,10 @@ class Protocol(object):
 
             if not hasattr(component, kwarg):
                 raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}.")
-            
+
             if type(component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
                 raise ValueError(Fore.RED + f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
-            
+
             elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
                 raise ValueError(Fore.RED + f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}")
 
@@ -329,7 +329,7 @@ class Protocol(object):
 
     def compile(self, warnings=True):
         '''Compile the protocol into a dict of devices and their procedures.
-            
+
         Args:
             warnings (bool, optional): Whether to warn the user of automatic inferences and non-fatal issues.
                 Default (and *highly* recommended setting) is True.
@@ -340,7 +340,7 @@ class Protocol(object):
             and "params", whose value is a dict of parameters for the procedure.
 
         Raises:
-            RuntimeError: When compilation fails. 
+            RuntimeError: When compilation fails.
         '''
         output = {}
 
@@ -366,8 +366,8 @@ class Protocol(object):
 
             # check for conflicting continuous procedures
             if len([x for x in component_procedures if x["start"] is None and x["stop"] is None]) > 1:
-                raise RuntimeError(Fore.RED + (f"{component} cannot have two procedures for the entire duration of the protocol. " 
-                    "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "  
+                raise RuntimeError(Fore.RED + (f"{component} cannot have two procedures for the entire duration of the protocol. "
+                    "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "
                     "Otherwise, reduce ambiguity by defining start and stop times for each procedure."))
 
             for i, procedure in enumerate(component_procedures):
@@ -382,7 +382,7 @@ class Protocol(object):
                 # make sure that the end time isn't outside the duration
                 if self.duration is not None and procedure["stop"] is not None and procedure["stop"] > self.duration:
                     raise ValueError(Fore.RED + f"Procedure cannot end at {procedure['stop']}, which is outside the duration of the experiment ({self.duration}).")
-                
+
                 # automatically infer start and stop times
                 try:
                     if component_procedures[i+1]["start"] == ureg.parse_expression("0 seconds"):
@@ -393,13 +393,13 @@ class Protocol(object):
                 except IndexError:
                     if procedure["stop"] is None:
                         if warnings: warn(Fore.YELLOW + f"Automatically inferring stop for {procedure['component']} as the end of the protocol. To override, provide stop in your call to add(). To suppress this warning, use warnings=False.")
-                        procedure["stop"] = self.duration 
+                        procedure["stop"] = self.duration
 
             # give the component instructions at all times
             compiled = []
             for i, procedure in enumerate(component_procedures):
                 compiled.append(dict(time=procedure["start"], params=procedure["params"]))
-                
+
                 # if the procedure is over at the same time as the next procedure begins, do go back to the base state
                 try:
                     if component_procedures[i+1]["start"] == procedure["stop"]:
@@ -439,7 +439,7 @@ class Protocol(object):
 
         Note:
             Each value of a parameter will have a consistent color, but some colors may be reused.
-        
+
         Args:
             warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
 
@@ -481,4 +481,3 @@ class Protocol(object):
         '''To be documented.
         '''
         print(requests.post(str(address), data=dict(protocol_json=self.json())).text)
-
