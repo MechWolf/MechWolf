@@ -14,7 +14,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 
 # -- Project information -----------------------------------------------------
@@ -66,7 +66,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'app.py', 'client.py']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -83,7 +83,9 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'logo_only': True,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -100,11 +102,13 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
+html_logo = "../../logo/wordmark.pdf"
+
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'FlowChemistrydoc'
+htmlhelp_basename = 'MechWolfdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -131,7 +135,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'FlowChemistry.tex', 'Flow Chemistry Documentation',
+    (master_doc, 'MechWolf.tex', 'MechWolf Documentation',
      'Benjamin Lee and Alex Mijalis', 'manual'),
 ]
 
@@ -141,7 +145,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'flowchemistry', 'Flow Chemistry Documentation',
+    (master_doc, 'mechwolf', 'MechWolf Documentation',
      [author], 1)
 ]
 
@@ -152,8 +156,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'FlowChemistry', 'Flow Chemistry Documentation',
-     author, 'FlowChemistry', 'One line description of project.',
+    (master_doc, 'MechWolf', 'MechWolf Documentation',
+     author, 'MechWolf', 'One line description of project.',
      'Miscellaneous'),
 ]
 

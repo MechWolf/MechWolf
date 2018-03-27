@@ -6,7 +6,7 @@
 MechWolf: Continuous Flow Process Description, Analysis, and Automation
 =======================================================================
 
-.. image:: ../logo/wordmark10x.png
+.. image:: ../../logo/wordmark10x.png
     :width: 490px
     :align: center
     :height: 135px
@@ -53,7 +53,7 @@ doesn't actually do anything, we're going to need to tell MechWolf what the
 configuration of the components is. The :literal:`\`` s are there to surround
 chemical names that we want resolved; we'll see how that works shortly.
 
-We can do this by creating an ``Apparatus`` object. To add connections between
+We can do this by creating an :class:`~mechwolf.mechwolf.Apparatus` object. To add connections between
 components, we need to tell MechWolf three things: where the connection is from,
 where it's going, and how they are actually connected. Tubing type can have a
 significant effect on reproducibility, so we require that you explicitly specify
@@ -76,8 +76,8 @@ but it is actually easy in practice::
     A.add(vessel_1, pump_1, tube)
     A.add(pump_1, vessel_2, tube)
 
-With the :class:`~flow.Apparatus` object, we can do *so* much. If we call
-:meth:`~flow.Apparatus.summarize()`, we'll get a clean tabular describe of
+With the :class:`~mechwolf.Apparatus` object, we can do *so* much. If we call
+:meth:`~mechwolf.Apparatus.summarize()`, we'll get a clean tabular describe of
 our apparatus like this with summary values automatically computed::
 
     ┌Components┬────────┐
@@ -97,13 +97,13 @@ our apparatus like this with summary values automatically computed::
     └──────────┴──────────┴───────────────────┴────────────────┴────────────────┴───────────────────┴──────────┴──────┘
 
 
-But wait, there's more! :meth:`~flow.Apparatus.visualize()` will create a
+But wait, there's more! :meth:`~mechwolf.Apparatus.visualize()` will create a
 diagram of the network:
 
 .. image:: example_apparatus_with_labels.png
     :align: center
 
-And that's not all either. :meth:`~flow.Apparatus.describe()` will generate an
+And that's not all either. :meth:`~mechwolf.Apparatus.describe()` will generate an
 SI-ready description of the apparatus:
 
 .. code-block:: text
@@ -121,15 +121,14 @@ National Cancer Institute's resolver
 
 Now that we've gone over how to define an apparatus and all the different ways
 to inspect it, let's make it actually do something. We do that with a
+:class:`~mechwolf.Protocol`, a list of procedures defined for an
+:class:`~mechwolf.Apparatus`.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   flow
-   components
-   app
-   client
+.. automodule:: mechwolf
 
 Indices and tables
 ==================

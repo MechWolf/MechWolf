@@ -41,7 +41,9 @@ setup(
         "vedis",
         "schedule",
         "requests",
-        "sphinx"],
+        "sphinx",
+        "numpy",
+        "pandas"],
 
     # entry_points={  # Optional
     #     'console_scripts': [

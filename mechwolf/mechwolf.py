@@ -8,17 +8,14 @@ from datetime import datetime, timedelta
 from graphviz import Digraph
 import networkx as nx
 from terminaltables import SingleTable
-from pint import UnitRegistry
 import plotly as py
 import plotly.figure_factory as ff
 from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
-from colorama import init, Fore, Back, Style
+from colorama import Fore
 import requests
 
-from components import *
-
-# initialize colored printing
-init(autoreset=True)
+from . import ureg
+from .components import *
 
 class Apparatus(object):
     '''A unique network of components.
@@ -68,8 +65,10 @@ class Apparatus(object):
     def visualize(self, title=True, label_tubes=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho",  nodesep="1"), format="pdf", filename=None):
         '''Generates a visualization of the graph of an apparatus.
 
-        For full list of acceptable Graphviz attributes for see `here <http://www.graphviz.org/doc/info/attrs.html>`_
-        and `here <http://graphviz.readthedocs.io/en/stable/manual.html#attributes>`_.
+        For full list of acceptable Graphviz attributes for see `the
+        graphviz.org docs <http://www.graphviz.org/doc/info/attrs.html>`_ and
+        `its Python API's docs
+        <http://graphviz.readthedocs.io/en/stable/manual.html#attributes>`_.
 
         Args:
             title (bool, optional): Whether to show the title in the output. Defaults to True.

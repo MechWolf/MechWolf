@@ -1,4 +1,4 @@
-from components import *
+from .components import *
 
 from json import dumps, loads
 import time
@@ -23,10 +23,10 @@ async def execute_procedure(protocol_id, procedure, session):
         me.update()
         await log(session, dumps(dict(
                     protocol_id=protocol_id,
-                    timestamp=time.time(), 
-                    success=True, 
+                    timestamp=time.time(),
+                    success=True,
                     procedure=procedure)))
-        
+
 async def get_protocol(session):
     try:
         async with session.post(f"{SERVER}/protocol", data=dict(device_id=DEVICE_NAME)) as resp:
@@ -36,7 +36,7 @@ async def get_protocol(session):
                 return response["protocol_id"], response[DEVICE_NAME]
             except:
                 return "", response
-    
+
 
     except aiohttp.client_exceptions.ClientConnectorError:
         print(Fore.YELLOW + "Unable to connect to server.")
@@ -114,7 +114,7 @@ async def main(loop):
 
             # upon completion, alert the user and begin the loop again
             print(Fore.GREEN + "Protocol executed successfully.")
-            
+
             if len(db.List("log")):
                 print("Submitting failed logs")
                 for i in range(len(db.List("log"))):
@@ -147,9 +147,9 @@ if __name__ == "__main__":
 
     # create the client object
     class_type = globals()[config["device_info"]["class"]]
-    
+
     if config["device_info"]["settings"]:
-       me = class_type(name=DEVICE_NAME, **config["device_info"]["settings"]) 
+       me = class_type(name=DEVICE_NAME, **config["device_info"]["settings"])
     else:
         me = class_type(name=DEVICE_NAME,)
 
