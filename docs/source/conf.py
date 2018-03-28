@@ -83,9 +83,9 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {
-    'logo_only': True,
-}
+# html_theme_options = {
+    # 'logo_only': True,
+# }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -165,3 +165,4 @@ texinfo_documents = [
 # -- Extension configuration -------------------------------------------------
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 autodoc_member_order = 'bysource'
+add_module_names = False

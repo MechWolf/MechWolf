@@ -53,7 +53,7 @@ doesn't actually do anything, we're going to need to tell MechWolf what the
 configuration of the components is. The :literal:`\`` s are there to surround
 chemical names that we want resolved; we'll see how that works shortly.
 
-We can do this by creating an :class:`~mechwolf.mechwolf.Apparatus` object. To add connections between
+We can do this by creating an :class:`~mechwolf.Apparatus` object. To add connections between
 components, we need to tell MechWolf three things: where the connection is from,
 where it's going, and how they are actually connected. Tubing type can have a
 significant effect on reproducibility, so we require that you explicitly specify
@@ -124,11 +124,14 @@ to inspect it, let's make it actually do something. We do that with a
 :class:`~mechwolf.Protocol`, a list of procedures defined for an
 :class:`~mechwolf.Apparatus`.
 
+Table of Contents
+=================
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-.. automodule:: mechwolf
+   mechwolf
+   mechwolf.components
+
 
 Indices and tables
 ==================

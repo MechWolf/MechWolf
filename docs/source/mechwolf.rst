@@ -1,20 +1,12 @@
 mechwolf package
 ================
 
-Submodules
-----------
+Apparatus
+---------
+.. autoclass:: mechwolf.Apparatus
+   :members:
 
-.. toctree::
-
-   mechwolf.app
-   mechwolf.client
-   mechwolf.components
-   mechwolf.mechwolf
-
-Module contents
----------------
-
-.. automodule:: mechwolf
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Protocol
+--------
+.. autoclass:: mechwolf.Protocol
+   :members:
