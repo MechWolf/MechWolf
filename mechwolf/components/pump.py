@@ -1,4 +1,5 @@
 from .component import ActiveComponent
+from . import ureg
 
 class Pump(ActiveComponent):
     '''A pumping device whose primary attribute is that it moves fluid.
@@ -12,7 +13,7 @@ class Pump(ActiveComponent):
     '''
     def __init__(self, name=None):
         super().__init__(name=name)
-        self.rate = "0 ml/min"
+        self.rate = ureg.parse_expression("0 ml/min")
 
     def base_state(self):
         '''Returns the base state of a pump'''

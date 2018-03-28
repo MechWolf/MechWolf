@@ -1,9 +1,7 @@
 from warnings import warn
 from abc import ABCMeta, abstractmethod
-from colorama import init, Fore, Back, Style
+from colorama import Fore
 
-# initialize colored printing
-init(autoreset=True)
 
 class Component(object):
     """One of the individial, irreducible parts of a flow chemistry setup.
