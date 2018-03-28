@@ -479,4 +479,10 @@ class Protocol(object):
     def execute(self, address="http://127.0.0.1:5000/submit_protocol"):
         '''To be documented.
         '''
+
+        # Ensure that execution isn't happening on objects that can't be updated
+        for component in [x for x in list(self.apparatus.components) if issubclass(x.__class__, ActiveComponent)]:
+            if not callable(getattr(component, "update", None)):
+                raise RuntimeError(Fore.Red + "Attempting to execute protocol on {component}, which does not have an update() method. Aborted.")
+
         print(requests.post(str(address), data=dict(protocol_json=self.json())).text)

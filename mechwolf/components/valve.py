@@ -9,6 +9,3 @@ class Valve(ActiveComponent):
     def base_state(self):
         # an arbitrary state
         return dict(setting=list(self.mapping.items())[0][1])
-
-    def update(self):
-        print(f"Setting at {self.setting}")
