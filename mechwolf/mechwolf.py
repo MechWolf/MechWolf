@@ -108,7 +108,6 @@ class Apparatus(object):
 
     def summarize(self):
         '''Prints a summary table of the apparatus.'''
-        self.validate() # ensure apparatus is valid
         summary = [["Name", "Type"]] # header rows of components table
         for component in list(self.components):
             summary.append([component.name, component.__class__.__name__])
@@ -146,6 +145,7 @@ class Apparatus(object):
         table.title = "Tubing"
         table.inner_footing_row_border = "True"
         print(table.table)
+        return table.table
 
     def validate(self):
         '''Ensures that the apparatus is valid.
