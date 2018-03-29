@@ -36,10 +36,10 @@ name anyway.
 Three Minutes to MechWolf
 =========================
 
-Let's say you're trying to automate an apparatus consisting of a vessel of water
-being pumped into another vessel of water. The basic level of organization in
-MechWolf are individual components, such as the vessels and pumps.
-Let's go ahead and create them::
+Let's say you're trying to automate an apparatus consisting of a vessel of
+ethanol and water being pumped into another vessel. The basic level of
+organization in MechWolf are individual components, such as the vessels and
+pumps. Let's go ahead and create them::
 
     from mechwolf.components import Vessel, Pump
 
