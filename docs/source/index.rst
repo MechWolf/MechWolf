@@ -78,23 +78,10 @@ but it is actually easy in practice::
 
 With the :class:`~mechwolf.Apparatus` object, we can do *so* much. If we call
 :meth:`~mechwolf.Apparatus.summarize()`, we'll get a clean tabular describe of
-our apparatus like this with summary values automatically computed::
+our apparatus like this with summary values automatically computed:
 
-    ┌Components┬────────┐
-    │ Name     │ Type   │
-    ├──────────┼────────┤
-    │ pump_1   │ Pump   │
-    │ Vessel_0 │ Vessel │
-    │ Vessel_1 │ Vessel │
-    └──────────┴────────┘
-    ┌Tubing────┬──────────┬───────────────────┬────────────────┬────────────────┬───────────────────┬──────────┬──────┐
-    │ From     │ To       │ Length            │ Inner Diameter │ Outer Diameter │ Volume            │ Material │ Temp │
-    ├──────────┼──────────┼───────────────────┼────────────────┼────────────────┼───────────────────┼──────────┼──────┤
-    │ Vessel_0 │ pump_1   │ 1 meter           │ 0.0625 inch    │ 0.125 inch     │ 1.9793 milliliter │ PVC      │ None │
-    │ pump_1   │ Vessel_1 │ 1 meter           │ 0.0625 inch    │ 0.125 inch     │ 1.9793 milliliter │ PVC      │ None │
-    ├──────────┼──────────┼───────────────────┼────────────────┼────────────────┼───────────────────┼──────────┼──────┤
-    │          │ Total    │ 2000.0 millimeter │ n/a            │ n/a            │ 3.9587 milliliter │ n/a      │      │
-    └──────────┴──────────┴───────────────────┴────────────────┴────────────────┴───────────────────┴──────────┴──────┘
+.. image:: example_table.png
+    :align: center
 
 
 But wait, there's more! :meth:`~mechwolf.Apparatus.visualize()` will create a
