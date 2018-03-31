@@ -36,8 +36,8 @@ class ActiveComponent(Component, metaclass=ABCMeta):
     All components beind manipulated in an :class:`flow.Protocol` must be of
     type :class:`ActiveComponent`.
 
-    Warning:
-        Users should not directly instantiate an :class:`ActiveComponent`
+    Note:
+        Users can not directly instantiate an :class:`ActiveComponent`
         because it is an abstract base class, not a functioning laboratory
         instrument.
 

@@ -145,7 +145,6 @@ class Apparatus(object):
         table.title = "Tubing"
         table.inner_footing_row_border = "True"
         print(table.table)
-        return table.table
 
     def validate(self):
         '''Ensures that the apparatus is valid.
@@ -326,7 +325,7 @@ class Protocol(object):
         # add the procedure to the procedure list
         self.procedures.append(dict(start=start, stop=stop, component=component, params=kwargs))
 
-    def compile(self, warnings=True):
+    def compile(self, warnings=True, _visualization=False):
         '''Compile the protocol into a dict of devices and their procedures.
 
         Args:
@@ -394,20 +393,24 @@ class Protocol(object):
                         if warnings: warn(Fore.YELLOW + f"Automatically inferring stop for {procedure['component']} as the end of the protocol. To override, provide stop in your call to add(). To suppress this warning, use warnings=False.")
                         procedure["stop"] = self.duration
 
+
             # give the component instructions at all times
             compiled = []
             for i, procedure in enumerate(component_procedures):
-                compiled.append(dict(time=procedure["start"], params=procedure["params"]))
+                if _visualization:
+                    compiled.append(dict(start=procedure["start"], stop=procedure["stop"], params=procedure["params"]))
+                else:
+                    compiled.append(dict(time=procedure["start"], params=procedure["params"]))
 
-                # if the procedure is over at the same time as the next procedure begins, do go back to the base state
-                try:
-                    if component_procedures[i+1]["start"] == procedure["stop"]:
-                        continue
-                except IndexError:
-                    pass
+                    # if the procedure is over at the same time as the next procedure begins, don't go back to the base state
+                    try:
+                        if component_procedures[i+1]["start"] == procedure["stop"]:
+                            continue
+                    except IndexError:
+                        pass
 
-                # otherwise, go back to base state
-                compiled.append(dict(time=procedure["stop"], params=component.base_state()))
+                    # otherwise, go back to base state
+                    compiled.append(dict(time=procedure["stop"], params=component.base_state()))
 
             output[component] = compiled
 
@@ -449,12 +452,12 @@ class Protocol(object):
             Same as :meth:`Protocol.compile`.
         '''
         df = []
-        for component, procedures in self.compile(warnings=warnings).items():
+        for component, procedures in self.compile(warnings=warnings, _visualization=True).items():
             for procedure in procedures:
                 df.append(dict(
                     Task=component.name,
-                    Start=str(datetime(2000, 1, 1) + procedure["start"].to_timedelta()),
-                    Finish=str(datetime(2000, 1, 1) + procedure["stop"].to_timedelta()),
+                    Start=str(datetime(1970, 1, 1) + procedure["start"].to_timedelta()),
+                    Finish=str(datetime(1970, 1, 1) + procedure["stop"].to_timedelta()),
                     Resource=str(procedure["params"])))
         df.sort(key=lambda x: x["Task"])
 
