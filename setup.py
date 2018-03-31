@@ -44,6 +44,7 @@ setup(
         "sphinx",
         "numpy",
         "pandas"],
+    scripts=["scripts/mechwolf-client", "scripts/mechwolf-server"],
 
     # entry_points={  # Optional
     #     'console_scripts': [
