@@ -10,3 +10,4 @@ init(autoreset=True)
 # to avoid circular import
 from .mechwolf import Apparatus, Protocol
 from .components import *
+from .validate_component import validate_component

@@ -9,14 +9,22 @@ what you need. In that case, you'll have to create your own component. Here's ho
 
 1. **Decide what kind of component it is.**
     If you're trying to make a new kind of pump, for example, you'll want to be
-    inheriting from :class:`~mechwolf.components.pump.Pump`.
+    inheriting from :class:`~mechwolf.components.pump.Pump`. For components
+    being controlled (i.e. not aliases of
+    :class:`~mechwolf.components.component.Component`), you'll have to create a
+    subclass of :class:`~mechwolf.components.component.ActiveComponent`. If you
+    are only creating an alias of :func:`~mechwolf.validate_component`, you can
+    skip 4–6.
 
 2. **Create a new class.**
     If you're struggling, see `the official Python docs
     <https://docs.python.org/3/tutorial/classes.html>`_, a handy `tutorial on
     classes
     <https://www.tutorialspoint.com/python3/python_classes_objects.htm>`_, or
-    look at MechWolf's source code.
+    look at MechWolf's source code. Make sure to add ``name`` as an argument to
+    ``__init__`` and the line ``super().__init__(name=name)``, which tells
+    Python to pass the name argument up to the
+    :class:`~mechwolf.components.component.ActiveComponent` class.
 
 3. **Give the component its attributes.**
     This means that anything that you will be using as keywords during your
@@ -44,7 +52,10 @@ what you need. In that case, you'll have to create your own component. Here's ho
     your script. The object that is being run on your client *would* need to
     know that though, so the object has to be able to support both uses.
 
-6. **Test thoroughly.**
+6. **Test thoroughly with** :func:`~mechwolf.validate_component`.
+    For your convenience, the :func:`~mechwolf.validate_component` function will
+    take an instance of your class (not the class itself) and verify that it
+    meets the requirements to be used in a protocol.
 
 7. **Contribute to GitHub** *(optional)*
     Odds are you're not the only person in the world who could use the component
@@ -107,3 +118,16 @@ And finally, a way to update it. Here, we'll have to rely on our imagination::
         def update(self):
             # magic goes here
             pass
+
+Saving it as ``philosophersstone.py``, we can then use
+:func:`~mechwolf.validate_component` to test if instances of the class are
+valid::
+
+    >>> import mechwolf as mw
+    >>> from philosophersstone import PhilosophersStone
+    >>> stone = PhilosophersStone(name="stone")
+    >>> mw.validate_component(stone)
+    True
+
+:func:`~mechwolf.validate_component` returned ``True``, meaning that the
+philosopher's stone class is facially valid.

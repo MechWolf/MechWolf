@@ -10,3 +10,7 @@ Protocol
 --------
 .. autoclass:: mechwolf.Protocol
    :members:
+
+Utilities
+---------
+.. autofunction:: mechwolf.validate_component
