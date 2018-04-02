@@ -1,6 +1,6 @@
+from colorama import Fore
 from .components import ActiveComponent
 from . import ureg
-from colorama import Fore
 
 def validate_component(component):
     '''Checks if a component's class is valid.

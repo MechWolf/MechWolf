@@ -1,6 +1,7 @@
 from math import pi
-from . import ureg
 from colorama import Fore
+from warnings import warn
+from . import ureg
 
 class Tube(object):
     """A tube.

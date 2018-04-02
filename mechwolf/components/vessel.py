@@ -1,7 +1,11 @@
-from .component import Component
+import re
+from warnings import warn
+
 from cirpy import Molecule
 from terminaltables import SingleTable
-import re
+from colorama import Fore
+
+from .component import Component
 
 class Vessel(Component):
     def __init__(self, description, name=None, resolve=True, warnings=False):

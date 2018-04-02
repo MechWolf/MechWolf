@@ -4,7 +4,6 @@ import time
 import json
 import yaml
 from warnings import warn
-from datetime import datetime, timedelta
 
 from graphviz import Digraph
 import networkx as nx
@@ -64,7 +63,7 @@ class Apparatus(object):
         self.network.append((from_component, to_component, tube))
         self.components.update([from_component, to_component])
 
-    def visualize(self, title=True, label_tubes=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho",  nodesep="1"), format="pdf", filename=None):
+    def visualize(self, title=True, label_tubes=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho", nodesep="1"), file_format="pdf", filename=None):
         '''Generates a visualization of the graph of an apparatus.
 
         For full list of acceptable Graphviz attributes for see `the
@@ -82,7 +81,7 @@ class Apparatus(object):
                 {"attribute": "value"}.
             graph_attr (dict, optional): Controls the appearance of the graph. Must be of the form
                 {"attribute": "value"}. Defaults to orthogonal splines and a node separation of 1.
-            format (str, optional): The output format of the graph, either "pdf" or "png". Defaults to "pdf".
+            file_format (str, optional): The output format of the graph, either "pdf" or "png". Defaults to "pdf".
             filename (str, optional): The name of the output file. Defaults to the name of the apparatus.
             '''
 
@@ -517,6 +516,6 @@ class Protocol(object):
 
         # Ensure that execution isn't happening on invalid components
         if not all([validate_component(x["component"]) for x in self.procedures]):
-            raise RuntimeError(Fore.Red + "Attempting to execute protocol on  invalid component {component}. Aborted.")
+            raise RuntimeError(Fore.RED + "Attempting to execute protocol on  invalid component {component}. Aborted.")
 
         print(requests.post(str(address), data=dict(protocol_json=self.json())).text)

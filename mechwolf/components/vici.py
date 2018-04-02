@@ -24,5 +24,4 @@ class ViciValve(Valve):
         if response:
             position = int(response[2:4]) # Response is in the form 'CPXX\r'
             return position
-        else:
-            return False
+        return False
