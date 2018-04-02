@@ -2,6 +2,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 import time
 import json
+import yaml
 from warnings import warn
 from datetime import datetime, timedelta
 
@@ -94,7 +95,7 @@ class Apparatus(object):
 
         # go from left to right adding components and their tubing connections
         f.attr(rankdir='LR')
-        f.attr('node', shape='circle')
+        f.attr('node', shape='box')
         for x in self.network:
             tube_label = f"Length {x[2].length}\nID {x[2].ID}\nOD {x[2].OD}" if label_tubes else ""
             f.edge(x[0].name, x[1].name, label=tube_label)
@@ -289,7 +290,7 @@ class Protocol(object):
                     raise TypeError(Fore.RED + "Must add a Component object.")
 
                 if not hasattr(_component, kwarg):
-                    raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {_component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}.")
+                    raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {_component}. Valid attributes are {[x for x in vars(_component).keys() if x != 'name']}.")
 
                 if type(_component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != _component.__dict__[kwarg].dimensionality:
                     raise ValueError(Fore.RED + f"Bad dimensionality of {kwarg} for {_component}. Expected dimensionality of {_component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
@@ -426,13 +427,13 @@ class Protocol(object):
         return output
 
     def json(self, warnings=True):
-        '''Compiles protocol and outputs to json
+        '''Compiles protocol and outputs to JSON.
 
         Args:
             warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
 
         Returns:
-            Json-formatted str of the compiled protocol.
+            JSON-formatted str of the compiled protocol.
 
         Raises:
             Same as :meth:`Protocol.compile`.
@@ -443,6 +444,23 @@ class Protocol(object):
                 procedure["time"] = procedure["time"].to_timedelta().total_seconds()
         compiled = {k.name: v for (k, v) in compiled.items()}
         return json.dumps(compiled, indent=4, sort_keys=True)
+
+    def yaml(self, warnings=True):
+        '''Compiles protocol and outputs to YAML.
+
+        Internally, this is a conversion of the output of :meth:`Protocol.json`
+        for the purpose of enhanced human readability.
+
+        Args:
+            warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
+
+        Returns:
+            YAML-formatted str of the compiled protocol.
+
+        Raises:
+            Same as :meth:`Protocol.compile`.
+        '''
+        return yaml.safe_dump(json.loads(self.json(warnings=warnings)))
 
     def visualize(self, warnings=True):
         '''Generates a Gantt plot visualization of the protocol.
