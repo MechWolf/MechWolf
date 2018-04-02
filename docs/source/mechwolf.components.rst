@@ -1,82 +1,62 @@
 mechwolf.components package
 ===========================
 
-components.component module
+component module
 ------------------------------------
 
 .. automodule:: mechwolf.components.component
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-components.dummy module
---------------------------------
+mixer module
+------------------------------------
 
-.. automodule:: mechwolf.components.dummy
+.. automodule:: mechwolf.components.mixer
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-components.pump module
+pump module
 -------------------------------
 
 .. automodule:: mechwolf.components.pump
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-components.sensor module
+sensor module
 ---------------------------------
 
 .. automodule:: mechwolf.components.sensor
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-components.tempcontrol module
+tempcontrol module
 --------------------------------------
 
 .. automodule:: mechwolf.components.tempcontrol
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-components.tube module
+tube module
 -------------------------------
 
 .. automodule:: mechwolf.components.tube
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-components.valve module
+valve module
 --------------------------------
 
 .. automodule:: mechwolf.components.valve
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-components.varian module
+varian module
 ---------------------------------
 
 .. automodule:: mechwolf.components.varian
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-components.vessel module
+vessel module
 ---------------------------------
 
 .. automodule:: mechwolf.components.vessel
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-components.vici module
+vici module
 -------------------------------
 
 .. automodule:: mechwolf.components.vici
     :members:
-    :undoc-members:
-    :show-inheritance:

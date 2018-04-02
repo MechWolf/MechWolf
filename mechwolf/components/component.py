@@ -6,12 +6,12 @@ from colorama import Fore
 class Component(object):
     """One of the individial, irreducible parts of a flow chemistry setup.
 
-    All components in an :class:`flow.Apparatus` must be of type
+    All components in an :class:`~mechwolf.Apparatus` must be of type
     :class:`Component`. However, it is unlikely that a user will directly
     instantiate a :class:`Component`.
 
     Attributes:
-        name (str, optional): the name of the component.
+        name (str, optional): The name of the component.
 
     Raises:
         ValueError: When a component has the same name as another component.
@@ -36,7 +36,7 @@ class Component(object):
 class ActiveComponent(Component, metaclass=ABCMeta):
     """A connected, controllable component.
 
-    All components beind manipulated in an :class:`flow.Protocol` must be of
+    All components being manipulated in a :class:`~mechwolf.Protocol` must be of
     type :class:`ActiveComponent`.
 
     Note:
@@ -45,7 +45,7 @@ class ActiveComponent(Component, metaclass=ABCMeta):
         instrument.
 
      Attributes:
-        Name (str, optional): the name of the component.
+        name (str, optional): The name of the component.
 
     """
     _id_counter = 0

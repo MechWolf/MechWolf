@@ -41,7 +41,8 @@ release = ''
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    'sphinx.ext.intersphinx'
+    'sphinx.ext.intersphinx',
+    # 'sphinxcontrib.fulltoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -84,8 +85,16 @@ html_theme = 'alabaster'
 # documentation.
 #
 # html_theme_options = {
-    # 'logo_only': True,
+#     'logo_only': True,
 # }
+html_theme_options = {
+    "fixed_sidebar": True,
+    "sidebar_collapse": False,
+    "github_user": "benjamin-lee",
+    "github_repo": "MechWolf",
+    "show_related": True,
+
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
