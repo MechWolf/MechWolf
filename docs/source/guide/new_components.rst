@@ -131,3 +131,11 @@ valid::
 
 :func:`~mechwolf.validate_component` returned ``True``, meaning that the
 philosopher's stone class is facially valid.
+
+A Note on Naming
+----------------
+
+Be sure to follow MechWolf's naming convention, especially if you plan on
+contributing to the GitHub. Classes are named in CamelCase format in keeping
+with `PEP 08's class name specification
+<https://www.python.org/dev/peps/pep-0008/#class-names>`_.
