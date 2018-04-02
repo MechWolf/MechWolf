@@ -17,6 +17,7 @@ import requests
 
 from . import ureg
 from .components import *
+from .validate_component import validate_component
 
 class Apparatus(object):
     '''A unique network of components.
@@ -126,7 +127,7 @@ class Apparatus(object):
             total_volume += tube.volume
 
         # summarize the tubing
-        summary = [["From", "To", "Length", "Inner Diameter", "Outer Diameter", "Volume", "Material", "Temp"]] # header row
+        summary = [["From", "To", "Length", "Inner Diameter", "Outer Diameter", "Volume", "Material"]] # header row
         for edge in self.network:
             summary.append([edge[0].name,
                             edge[1].name,
@@ -135,10 +136,6 @@ class Apparatus(object):
                             round(edge[2].OD, 4),
                             round(edge[2].volume.to("ml"), 4),
                             edge[2].material])
-            if edge[2].temp is not None:
-                summary[-1].append(round(edge[2].temp, 4))
-            else:
-                summary[-1].append(None)
         summary.append(["", "Total", round(total_length, 4), "n/a", "n/a", round(total_volume.to("ml"), 4), "n/a"]) # footer row
 
         # generate the tubing table
@@ -169,7 +166,7 @@ class Apparatus(object):
         for valve in list(set([x[0] for x in self.network if issubclass(x[0].__class__, Valve)])):
             for name in valve.mapping.keys():
                 # ensure that valve's mapping components are part of apparatus
-                if name not in valve.used_names:
+                if name not in [x.name for x in list(self.components)]:
                     raise RuntimeError(Fore.RED + f"Invalid mapping for Valve {valve}. No component named {name} exists.")
             # no more than one output from a valve (might have to change this)
             if len([x for x in self.network if x[0] == valve]) != 1:
@@ -243,7 +240,7 @@ class Protocol(object):
         self.duration = duration
 
     def add(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
-        '''Adds a procedure to the protocol
+        '''Adds a procedure to the protocol.
 
         Args:
 
@@ -256,10 +253,13 @@ class Protocol(object):
                 ``"30 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to None.
             duration (str, optional): The duration of the procedure, such as "1 hour". May also be a
                 :class:`datetime.timedelta`. Defaults to None.
+            **kwargs: The state of the component for the procedure.
+
+        Warning:
+            If stop and duration are both None, the procedure's stop time will be inferred as the end of the protocol.
 
         Note:
             Only one of stop and duration may be given.
-            If stop and duration are both None, the procedure's stop time will be inferred as the end of the protocol.
 
         Raises:
             TypeError: A component is not of the correct type (*i.e.* a Component object)
@@ -273,21 +273,22 @@ class Protocol(object):
             component = [component]
 
         for _component in component:
+            _start, _stop, _duration = start, stop, duration
             # make sure that the component being added to the protocol is part of the apparatus
             if _component not in self.apparatus.components:
                 raise RuntimeError(Fore.RED + f"{_component} is not a component of {self.apparatus.name}.")
 
             # perform the mapping for valves
             if issubclass(_component.__class__, Valve) and kwargs.get("setting") is not None:
-                kwargs["setting"] = _component.mapping[kwargs["setting"]]
+                kwargs["setting"] = _component.mapping[kwargs["setting"].name]
 
             # make sure the component is valid to add
             for kwarg, value in kwargs.items():
                 if isinstance(_component, type):
                     raise TypeError(Fore.RED + f"Must add an instance of {_component}, not the class itself.")
 
-                if not issubclass(_component.__class__, Component):
-                    raise TypeError(Fore.RED + "Must add a Component object.")
+                if not issubclass(_component.__class__, ActiveComponent):
+                    raise TypeError(Fore.RED + "Must add a ActiveComponent object.")
 
                 if not hasattr(_component, kwarg):
                     raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {_component}. Valid attributes are {[x for x in vars(_component).keys() if x != 'name']}.")
@@ -298,28 +299,30 @@ class Protocol(object):
                 elif type(_component.__dict__[kwarg]) != type(value) and type(_component.__dict__[kwarg]) != ureg.Quantity:
                     raise ValueError(Fore.RED + f"Bad type matching. Expected {kwarg} to be {type(_component.__dict__[kwarg])} but got {value}, which is of type {type(value)}")
 
-            if stop is not None and duration is not None:
+            if _stop is not None and _duration is not None:
                 raise RuntimeError(Fore.RED + "Must provide one of stop and duration, not both.")
 
             # parse the start time if given
-            if isinstance(start, timedelta):
-                _start = str(start.total_seconds()) + " seconds"
-            _start = ureg.parse_expression(start)
+            if isinstance(_start, timedelta):
+                _start = str(_start.total_seconds()) + " seconds"
+            _start = ureg.parse_expression(_start)
 
             # parse duration if given
-            if duration is not None:
-                if isinstance(duration, timedelta):
-                    duration = str(duration.total_seconds()) + " seconds"
-                _stop = _start + ureg.parse_expression(duration)
+            if _duration is not None:
+                if isinstance(_duration, timedelta):
+                    _duration = str(_duration.total_seconds()) + " seconds"
+                _stop = _start + ureg.parse_expression(_duration)
 
             # determine stop time
-            if _stop is None and self.duration is None and duration is None:
+            if _stop is None and self.duration is None and _duration is None:
                 raise RuntimeError(Fore.RED + "Must specify protocol duration during instantiation in order to omit stop and duration. " \
                     f"To automatically set duration of protocol as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
-            elif stop is not None:
+            if _stop is None:
+                _stop = stop
+            elif _stop is not None:
                 if isinstance(stop, timedelta):
-                    _stop = str(stop.total_seconds()) + " seconds"
-                if type(stop) == str:
+                    _stop = str(_stop.total_seconds()) + " seconds"
+                if type(_stop) == str:
                     _stop = ureg.parse_expression(stop)
 
             # a little magic for temperature controllers
@@ -506,12 +509,14 @@ class Protocol(object):
         py.offline.plot(fig, filename=f'{self.name}.html')
 
     def execute(self, address="http://127.0.0.1:5000/submit_protocol"):
-        '''To be documented.
-        '''
+        '''Executes the procedure
 
-        # Ensure that execution isn't happening on objects that can't be updated
-        for component in [x for x in list(self.apparatus.components) if issubclass(x.__class__, ActiveComponent)]:
-            if not callable(getattr(component, "update", None)):
-                raise RuntimeError(Fore.Red + "Attempting to execute protocol on {component}, which does not have an update() method. Aborted.")
+        Note:
+            Must only contain :class:`~mechwolf.components.component.ActiveComponent` s that have an
+            update method, i.e. real components.'''
+
+        # Ensure that execution isn't happening on invalid components
+        if not all([validate_component(x["component"]) for x in self.procedures]):
+            raise RuntimeError(Fore.Red + "Attempting to execute protocol on  invalid component {component}. Aborted.")
 
         print(requests.post(str(address), data=dict(protocol_json=self.json())).text)

@@ -1,4 +1,4 @@
-from .components import *
+from mechwolf.components import *
 
 from json import dumps, loads
 import time

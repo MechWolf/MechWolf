@@ -52,7 +52,7 @@ class ActiveComponent(Component, metaclass=ABCMeta):
 
     def __init__(self, name=None):
         if name is None:
-            raise ValueError(Fore.RED + "No name given for ActiveComponent. Specify the name of the component by adding name=\"[name of component]\" to the line that generated this error.")
+            raise ValueError(Fore.RED + "No name given for ActiveComponent. Specify the name of the component by adding name=\"[name of component]\".")
         super().__init__(name=name)
 
     def update_from_params(self, params):
