@@ -12,7 +12,6 @@ pump_2 = mw.Pump(name="pump_2")
 # define the mixer
 mixer = mw.TMixer()
 
-
 # same tube specs for all tubes
 tube = mw.Tube(
     length="1 m",
