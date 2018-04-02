@@ -109,3 +109,6 @@ ENV/
 _build
 _static
 _templates
+
+# Graphviz PDFs
+.gv.pdf
