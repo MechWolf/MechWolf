@@ -12,20 +12,23 @@ class Component(object):
 
     Attributes:
         name (str, optional): the name of the component.
+
+    Raises:
+        ValueError: When a component has the same name as another component.
     """
     _id_counter = 0
-    used_names = set()
+    _used_names = set()
 
     def __init__(self, name=None):
         # name the object, either sequentially or with a given name
         if name is None:
             self.name = self.__class__.__name__ + "_" + str(self.__class__._id_counter)
             self.__class__._id_counter += 1
-        elif name not in self.__class__.used_names:
+        elif name not in self.__class__._used_names:
             self.name = name
         else:
             raise ValueError(Fore.RED + f"Cannot have two components with the name {name}.")
-        self.__class__.used_names.add(self.name)
+        self.__class__._used_names.add(self.name)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}>"
