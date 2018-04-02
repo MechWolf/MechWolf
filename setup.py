@@ -26,6 +26,7 @@ setup(
     ],
     packages=find_packages(),  # Required
     setup_requires=['cython'],
+    tests_require=["pytest"],
     install_requires=[
         "graphviz",
         "terminaltables",
