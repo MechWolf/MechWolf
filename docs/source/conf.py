@@ -145,7 +145,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'MechWolf.tex', 'MechWolf Documentation',
-     'Benjamin Lee and Alex Mijalis', 'manual'),
+     author, 'manual'),
 ]
 
 
