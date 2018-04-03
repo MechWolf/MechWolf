@@ -164,6 +164,14 @@ off 600 seconds (10 minutes) later. When we're ready to actually execute the
 protocol, we just call :meth:`~mechwolf.Protocol.execute()` and MechWolf will do
 the rest, ensuring that both pumps have their protocols and start in sync.
 
+About
+-----
+.. toctree::
+   :maxdepth: 2
+
+   about/why
+   about/faq
+
 User Guide
 ----------
 .. toctree::

@@ -8,14 +8,26 @@ from colorama import Fore
 from .component import Component
 
 class Vessel(Component):
-    def __init__(self, description, name=None, resolve=True, warnings=False):
+    """A generic vessel.
+
+    Attributes:
+        description (str): The contents of the Vessel.
+        resolve (bool, optional): Whether to resolve the names of chemicals surrounded by :literal:`\`` s into their IUPAC names. Defaults to True.
+        warnings (bool, optional): Whether to show the resolved chemicals for manual confirmation. Defaults to False.
+    """
+    def __init__(self, description, resolve=True, warnings=False):
+
+        # handle the resolver logic
         if resolve:
+            # find the tagged chemical names
             hits = list(re.findall(r"`(.+?)`", description))
+
             try: # in case the resolver is down, don't break
                 for hit in hits:
                     M = Molecule(hit)
                     description = description.replace(f"`{hit}`", f"{hit} ({M.iupac_name})" if hit.lower() != M.iupac_name.lower() else hit)
 
+                    # show a warning table
                     if warnings:
                         table = SingleTable([
                             ["IUPAC Name", M.iupac_name],
@@ -26,7 +38,5 @@ class Vessel(Component):
                         print(table.table)
             except:
                 warn(Fore.YELLOW + "Resolver failed. Continuing without resolving.")
-
         super().__init__(name=description)
-
         self.description = description
