@@ -24,5 +24,5 @@ class TempControl(ActiveComponent):
         self.active = False
 
     def base_state(self):
-        '''Default to being inactive'''
+        '''Default to being inactive.'''
         return dict(temp="0 degC", active=False)

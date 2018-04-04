@@ -43,7 +43,7 @@ class ActiveComponent(Component, metaclass=ABCMeta):
         because it is an abstract base class, not a functioning laboratory
         instrument.
 
-     Attributes:
+    Attributes:
         name (str, optional): The name of the component.
 
     """
@@ -58,8 +58,7 @@ class ActiveComponent(Component, metaclass=ABCMeta):
         '''Updates the attributes of the object from a dict.
 
         Args:
-            params (dict): A dict whose keys are the strings of attribute names
-            and values are the new values of the attribute.
+            params (dict): A dict whose keys are the strings of attribute names and values are the new values of the attribute.
 
         '''
         for key, value in params.items():

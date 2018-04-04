@@ -47,3 +47,18 @@ resolve the issue.
 Still, if those steps haven't solved the problem, `create an issue
 <https://github.com/Benjamin-Lee/MechWolf/issues>`_ on the MechWolf GitHub and
 someone will work to resolve the issue there.
+
+Can I use MechWolf for commercial purposes?
+-------------------------------------------
+
+Yes. MechWolf is licensed under [insert license here].
+
+Where can I get high-resolution versions of MechWolf's logo?
+------------------------------------------------------------
+
+High-res versions are available in the `logos directory <http://github.com/benjamin-lee/MechWolf/logos>`_.
+
+How do I cite MechWolf?
+-----------------------
+
+To be determined when MechWolf is published!

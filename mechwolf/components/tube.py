@@ -12,6 +12,9 @@ class Tube(object):
         OD (str): The outer diameter of the tube. Converted to a Quantity.
         Volume (Quantity): The volume of the tube, as determined from the length and inner diameter.
         material (str): The material of the tube.
+
+    Raises:
+        ValueError: When the outer diameter is less than the inner diameter of the tube.
     """
     def __init__(self, length, ID, OD, material):
         self.length = ureg.parse_expression(length)

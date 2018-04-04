@@ -17,5 +17,5 @@ class Pump(ActiveComponent):
         self.rate = ureg.parse_expression("0 ml/min")
 
     def base_state(self):
-        '''Default to 0 mL/min'''
+        '''Default to 0 mL/min.'''
         return dict(rate="0 mL/min")
