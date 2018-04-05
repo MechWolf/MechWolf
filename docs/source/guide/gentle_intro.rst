@@ -35,7 +35,7 @@ Although Python is likely already installed on your computer (especially if
 you're using Mac or Linux), you probably don't have a recent enough version of
 Python to support MechWolf. Python is available from the `download page at
 Python.org <https://www.python.org/downloads/>`_. For a detailed guide, see
-`The Hitchiker's Guide to Python section on installing Python 3
+`The Hitchhiker's Guide to Python section on installing Python 3
 <http://docs.python-guide.org/en/latest/starting/installation/>`_.
 
 .. Important::
@@ -60,7 +60,7 @@ piece of code required having version 1.0 of MechWolf but another required
 version 2.0. The solution is to run each piece of code inside a virtual
 environment to keep their dependencies separate. You don't have to do this step,
 but it's **highly recommended** to prevent bad, unpredictable things from
-happening that can be hard to debug. `The Hitchiker's Guide to Python's section
+happening that can be hard to debug. `The Hitchhiker's Guide to Python's section
 on virtualenv
 <http://docs.python-guide.org/en/latest/dev/virtualenvs/#lower-level-virtualenv>`_
 is well worth the read for getting a feel for virtualenv.
