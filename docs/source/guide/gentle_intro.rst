@@ -7,7 +7,9 @@ An Introduction to the Introduction
 This gentle introduction is made for people with **absolutely no coding
 experience** who are likely feeling very lost right now. To tell if this guide
 is right for you, if you know what the command ``pip install XXXXX`` does, then
-feel free to skip this section. If not, welcome!
+feel free to skip this section. If not, welcome! We'll cover the background
+knowledge you'll need for the general :doc:`getting started guide
+<../guide/getting_started>`.
 
 Learn Python
 ------------
@@ -51,6 +53,8 @@ to use the command line, at least to a cursory level. Go over `common commands
 idea of how to navigate the filesystem (``cd``, ``ls``, and ``pwd``). This will be
 invaluable going forward.
 
+.. _virtualenv_instructions:
+
 Create a virtualenv *(optional)*
 --------------------------------
 
@@ -80,9 +84,3 @@ And then activate the environment with::
 You can leave the virtualenv at any time with the command::
 
     (mechwolf-env) $ deactivate
-
-Install MechWolf
-----------------
-Inside your virtualenv, use the ``pip3`` command to install MechWolf::
-
-    (mechwolf-env) $ pip3 install mechwolf

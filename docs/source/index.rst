@@ -178,6 +178,8 @@ User Guide
    :maxdepth: 2
 
    guide/gentle_intro
+   guide/installation
+   guide/getting_started
    guide/new_components
 
 API Reference
