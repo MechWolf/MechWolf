@@ -1,3 +1,3 @@
-# MechWolf
+![MechWolf Wordmark](logo/wordmark3x.png)
 
-The purpose of this module is to allow lightweight flow chemistry experiment design in Python. Features include extensive error checking, flexibility, and user extensibility.
+A readme will live here some day.
