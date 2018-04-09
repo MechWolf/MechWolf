@@ -44,8 +44,9 @@ setup(
         "requests",
         "sphinx",
         "numpy",
-        "pandas"],
-    scripts=["scripts/mechwolf-client", "scripts/mechwolf-server"],
+        "pandas",
+        "xkcdpass"],
+        scripts=["scripts/mechwolf-client.py", "scripts/mechwolf-hub.py", "scripts/mechwolf-setup.py"],
 
     # entry_points={  # Optional
     #     'console_scripts': [
