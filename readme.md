@@ -1,3 +1,2 @@
 ![MechWolf Wordmark](logo/wordmark3x.png)
-
-A readme will live here some day.
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/mechwolf-project)
