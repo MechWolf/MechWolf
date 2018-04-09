@@ -90,7 +90,7 @@ class Apparatus(object):
                     node_attr=node_attr,
                     edge_attr=edge_attr,
                     graph_attr=graph_attr,
-                    format=format,
+                    format=file_format,
                     filename=filename)
 
         # go from left to right adding components and their tubing connections
