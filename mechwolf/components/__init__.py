@@ -2,7 +2,7 @@ from mechwolf import ureg as _ureg
 ureg = _ureg
 
 from .component import Component, ActiveComponent
-from .mixer import TMixer, YMixer
+from .mixer import TMixer, YMixer, CrossMixer
 from .pump import Pump
 from .sensor import Sensor
 from .tempcontrol import TempControl

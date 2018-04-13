@@ -22,3 +22,14 @@ class YMixer(Component):
 
     def __init__(self, name=None):
         super().__init__(name=name)
+
+class CrossMixer(Component):
+    """A cross mixer.
+
+    This is an alias of :class:`~mechwolf.Component`.
+
+    Attributes:
+        name (str, optional): The name of the mixer.
+    """
+    def __init__(self, name=None):
+        super().__init__(name=name)
