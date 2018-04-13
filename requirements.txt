@@ -17,3 +17,6 @@ sphinx
 numpy
 pandas
 xkcdpass
+click
+pick
+pytest
