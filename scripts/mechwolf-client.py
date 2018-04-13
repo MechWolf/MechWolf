@@ -1,5 +1,3 @@
-from mechwolf.components import *
-
 from json import dumps, loads
 import time
 from socket import socket, AF_INET, SOCK_DGRAM
@@ -10,6 +8,8 @@ import async_timeout
 from colorama import init, Fore, Back, Style
 import yaml
 from vedis import Vedis
+
+from mechwolf.components import *
 
 # initialize colored printing
 init(autoreset=True)

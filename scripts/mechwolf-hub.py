@@ -1,11 +1,12 @@
-from flask import Flask, render_template, jsonify, request, abort
 from json import dumps, loads
 from time import time, sleep
-from vedis import Vedis
 from threading import Thread
-import schedule
 from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, gethostbyname, gethostname
 from uuid import uuid1
+
+from flask import Flask, render_template, jsonify, request, abort
+from vedis import Vedis
+import schedule
 
 db = Vedis("test.db")
 app = Flask(__name__)
