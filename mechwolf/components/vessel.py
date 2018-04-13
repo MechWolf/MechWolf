@@ -12,10 +12,11 @@ class Vessel(Component):
 
     Attributes:
         description (str): The contents of the Vessel.
+        name (str): The name of the vessel, if different from the description.
         resolve (bool, optional): Whether to resolve the names of chemicals surrounded by :literal:`\`` s into their IUPAC names. Defaults to True.
         warnings (bool, optional): Whether to show the resolved chemicals for manual confirmation. Defaults to False.
     """
-    def __init__(self, description, resolve=True, warnings=False):
+    def __init__(self, description, resolve=True, warnings=False, name=None):
 
         # handle the resolver logic
         if resolve:
@@ -38,5 +39,5 @@ class Vessel(Component):
                         print(table.table)
             except:
                 warn(Fore.YELLOW + "Resolver failed. Continuing without resolving.")
-        super().__init__(name=description)
+        super().__init__(name=name)
         self.description = description

@@ -56,10 +56,10 @@ components, such as the vessels and pumps. Let's go ahead and create them::
     # define the mixer
     mixer = mw.TMixer()
 
-That wasn't too bad! Just as putting vessels and pumps on a lab bench
-doesn't actually do anything, we're going to need to tell MechWolf what the
-configuration of the components is. The :literal:`\`` s are there to surround
-chemical names that we want resolved; we'll see how that works shortly.
+That wasn't too bad! Just as putting vessels and pumps on a lab bench doesn't
+actually do anything, we're going to need to tell MechWolf what the
+configuration of the components is. The :literal:`\`` symbols are there to
+surround chemical names that we want resolved; we'll see how that works shortly.
 
 We can do this by creating an :class:`~mechwolf.Apparatus` object. To add connections between
 components, we need to tell MechWolf three things: where the connection is from,
@@ -122,7 +122,7 @@ That's because the :literal:`\`` s around the chemical name tell MechWolf to use
 <https://cactus.nci.nih.gov/chemical/structure>`_.
 
 Now that we've gone over how to define an apparatus and all the different ways
-to inspect it, let's make it synthesize the acetaminophen. We do that with a
+to inspect it, let's make it synthesize acetaminophen. We do that with a
 :class:`~mechwolf.Protocol`, a list of procedures defined for an
 :class:`~mechwolf.Apparatus`. For this reaction, it's as simple as deciding the
 flow rate and duration for which to run the pumps::
@@ -167,10 +167,11 @@ the rest, ensuring that both pumps have their protocols and start in sync.
 About
 -----
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    about/why
    about/faq
+   about/security
 
 User Guide
 ----------
