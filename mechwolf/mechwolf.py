@@ -45,8 +45,8 @@ class Apparatus(object):
     def __repr__(self):
         return self.name
 
-    def add(self, from_component, to_component, tube):
-        '''Adds a connection to the apparatus.
+    def _add_single(self, from_component, to_component, tube):
+        '''Adds a single connection to the apparatus.
 
         Args:
             from_component (Component): The :class:`Component` from which the flow is originating.
@@ -62,6 +62,23 @@ class Apparatus(object):
 
         self.network.append((from_component, to_component, tube))
         self.components.update([from_component, to_component])
+
+    def add(self, from_component, to_component, tube):
+        '''Adds connections to the apparatus.
+
+        Args:
+            from_component (Component or Iterable): The :class:`Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
+            to_component (Component): The :class:`Component` where the flow is going.
+            tube (Tube): The :class:`components.Tube` that connects the components.
+        '''
+
+        try:
+            iter(from_component)
+        except TypeError:
+            from_component = [from_component]
+
+        for component in from_component:
+            self._add_single(component, to_component, tube)
 
     def visualize(self, title=True, label_tubes=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho", nodesep="1"), file_format="pdf", filename=None):
         '''Generates a visualization of the graph of an apparatus.
@@ -238,11 +255,94 @@ class Protocol(object):
                 raise ValueError(Fore.RED + f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}")
         self.duration = duration
 
+    def _add_single(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
+        '''Adds a single procedure to the protocol.
+
+        Args:
+            component (Component): The component which the procedure being added is for.
+            start (str, optional): The start time of the procedure relative to the start of the protocol, such as
+                ``"5 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to ``"0 seconds"``, *i.e.* the
+                beginning of the protocol.
+            stop (str, optional): The stop time of the procedure relative to the start of the protocol, such as
+                ``"30 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to None.
+            duration (str, optional): The duration of the procedure, such as "1 hour". May also be a
+                :class:`datetime.timedelta`. Defaults to None.
+
+        Note:
+            Only one of stop and duration may be given.
+            If stop and duration are both None, the procedure's stop time will be inferred as the end of the protocol.
+
+        Raises:
+            TypeError: A component is not of the correct type (*i.e.* a Component object)
+            ValueError: An error occurred when attempting to parse the kwargs.
+            RuntimeError: Stop time of procedure is unable to be determined or invalid component.
+        '''
+
+        # make sure that the component being added to the protocol is part of the apparatus
+        if component not in self.apparatus.components:
+            raise RuntimeError(Fore.RED + f"{component} is not a component of {self.apparatus.name}.")
+
+        # perform the mapping for valves
+        if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
+            kwargs["setting"] = component.mapping[kwargs["setting"]]
+
+        # make sure the component is valid to add
+        for kwarg, value in kwargs.items():
+            if isinstance(component, type):
+                raise TypeError(Fore.RED + f"Must add an instance of {component}, not the class itself.")
+
+            if not issubclass(component.__class__, Component):
+                raise TypeError(Fore.RED + "Must add a Component object.")
+
+            if not hasattr(component, kwarg):
+                raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}.")
+
+            if type(component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
+                raise ValueError(Fore.RED + f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
+
+            elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
+                raise ValueError(Fore.RED + f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}")
+
+        if stop is not None and duration is not None:
+            raise RuntimeError(Fore.RED + "Must provide one of stop and duration, not both.")
+
+        # parse the start time if given
+        if isinstance(start, timedelta):
+            start = str(start.total_seconds()) + " seconds"
+        start = ureg.parse_expression(start)
+
+        # parse duration if given
+        if duration is not None:
+            if isinstance(duration, timedelta):
+                duration = str(duration.total_seconds()) + " seconds"
+            stop = start + ureg.parse_expression(duration)
+
+        # determine stop time
+        if stop is None and self.duration is None and duration is None:
+            raise RuntimeError(Fore.RED + "Must specify protocol duration during instantiation in order to omit stop and duration. " \
+                f"To automatically set duration of protocol as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
+        elif stop is not None:
+            if isinstance(stop, timedelta):
+                stop = str(stop.total_seconds()) + " seconds"
+            if type(stop) == str:
+                stop = ureg.parse_expression(stop)
+
+        # a little magic for temperature controllers
+        if issubclass(component.__class__, TempControl):
+            if kwargs.get("temp") is not None and kwargs.get("active") is None:
+                kwargs["active"] = True
+            elif kwargs.get("active") == False and kwargs.get("temp") is None:
+                kwargs["temp"] = "0 degC"
+            elif kwargs["active"] and kwargs.get("temp") is None:
+                raise RuntimeError(Fore.RED + f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add().")
+
+        # add the procedure to the procedure list
+        self.procedures.append(dict(start=start, stop=stop, component=component, params=kwargs))
+
     def add(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
         '''Adds a procedure to the protocol.
 
         Args:
-
             component_added (ActiveComponent or Iterable): The component(s) for which the procedure being added. If an
                 interable, all components will have the same parameters.
             start (str, optional): The start time of the procedure relative to the start of the protocol, such as
@@ -272,69 +372,7 @@ class Protocol(object):
             component = [component]
 
         for _component in component:
-            _start, _stop, _duration = start, stop, duration
-            # make sure that the component being added to the protocol is part of the apparatus
-            if _component not in self.apparatus.components:
-                raise RuntimeError(Fore.RED + f"{_component} is not a component of {self.apparatus.name}.")
-
-            # perform the mapping for valves
-            if issubclass(_component.__class__, Valve) and kwargs.get("setting") is not None:
-                kwargs["setting"] = _component.mapping[kwargs["setting"].name]
-
-            # make sure the component is valid to add
-            for kwarg, value in kwargs.items():
-                if isinstance(_component, type):
-                    raise TypeError(Fore.RED + f"Must add an instance of {_component}, not the class itself.")
-
-                if not issubclass(_component.__class__, ActiveComponent):
-                    raise TypeError(Fore.RED + "Must add a ActiveComponent object.")
-
-                if not hasattr(_component, kwarg):
-                    raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {_component}. Valid attributes are {[x for x in vars(_component).keys() if x != 'name']}.")
-
-                if type(_component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != _component.__dict__[kwarg].dimensionality:
-                    raise ValueError(Fore.RED + f"Bad dimensionality of {kwarg} for {_component}. Expected dimensionality of {_component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
-
-                elif type(_component.__dict__[kwarg]) != type(value) and type(_component.__dict__[kwarg]) != ureg.Quantity:
-                    raise ValueError(Fore.RED + f"Bad type matching. Expected {kwarg} to be {type(_component.__dict__[kwarg])} but got {value}, which is of type {type(value)}")
-
-            if _stop is not None and _duration is not None:
-                raise RuntimeError(Fore.RED + "Must provide one of stop and duration, not both.")
-
-            # parse the start time if given
-            if isinstance(_start, timedelta):
-                _start = str(_start.total_seconds()) + " seconds"
-            _start = ureg.parse_expression(_start)
-
-            # parse duration if given
-            if _duration is not None:
-                if isinstance(_duration, timedelta):
-                    _duration = str(_duration.total_seconds()) + " seconds"
-                _stop = _start + ureg.parse_expression(_duration)
-
-            # determine stop time
-            if _stop is None and self.duration is None and _duration is None:
-                raise RuntimeError(Fore.RED + "Must specify protocol duration during instantiation in order to omit stop and duration. " \
-                    f"To automatically set duration of protocol as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
-            if _stop is None:
-                _stop = stop
-            elif _stop is not None:
-                if isinstance(stop, timedelta):
-                    _stop = str(_stop.total_seconds()) + " seconds"
-                if type(_stop) == str:
-                    _stop = ureg.parse_expression(stop)
-
-            # a little magic for temperature controllers
-            if issubclass(_component.__class__, TempControl):
-                if kwargs.get("temp") is not None and kwargs.get("active") is None:
-                    kwargs["active"] = True
-                elif kwargs.get("active") == False and kwargs.get("temp") is None:
-                    kwargs["temp"] = "0 degC"
-                elif kwargs["active"] and kwargs.get("temp") is None:
-                    raise RuntimeError(Fore.RED + f"TempControl {_component} is activated but temperature setting is not given. Specify 'temp' in your call to add().")
-
-            # add the procedure to the procedure list
-            self.procedures.append(dict(start=_start, stop=_stop, component=_component, params=kwargs))
+            self._add_single(_component, start=start, stop=stop, duration=duration, **kwargs)
 
     def compile(self, warnings=True, _visualization=False):
         '''Compile the protocol into a dict of devices and their procedures.

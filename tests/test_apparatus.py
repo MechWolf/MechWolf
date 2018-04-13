@@ -17,6 +17,11 @@ def test_add():
     with pytest.raises(ValueError):
         A.add(a, t, t) # using a tube instead of a component
 
+    # multiple components connected to same one in one line
+    B = mw.Apparatus()
+    B.add([a, b, c], d, t)
+    assert B.network == [(a, d, t), (b, d, t), (c, d, t)]
+
 def test_validate():
     # test network connectivity checking
     assert A.validate()
