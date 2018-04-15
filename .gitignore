@@ -112,3 +112,6 @@ _templates
 
 # Graphviz PDFs
 .gv.pdf
+
+# encryption keys
+.pem
