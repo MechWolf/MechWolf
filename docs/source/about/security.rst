@@ -106,3 +106,19 @@ In addition, we feel obliged to warn you that, if you use a Raspberry Pi to run
 the client or hub, you must change the username and password if you activate
 SSH. Failure to do so can result in remote access and use of your components as
 well as the possible loss or modification of your data.
+
+Injection Attack Mitigation
+---------------------------
+
+The MechWolf resolver is based of `AWS DynamoDB
+<https://aws.amazon.com/dynamodb/>`_, a NoSQL database platform. By not using
+SQL, we therefore significantly reduce the chances of an injection attack.
+Furthermore, we properly escape all user input.
+
+Connection Encryption
+---------------------
+
+All connections to `mechwolf.io <https://www.mechwolf.io>`_ are encrypted by
+default with bank-grade encryption. Similarly, all connections between hubs and
+clients are encrypted as well. This prevents man-in-the-middle attacks in
+addition to eavesdropping.
