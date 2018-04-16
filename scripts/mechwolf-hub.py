@@ -41,7 +41,7 @@ PUB_KEY_HEX = binascii.hexlify(rsa.PublicKey.load_pkcs1(keydata).save_pkcs1()).d
 def update_ip():
     '''send out the location of our server to the resolver if nescessary '''
 
-    # find current IP
+    # find current IP address
     ip_socket = socket(AF_INET, SOCK_DGRAM)
     ip_socket.connect(("8.8.8.8", 80))
     my_ip = ip_socket.getsockname()[0]
@@ -50,13 +50,15 @@ def update_ip():
     try:
         # return early if address on file matches
         if my_ip == db["current_ip"]:
-            print("IP on record matches resolver status.")
             return
     except KeyError:
-        with db.transaction():
-            db["current_ip"] = my_ip
+        pass
 
-    # sign the current IP
+    # store new IP address
+    with db.transaction():
+        db["current_ip"] = my_ip
+
+    # sign the current IP address
     s = Signer(SECURITY_KEY)
     signed_ip = s.sign(my_ip.encode())
     signature = rsa.sign(signed_ip, PRIV_KEY, 'SHA-512')
@@ -138,31 +140,33 @@ def protocol():
 @app.route("/start_time", methods=["GET"])
 def start_time():
     with db.transaction():
-        # time out if too long has passed from when the protocol was submitted but not all devices have checked in
-        if time() - float(db["protocol_submit_time"]) > TIMEOUT:
-            return "abort"
+        try:
+            # time out if too long has passed from when the protocol was submitted but not all devices have checked in
+            if time() - float(db["protocol_submit_time"]) > TIMEOUT:
+                return "abort"
 
-        # if every device has gotten the protocol, give them the start time
-        if all([x in db.Set("protocol_acks") for x in list(loads(db["protocol"]))]):
+            # if every device has gotten the protocol, give them the start time
+            if all([x in db.Set("protocol_acks") for x in list(loads(db["protocol"]))]):
 
-            if request.args["device_id"] in db.Set("start_time_acks"):
-                return "no start time"
+                if request.args["device_id"] in db.Set("start_time_acks"):
+                    return "no start time"
 
-            # try to log the device ID but fail gracefully if not provided to allow introspection
-            try:
-                db.Set("start_time_acks").add(request.args["device_id"])
-            except KeyError:
-                pass
+                # try to log the device ID but fail gracefully if not provided to allow introspection
+                try:
+                    db.Set("start_time_acks").add(request.args["device_id"])
+                except KeyError:
+                    pass
 
-            # the first device after all have checked in will determine start time
-            try:
-                return db["start_time"]
-            except KeyError:
-                db["start_time"] = time() + 5
-                return db["start_time"]
+                # the first device after all have checked in will determine start time
+                try:
+                    return db["start_time"]
+                except KeyError:
+                    db["start_time"] = time() + 5
+                    return db["start_time"]
 
-        else:
-            return "no start time"
+        except KeyError:
+            pass
+        return "no start time"
 
 @app.route("/log", methods=["POST", "GET"])
 def log():
@@ -178,4 +182,4 @@ if __name__ == "__main__":
     schedule.every(5).seconds.do(update_ip)
     t = Thread(target=run_schedule)
     t.start()
-    app.run(debug=True, host="0.0.0.0", use_reloader=True, threaded=True)
+    app.run(debug=True, host="0.0.0.0", use_reloader=True, threaded=True, port=80)
