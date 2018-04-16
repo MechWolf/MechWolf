@@ -20,3 +20,5 @@ xkcdpass
 click
 pick
 pytest
+rsa
+yamlordereddictloader

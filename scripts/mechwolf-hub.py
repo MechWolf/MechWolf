@@ -3,31 +3,75 @@ from time import time, sleep
 from threading import Thread
 from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, gethostbyname, gethostname
 from uuid import uuid1
+import binascii
 
 from flask import Flask, render_template, jsonify, request, abort
 from vedis import Vedis
 import schedule
+import yaml
+import rsa
+import requests
+from itsdangerous import Signer
 
-db = Vedis("test.db")
-app = Flask(__name__)
+import mechwolf as mw
+
+db = Vedis("test.db") # set up database
+app = Flask(__name__) # create flask app
 
 # how long to wait for check ins before aborting a protcol
 TIMEOUT = 60
 
-def broadcast_ip(key="flow_chemistry", port=1636):
-    '''send out the location of our server'''
-    s = socket(AF_INET, SOCK_DGRAM) # create UDP socket
-    s.bind(('', 0))
-    s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1) # this is a broadcast socket
+# get the config data
+with open("hub_config.yml", "r") as f:
+    config = yaml.load(f)
+SECURITY_KEY = config['resolver_info']['security_key']
+HUB_ID = config['resolver_info']['hub_id']
 
+# get the private key
+with open(config['resolver_info']['rsa_private_filepath'], mode='rb') as privatefile:
+    keydata = privatefile.read()
+PRIV_KEY = rsa.PrivateKey.load_pkcs1(keydata)
+
+# get the public key
+with open(config['resolver_info']['rsa_public_filepath'], mode='rb') as pubfile:
+    keydata = pubfile.read()
+# the inverse function call here is to verify that they public key is valid
+PUB_KEY_HEX = binascii.hexlify(rsa.PublicKey.load_pkcs1(keydata).save_pkcs1()).decode()
+
+def update_ip():
+    '''send out the location of our server to the resolver if nescessary '''
+
+    # find current IP
     ip_socket = socket(AF_INET, SOCK_DGRAM)
     ip_socket.connect(("8.8.8.8", 80))
     my_ip = ip_socket.getsockname()[0]
     ip_socket.close()
 
-    data = key + my_ip
-    s.sendto(data.encode(), ('<broadcast>', port))
-    print(f"Broadcasted IP {my_ip} with key \"{key}\" on port {port}")
+    try:
+        # return early if address on file matches
+        if my_ip == db["current_ip"]:
+            print("IP on record matches resolver status.")
+            return
+    except KeyError:
+        with db.transaction():
+            db["current_ip"] = my_ip
+
+    # sign the current IP
+    s = Signer(SECURITY_KEY)
+    signed_ip = s.sign(my_ip.encode())
+    signature = rsa.sign(signed_ip, PRIV_KEY, 'SHA-512')
+    signature = binascii.hexlify(signature).decode()
+
+    # send it to the resolver
+    payload = {
+    "hub_id": HUB_ID,
+    "hub_address": signed_ip,
+    "hub_address_signature": signature,
+    "hub_public_key": PUB_KEY_HEX
+    }
+    requests.post(mw.RESOLVER_URL + "register", data=payload)
+
+    print(f"Updated resolver with IP {my_ip}.")
 
 def run_schedule():
     while True:
@@ -131,7 +175,7 @@ def log():
     return "logged"
 
 if __name__ == "__main__":
-    schedule.every(5).seconds.do(broadcast_ip)
+    schedule.every(5).seconds.do(update_ip)
     t = Thread(target=run_schedule)
     t.start()
     app.run(debug=True, host="0.0.0.0", use_reloader=True, threaded=True)

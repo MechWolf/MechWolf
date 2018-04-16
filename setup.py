@@ -47,7 +47,9 @@ setup(
         "pandas",
         "xkcdpass",
         "pick",
-        "click"],
+        "click",
+        "rsa",
+        "yamlordereddictloader"],
         scripts=["scripts/mechwolf-client.py", "scripts/mechwolf-hub.py", "scripts/mechwolf-setup.py"],
 
     # entry_points={  # Optional

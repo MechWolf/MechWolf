@@ -1,8 +1,0 @@
-device_info:
-  device_name: pump_3
-  class: VarianPump # must be a valid component class
-  settings:
-    max_rate: 5 # for pumps
-network_info:
-  key: flow_chemistry # unique key to recognize your own system
-  port: 1636 # probably don't change this

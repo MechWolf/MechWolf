@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 project = 'MechWolf'
 # copyright = '2018, Benjamin Lee and Alex Mijalis'
-author = 'Benjamin Lee and Alex Mijalis'
+author = 'Benjamin Lee, Alex Mijalis, Myles Ingram, and Nicola Pohl'
 
 # The short X.Y version
 version = ''
