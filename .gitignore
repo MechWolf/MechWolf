@@ -114,4 +114,4 @@ _templates
 .gv.pdf
 
 # encryption keys
-.pem
+*.pem
