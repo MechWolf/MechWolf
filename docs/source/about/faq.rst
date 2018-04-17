@@ -65,7 +65,7 @@ someone will work to resolve the issue there.
 Can I use MechWolf for commercial purposes?
 -------------------------------------------
 
-[Yes/no]. MechWolf is licensed under [insert license here].
+Yes. MechWolf is licensed under the permissive GPLv3 license.
 
 Where can I get high-resolution versions of MechWolf's logo?
 ------------------------------------------------------------

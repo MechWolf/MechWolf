@@ -168,7 +168,7 @@ class Apparatus(object):
             instantiation.
 
         Returns:
-            True.
+            bool: True if valid.
 
         Raises:
             RuntimeError: If the protocol is invalid.
@@ -199,7 +199,7 @@ class Apparatus(object):
         '''Generates a human-readable description of the apparatus.
 
         Returns:
-            String description of apparatus.'''
+            str: A description of apparatus.'''
         def _description(element, capitalize=False):
             '''takes a component and converts it to a string description'''
             if issubclass(element.__class__, Vessel):
@@ -382,7 +382,7 @@ class Protocol(object):
                 Default (and *highly* recommended setting) is True.
 
         Returns:
-            A dict with the names of components as the values and lists of their procedures as the value.
+            dict: A dict with the names of components as the values and lists of their procedures as the value.
             The elements of the list of procedures are dicts with two keys: "time", whose value is a pint Quantity,
             and "params", whose value is a dict of parameters for the procedure.
 
@@ -473,7 +473,7 @@ class Protocol(object):
             warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
 
         Returns:
-            JSON-formatted str of the compiled protocol.
+            str: JSON of the compiled protocol.
 
         Raises:
             Same as :meth:`Protocol.compile`.
@@ -495,7 +495,7 @@ class Protocol(object):
             warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
 
         Returns:
-            YAML-formatted str of the compiled protocol.
+            str: YAML of the compiled protocol.
 
         Raises:
             Same as :meth:`Protocol.compile`.
@@ -510,9 +510,6 @@ class Protocol(object):
 
         Args:
             warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
-
-        Returns:
-            Json-formatted str of the compiled protocol.
 
         Raises:
             Same as :meth:`Protocol.compile`.

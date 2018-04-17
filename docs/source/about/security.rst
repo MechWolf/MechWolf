@@ -113,7 +113,8 @@ Injection Attack Mitigation
 The MechWolf resolver is based of `AWS DynamoDB
 <https://aws.amazon.com/dynamodb/>`_, a NoSQL database platform. By not using
 SQL, we therefore significantly reduce the chances of an injection attack.
-Furthermore, we properly escape all user input.
+Furthermore, we properly escape all user input. We also employ point-in-time
+backups of our database in the event our database is rendered unusable.
 
 Connection Encryption
 ---------------------
