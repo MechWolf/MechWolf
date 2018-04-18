@@ -1,6 +1,5 @@
 from json import dumps, loads
 import time
-from socket import socket, AF_INET, SOCK_DGRAM
 
 import aiohttp
 import asyncio
@@ -8,13 +7,14 @@ import async_timeout
 from colorama import init, Fore, Back, Style
 import yaml
 from vedis import Vedis
+import requests
+import itsdangerous
 
 from mechwolf.components import *
+import mechwolf as mw
 
 # initialize colored printing
 init(autoreset=True)
-
-db = Vedis("client.db")
 
 async def execute_procedure(protocol_id, procedure, session):
         await asyncio.sleep(procedure["time"])
@@ -28,8 +28,11 @@ async def execute_procedure(protocol_id, procedure, session):
                     procedure=procedure)))
 
 async def get_protocol(session):
+    with db.transaction():
+        server = db["server"]
     try:
-        async with session.post(f"{SERVER}/protocol", data=dict(device_id=DEVICE_NAME)) as resp:
+        print("connecting to server")
+        async with session.post(f"{server}/protocol", data=dict(device_id=DEVICE_NAME)) as resp:
             response = await resp.text()
             try:
                 response = loads(response)
@@ -39,13 +42,15 @@ async def get_protocol(session):
 
 
     except aiohttp.client_exceptions.ClientConnectorError:
-        print(Fore.YELLOW + "Unable to connect to server.")
-        find_server()
+        print(Fore.YELLOW + f"Unable to connect to {server}")
+        resolve_server()
         return "", False
 
 async def get_start_time(session):
+    with db.transaction():
+        server = db["server"]
     try:
-        async with session.get(f"{SERVER}/start_time", params=dict(device_id=DEVICE_NAME)) as resp:
+        async with session.get(f"{server}/start_time", params=dict(device_id=DEVICE_NAME)) as resp:
             response = await resp.text()
             try:
                 response = loads(response)
@@ -55,13 +60,15 @@ async def get_start_time(session):
 
     # if the server is down, try again
     except aiohttp.client_exceptions.ClientConnectorError:
-        print(Fore.YELLOW + "Unable to connect to server. Trying again...")
-        find_server()
+        print(Fore.YELLOW + f"Unable to connect to {server}. Trying again...")
+        resolve_server()
         return False
 
 async def log(session, data):
+    with db.transaction():
+        server = db["server"]
     try:
-        async with session.post(f"{SERVER}/log", json=data) as resp:
+        async with session.post(f"{server}/log", json=data) as resp:
             await resp.text()
     except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
         with db.transaction():
@@ -70,10 +77,8 @@ async def log(session, data):
     return
 
 async def main(loop):
-
     async with aiohttp.ClientSession(loop=loop) as session:
         while True:
-
             # try to get a protocol
             protocol = "no protocol"
             while protocol == "no protocol":
@@ -117,51 +122,55 @@ async def main(loop):
 
             if len(db.List("log")):
                 print("Submitting failed logs")
+                resolve_server()
                 for i in range(len(db.List("log"))):
                     await log(session, db.List("log").pop())
 
-def find_server():
-    # https://stackoverflow.com/questions/21089268/python-service-discovery-advertise-a-service-across-a-local-network
-    s = socket(AF_INET, SOCK_DGRAM) # create UDP socket
-    s.bind(('', PORT))
+def resolve_server():
+    server = ""
+    while not server:
+        response = requests.get(mw.RESOLVER_URL + "get_hub", params={"hub_id":HUB_ID})
+        s = itsdangerous.Signer(SECURITY_KEY)
+        server = s.unsign(response.json()["hub_address"]).decode()
+        with db.transaction():
+            db["server"] = f"http://{server}"
+        # print("Finding server")
+        # data, addr = s.recvfrom(1024) # wait for a packet
+        # data = data.decode()
+        # if data.startswith(KEY):
+        #     server = f"http://{data[len(KEY):]}:5000"
+        #     print(Fore.GREEN + f"Got service announcement from {server}")
 
-    global SERVER
-    SERVER = ""
-    while not SERVER:
-        print("Finding server")
-        data, addr = s.recvfrom(1024) # wait for a packet
-        data = data.decode()
-        if data.startswith(KEY):
-            SERVER = f"http://{data[len(KEY):]}:5000"
-            print(Fore.GREEN + f"Got service announcement from {SERVER}")
+db = Vedis("client.db") # set up db
 
-if __name__ == "__main__":
-    # placeholder global variable
-    SERVER = ""
+# get the config data
+with open("client_config.yml", "r") as f:
+    config = yaml.load(f)
+SECURITY_KEY = config['resolver_info']['security_key']
+HUB_ID = config['resolver_info']['hub_id']
+DEVICE_NAME = config["device_info"]["device_name"]
 
-    # read the config file
-    config = yaml.load(open('client_config.yaml', 'r'))
-    DEVICE_NAME = config["device_info"]["device_name"]
-    PORT = config["network_info"]["port"]
-    KEY = config["network_info"]["key"] # to make sure we don't confuse or get confused by other programs
+# default to cached server address
+try:
+    with db.transaction():
+        server = db["server"]
+except KeyError:
+    resolve_server()
 
-    # create the client object
-    class_type = globals()[config["device_info"]["class"]]
+# create the client object
+class_type = globals()[config["device_info"]["device_class"]]
 
-    if config["device_info"]["settings"]:
-       me = class_type(name=DEVICE_NAME, **config["device_info"]["settings"])
-    else:
-        me = class_type(name=DEVICE_NAME,)
+if config["device_info"]["device_settings"]:
+   me = class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"])
+else:
+    me = class_type(name=DEVICE_NAME,)
 
-    # locate the server address
-    find_server()
-
-    # get and execute protocols forever
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(loop))
+# get and execute protocols forever
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main(loop))
 
 
-    # with ViciValve(mapping = None,
-    #                   name = DEVICE_NAME,
-    #            serial_port = '/dev/tty.usbserial',
-    #              positions = 10) as me:
+# with ViciValve(mapping = None,
+#                   name = DEVICE_NAME,
+#            serial_port = '/dev/tty.usbserial',
+#              positions = 10) as me:

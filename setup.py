@@ -50,11 +50,11 @@ setup(
         "click",
         "rsa",
         "yamlordereddictloader"],
-        scripts=["scripts/mechwolf-client.py", "scripts/mechwolf-hub.py", "scripts/mechwolf-setup.py"],
+        # scripts=["scripts/mechwolf-client.py", "scripts/mechwolf-hub.py", "scripts/mechwolf-setup.py"],
 
-    # entry_points={  # Optional
-    #     'console_scripts': [
-    #         'sample=sample:main',
-    #     ],
-    # },
+    entry_points={  # Optional
+        'console_scripts': [
+            'mechwolf=cli:cli',
+        ],
+    },
 )

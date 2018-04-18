@@ -15,7 +15,8 @@ from itsdangerous import Signer
 
 import mechwolf as mw
 
-db = Vedis("test.db") # set up database
+config_db = Vedis("config.db")
+db = Vedis("hub.db") # set up database
 app = Flask(__name__) # create flask app
 
 # how long to wait for check ins before aborting a protcol
@@ -47,16 +48,16 @@ def update_ip():
     my_ip = ip_socket.getsockname()[0]
     ip_socket.close()
 
+    # return early if address on file matches
     try:
-        # return early if address on file matches
-        if my_ip == db["current_ip"]:
+        if my_ip == config_db["current_ip"]:
             return
     except KeyError:
         pass
 
     # store new IP address
-    with db.transaction():
-        db["current_ip"] = my_ip
+    with config_db.transaction():
+        config_db["current_ip"] = my_ip
 
     # sign the current IP address
     s = Signer(SECURITY_KEY)
@@ -65,12 +66,10 @@ def update_ip():
     signature = binascii.hexlify(signature).decode()
 
     # send it to the resolver
-    payload = {
-    "hub_id": HUB_ID,
-    "hub_address": signed_ip,
-    "hub_address_signature": signature,
-    "hub_public_key": PUB_KEY_HEX
-    }
+    payload = {"hub_id": HUB_ID,
+               "hub_address": signed_ip,
+               "hub_address_signature": signature,
+               "hub_public_key": PUB_KEY_HEX}
     requests.post(mw.RESOLVER_URL + "register", data=payload)
 
     print(f"Updated resolver with IP {my_ip}.")
@@ -79,10 +78,6 @@ def run_schedule():
     while True:
         schedule.run_pending()
         sleep(2.5)
-
-@app.route("/")
-def index():
-    return render_template("index.html")
 
 @app.route("/submit_protocol", methods=["POST"])
 def submit_protocol():
@@ -178,8 +173,8 @@ def log():
         db.List("log").append(request.json)
     return "logged"
 
-if __name__ == "__main__":
-    schedule.every(5).seconds.do(update_ip)
-    t = Thread(target=run_schedule)
-    t.start()
-    app.run(debug=True, host="0.0.0.0", use_reloader=True, threaded=True, port=80)
+
+schedule.every(5).seconds.do(update_ip)
+t = Thread(target=run_schedule)
+t.start()
+app.run(debug=True, host="0.0.0.0", use_reloader=True, threaded=True, port=80)
