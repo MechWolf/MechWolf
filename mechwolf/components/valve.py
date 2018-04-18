@@ -18,7 +18,7 @@ class Valve(ActiveComponent):
         self.setting = 1
 
     def base_state(self):
-        '''Default to the first mapping.
+        '''Default to the first setting.
 
         This is an arbitrary choice but is guaranteed to be a valid setting.'''
-        return dict(setting=list(self.mapping.items())[0][1])
+        return dict(setting=1)

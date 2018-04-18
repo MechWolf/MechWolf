@@ -284,7 +284,12 @@ class Protocol(object):
 
         # perform the mapping for valves
         if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
-            kwargs["setting"] = component.mapping[kwargs["setting"]]
+            try:
+                kwargs["setting"] = component.mapping[kwargs["setting"]]
+            except KeyError:
+                # allow direct specification of valve settings
+                if type(kwargs["setting"]) == int:
+                    pass
 
         # make sure the component is valid to add
         for kwarg, value in kwargs.items():
