@@ -25,3 +25,10 @@ class ViciValve(Valve):
             position = int(response[2:4]) # Response is in the form 'CPXX\r'
             return position
         return False
+
+    def config(self):
+        return dict(serial_port=(int, None), positions=(int, 10))
+
+    def update(self):
+        # TODO: implement this
+        pass

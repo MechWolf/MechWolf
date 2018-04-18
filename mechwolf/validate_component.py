@@ -47,5 +47,23 @@ def validate_component(component, warnings=True):
             return False
         elif type(component.__dict__[k]) != ureg.Quantity and type(component.__dict__[k]) != type(v):
             if warnings: print(Fore.RED + f"Bad type matching for {k} in base_state dict. Should be {type(component.__dict__[k])} but is {type(v)}.")
+            return False
 
+    # ensure type of config is valid
+    if type(component.config()) != dict:
+        if warnings: print(Fore.RED + f"Must return dictionary for config method for {component}.")
+        return False
+
+    for k, v in component.config().items():
+
+        # check that the attributes match
+        if not hasattr(component, k):
+            if warnings: print(Fore.RED + f"Invalid attribute {k} for {component}. Valid attributes are {component.__dict__}")
+            return False
+
+        # check that the configuration tuple is valid
+        if type(v) not in [tuple, list] or len(v) != 2 or type(v[0]) != type:
+            if warnings: print(Fore.RED + f"Invalid configuration for {k} in {component}. Should be (type, default).")
+            return False
+            
     return True

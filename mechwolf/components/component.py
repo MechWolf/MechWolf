@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractmethod
 from colorama import Fore
 
 
@@ -32,14 +31,14 @@ class Component(object):
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}>"
 
-class ActiveComponent(Component, metaclass=ABCMeta):
+class ActiveComponent(Component):
     """A connected, controllable component.
 
     All components being manipulated in a :class:`~mechwolf.Protocol` must be of
     type :class:`ActiveComponent`.
 
     Note:
-        Users can not directly instantiate an :class:`ActiveComponent`
+        Users should not directly instantiate an :class:`ActiveComponent`
         because it is an abstract base class, not a functioning laboratory
         instrument.
 
@@ -64,7 +63,6 @@ class ActiveComponent(Component, metaclass=ABCMeta):
         for key, value in params.items():
             setattr(self, key, value)
 
-    @abstractmethod
     def base_state():
         '''A placeholder method for the base state of the component.
 
@@ -72,9 +70,30 @@ class ActiveComponent(Component, metaclass=ABCMeta):
         a dict of its base state. At the end of a protocol, the component will
         return to this state.
 
-        Note:
-            The dict that :meth:`ActiveComponent.base_state` returns, must have values which
-            can be parsed into compatible units of the object's attributes, if applicable.
-            For example, :meth:`Pump.base_state` returns ``{"rate": "0 ml/min"}``.
+        Returns:
+            dict: A dict that has values which can be parsed into compatible units of
+            the object's attributes, if applicable.
+
+        Example:
+            >>> Pump.base_state()
+            {"rate": "0 ml/min"}
+
+        '''
+        pass
+
+    def config():
+        '''A placeholder method containing the information needed to configure the component.
+
+        When an ActiveComponent is used in the real world, there is likely
+        variables that will need to be configured such as serial port.
+
+        Returns:
+            dict: A dict of the form ``{attribute: (type, default)}``. If there is no
+            default, the value should be (type, None).
+
+        Example:
+            >>> ViciValve.config()
+            {"serial_port": (int, None), "positions": (int, 10)}
+
         '''
         pass

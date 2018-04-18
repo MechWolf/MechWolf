@@ -11,3 +11,6 @@ class VarianPump(Pump):
 
     def update(self):
         print(ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude / self.max_rate)
+
+    def config(self):
+        return dict(max_rate=(int, None))

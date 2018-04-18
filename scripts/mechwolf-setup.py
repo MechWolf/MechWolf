@@ -55,13 +55,15 @@ if device_type == "client":
     config_data["device_info"]["device_name"] = device_name
 
     device_classes = ["Import from file"]
+    device_objs = [""]
     for name, obj in inspect.getmembers(mw.components):
         try:
             if inspect.isclass(obj) and mw.validate_component(obj(name=name), warnings=False):
                 device_classes.insert(0, obj.__name__)
+                device_objs.insert(0, obj)
         except TypeError:
             pass
-    device_class, _ = pick(device_classes, "Which type of component is this?", indicator="->")
+    device_class, device_idx = pick(device_classes, "Which type of component is this?", indicator="->")
     if device_class == "Import from file":
         device_class = click.prompt("Component name", type=str)
         config_data["device_info"]["device_class"] = device_class
@@ -70,6 +72,11 @@ if device_type == "client":
             config_data["device_info"]["device_class_filepath"] = os.path.realpath(f.name)
     else:
         config_data["device_info"]["device_class"] = device_class
+
+    config = {}
+    for i in device_objs[device_idx](name="setup").config().items():
+        config[i[0]] = click.prompt(i[0], type=i[1][0], default=i[1][1])
+    config_data["device_info"]["device_settings"] = config
 
 elif device_type == "hub":
     if has_key:
