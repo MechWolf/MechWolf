@@ -81,8 +81,7 @@ but it is actually easy in practice::
     # add the connections
     A.add(vessel_1, pump_1, tube)
     A.add(vessel_2, pump_2, tube)
-    A.add(pump_1, mixer, tube)
-    A.add(pump_2, mixer, tube)
+    A.add([pump_1, pump_2], mixer, tube)
     A.add(mixer, vessel_3, tube)
 
 With the :class:`~mechwolf.Apparatus` object, we can do *so* much. If we call
