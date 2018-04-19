@@ -10,7 +10,7 @@ class Valve(ActiveComponent):
     Attributes:
         name (str, optional): The name of the Valve.
         mapping (dict): The mapping from components to their integer port numbers.
-        active (bool): Whether the temperature controller is active.
+        setting (int): The position of the valve.
     """
     def __init__(self, mapping={}, name=None):
         super().__init__(name=name)

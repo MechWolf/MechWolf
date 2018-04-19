@@ -36,10 +36,39 @@ what you need. In that case, you'll have to create your own component. Here's ho
     MechWolf requires that any component being modified as part of a protocol
     have a base state which it will return to after the protocol. For things
     that turn on, this base state is usually "off". The base state method must
-    return a dict with attribute as keys and settings for those attributes as
-    values.
+    be called ``base_state`` and return a dict with attribute as keys and
+    settings for those attributes as values. For a Varian pump, it could look
+    like this::
 
-5. **Give it an update method.**
+        >>> VarianPump(name="pump").base_state()
+        {"rate": "0 mL/min"}
+
+    The values in the base state dictionary need to be parsable into valid
+    values, the same as if they were passed as keyword arguments to
+    :meth:`~mechwolf.Protocol.add`. In fact, under the hood, that is exactly
+    what is happening. At the end of your protocol,
+    :meth:`~mechwolf.Protocol.compile` adds a procedure for each
+    :class:`~mechwolf.components.component.ActiveComponent` in the protocol to
+    return to its base state.
+
+5. **Give it a config method.**
+    Often times, components will require some configuration information when
+    running mechwolf-setup. For example, Vici valves need to know to what serial
+    port they are connected. To get this information, give your component a
+    configuration method, called ``config`` that returns a dictionary whose keys
+    are parameters to be confiured and whose values are tuples with the desired
+    type and default value for the parameter. Going back to the Vici valve
+    example, these valves usually have 10 positions, so a config dict could look
+    like::
+
+        >>> ViciValve(name="valve").config()
+        {"positions": (int, None), "serial_port": (int, None)}
+
+    Note that, when there is no default, the second value of the tuple is
+    ``None``. When your component is instantiated on the client, these values
+    will be passed to ``__init__()`` as keyword arguments.
+
+6. **Give it an update method.**
     The job of the update method is to make the object's real-world state match
     its virtual representation. This is where the hardware interfacing happens.
 
@@ -52,12 +81,12 @@ what you need. In that case, you'll have to create your own component. Here's ho
     your script. The object that is being run on your client *would* need to
     know that though, so the object has to be able to support both uses.
 
-6. **Test thoroughly with** :func:`~mechwolf.validate_component`.
+7. **Test thoroughly with** :func:`~mechwolf.validate_component`.
     For your convenience, the :func:`~mechwolf.validate_component` function will
     take an instance of your class (not the class itself) and verify that it
     meets the requirements to be used in a protocol.
 
-7. **Contribute to GitHub** *(optional)*
+8. **Contribute to GitHub** *(optional)*
     Odds are you're not the only person in the world who could use the component
     you're making. In the spirit of collaboration, we welcome any and all components
     submitted to us that are compatible with our API and encourage you to submit
@@ -82,7 +111,7 @@ component by making a blank class that inherits from
             super().__init__(name=name)
 
 For attributes, let's imagine that the philosopher's stone can convert a
-variable mass of the solution flowing through it into gold.::
+variable mass of the solution flowing through it into gold::
 
     from mechwolf import ActiveComponent, ureg
 
@@ -103,17 +132,41 @@ Now we'll need a base state::
         def base_state(self):
             return dict(rate="0 g/min")
 
+And a config method. Let's pretend that the Philosopher's Stone needs to know to
+what serial port it's connected. We'll ignore the complexities of actually
+connecting to it for the purposes of this tutorial, however. We'll add
+``serial_port`` as an argument to ``__init__()`` and have the ``config`` method
+return a dictionary saying that ``serial_port`` is an integer without a default::
+
+    from mechwolf import ActiveComponent, ureg
+
+    class PhilosophersStone(ActiveComponent):
+        def __init__(self, name=None, serial_port=None):
+            super().__init__(name=name)
+            self.rate = ureg.parse_expression("0 g/min")
+            self.serial_port = serial_port
+
+        def base_state(self):
+            return dict(rate="0 g/min")
+
+        def config(self):
+            return dict(serial_port=(int, None))
+
 And finally, a way to update it. Here, we'll have to rely on our imagination::
 
     from mechwolf import ActiveComponent, ureg
 
     class PhilosophersStone(ActiveComponent):
-        def __init__(self, name=None):
+        def __init__(self, name=None, serial_port=None):
             super().__init__(name=name)
             self.rate = ureg.parse_expression("0 g/min")
+            self.serial_port = serial_port
 
         def base_state(self):
             return dict(rate="0 g/min")
+
+        def config(self):
+            return dict(serial_port=(int, None))
 
         def update(self):
             # magic goes here
