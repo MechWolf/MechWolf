@@ -1,20 +1,22 @@
 from .pump import Pump
 from . import ureg
+import serial
 
 class VarianPump(Pump):
     '''A Varian pump.
     '''
-    def __init__(self, name=None, max_rate=0):
+    def __init__(self, name=None, serial_port=None, max_rate=0):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
         self.max_rate = max_rate
+        self.serial_port = serial_port
 
         #VARIAN PUMP SPECIFIC OPTIONS
         self.pump_id = 0
 
     def __enter__(self):
 
-        self.ser = serial.Serial(self.port)
+        self.ser = serial.Serial(self.serial_port)
         self.ser.baudrate = 19200
         self.ser.parity = 'E'
         self.ser.stopbits = 1
@@ -45,4 +47,4 @@ class VarianPump(Pump):
         self.set_flow(self.rate)
 
     def config(self):
-        return dict(max_rate=(int, None))
+        return dict(serial_port=(str, None), max_rate=(int, None))
