@@ -26,9 +26,20 @@ class ViciValve(Valve):
             return position
         return False
 
+    def set_position(self, position):
+        if not position > 0 and position <= self.positions:
+            return False
+        else:
+            message = f'GO{position}\r'
+            self.ser.write(message.encode())
+            return True
+
     def config(self):
-        return dict(serial_port=(int, None), positions=(int, 10))
+        return dict(serial_port=(str, None), positions=(int, 10))
 
     def update(self):
-        # TODO: implement this
-        pass
+        ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
+        message = f'GO{position}\r'
+        ser.write(message.encode())
+        self.ser.close()
+        print(self.setting)
