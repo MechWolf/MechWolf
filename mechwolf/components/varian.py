@@ -12,7 +12,8 @@ class VarianPump(Pump):
         self.serial_port = serial_port
 
         #VARIAN PUMP SPECIFIC OPTIONS
-        self.pump_id = 0
+        #TODO: MAKE THIS A CONGFIGURABLE OPTION
+        self.pump_id = 0x80
 
     def __enter__(self):
 
@@ -33,18 +34,22 @@ class VarianPump(Pump):
         print(self.ser.read_all())
 
     def set_flow(self,flow_rate):
+        print(flow_rate)
         #Flow rate must be supplied as an string from 000000 to 100000, where 100000 = 100% of the maximum pump flow rate.
-        percentage = 1000 * flow_rate / self.max_rate
-
-        flow_command = [0xFF, self.pump_id, 0x0A, 0x58]
-        
-        flow_command.extend(list(str(int(percentage)).encode()))
+        percentage = 100000 * flow_rate / self.max_rate
+        print(percentage)
+        flow_command = [0xFF, self.pump_id, 0x0A, 0x58]        
+        flow_command.extend(list(str(int(percentage)).zfill(6).encode()))
         flow_command.append(0x0D)
+        print(flow_command)
         self.ser.write(flow_command)
         print(self.ser.read_all())    
 
     def update(self):
-        self.set_flow(self.rate)
+        new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
+        self.set_flow(new_rate)
+
 
     def config(self):
+        #TODO Make max_rate a ureg?
         return dict(serial_port=(str, None), max_rate=(int, None))

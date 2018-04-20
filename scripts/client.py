@@ -20,8 +20,7 @@ async def execute_procedure(protocol_id, procedure, session):
         await asyncio.sleep(procedure["time"])
         print(Fore.GREEN + f"executing: {procedure} at {time.time()}")
         me.update_from_params(procedure["params"])
-        with me:
-            me.update()
+        me.update()
         await log(session, dumps(dict(
                     protocol_id=protocol_id,
                     timestamp=time.time(),
@@ -161,16 +160,11 @@ resolve_server()
 # create the client object
 class_type = globals()[config["device_info"]["device_class"]]
 
-if config["device_info"]["device_settings"]:
-    me = class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"])
-    me.open()
-else:
-    me = class_type(name=DEVICE_NAME,)
-    me.open()
 # get and execute protocols forever
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main(loop))
-me.close()
+with class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"]) as me:
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main(loop))
 
 # with ViciValve(mapping = None,
 #                   name = DEVICE_NAME,
