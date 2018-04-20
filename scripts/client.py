@@ -161,14 +161,15 @@ resolve_server()
 class_type = globals()[config["device_info"]["device_class"]]
 
 if config["device_info"]["device_settings"]:
-   me = class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"])
+    me = class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"])
+    me.open()
 else:
     me = class_type(name=DEVICE_NAME,)
-
+    me.open()
 # get and execute protocols forever
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main(loop))
-
+me.close()
 
 # with ViciValve(mapping = None,
 #                   name = DEVICE_NAME,
