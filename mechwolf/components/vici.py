@@ -17,6 +17,12 @@ class ViciValve(Valve):
     def __exit__(self, exc_type, exc_value, traceback):
         self.ser.close()
         return self
+    
+    def open(self):
+        self.ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
+
+    def close(self):
+        self.ser.close()
 
     def get_position(self):
         self.ser.write(b'CP\r')
@@ -39,11 +45,11 @@ class ViciValve(Valve):
 
     def update(self):
         try:
-            ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
             message = f'GO{self.setting}\r'
-            ser.write(message.encode())
+            self.ser.write(message.encode())
             print(self.setting)
         except Exception as e:
+            print('closing serial port...')
+            self.ser.close()
+            print('closed serial port')
             raise e
-        finally:
-            ser.close()
