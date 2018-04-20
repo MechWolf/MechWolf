@@ -31,7 +31,7 @@ async def get_protocol(session):
     with db.transaction():
         server = db["server"]
     try:
-        print("connecting to server")
+        print(f"connecting to {server}")
         async with session.post(f"{server}/protocol", data=dict(device_id=DEVICE_NAME)) as resp:
             response = await resp.text()
             try:
@@ -151,11 +151,11 @@ HUB_ID = config['resolver_info']['hub_id']
 DEVICE_NAME = config["device_info"]["device_name"]
 
 # default to cached server address
-try:
-    with db.transaction():
-        server = db["server"]
-except KeyError:
-    resolve_server()
+# try:
+#     with db.transaction():
+#         server = db["server"]
+# except KeyError:
+resolve_server()
 
 # create the client object
 class_type = globals()[config["device_info"]["device_class"]]
