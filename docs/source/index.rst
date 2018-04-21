@@ -40,21 +40,11 @@ Let's say you're trying to automate the production of `acetaminophen
 <https://en.wikipedia.org/wiki/Paracetamol>`_, a popular pain reliever and fever
 reducer. The reaction involves combining two chemicals, 4-aminophenol and acetic
 anhydride. The basic level of organization in MechWolf are individual
-components, such as the vessels and pumps. Let's go ahead and create them::
+components, such as the vessels and pumps. Let's go ahead and create them:
 
-    import mechwolf as mw
-
-    # define the vessels
-    vessel_1 = mw.Vessel("10 mL `4-aminophenol`")
-    vessel_2 = mw.Vessel("10 mL `acetic anhydride`")
-    vessel_3 = mw.Vessel("`acetaminophen`")
-
-    # define the pumps
-    pump_1 = mw.Pump(name="pump_1")
-    pump_2 = mw.Pump(name="pump_2")
-
-    # define the mixer
-    mixer = mw.TMixer()
+.. literalinclude:: ../../examples/acetaminophen.py
+   :language: python
+   :lines: 1-13
 
 That wasn't too bad! Just as putting vessels and pumps on a lab bench doesn't
 actually do anything, we're going to need to tell MechWolf what the
@@ -66,23 +56,11 @@ components, we need to tell MechWolf three things: where the connection is from,
 where it's going, and how they are actually connected. Tubing type can have a
 significant effect on reproducibility, so we require that you explicitly specify
 what tubing you are using when connecting components. This sounds complicated,
-but it is actually easy in practice::
+but it is actually easy in practice:
 
-    # same tube specs for all tubes
-    tube = mw.Tube(
-        length="1 m",
-        ID="1/16 in",
-        OD="2/16 in",
-        material="PVC")
-
-    # create the Apparatus object
-    A = mw.Apparatus()
-
-    # add the connections
-    A.add(vessel_1, pump_1, tube)
-    A.add(vessel_2, pump_2, tube)
-    A.add([pump_1, pump_2], mixer, tube)
-    A.add(mixer, vessel_3, tube)
+.. literalinclude:: ../../examples/acetaminophen.py
+   :language: python
+   :lines: 15-29
 
 With the :class:`~mechwolf.Apparatus` object, we can do *so* much. If we call
 :meth:`~mechwolf.Apparatus.summarize()`, we'll get a clean tabular describe of
@@ -124,13 +102,11 @@ Now that we've gone over how to define an apparatus and all the different ways
 to inspect it, let's make it synthesize acetaminophen. We do that with a
 :class:`~mechwolf.Protocol`, a list of procedures defined for an
 :class:`~mechwolf.Apparatus`. For this reaction, it's as simple as deciding the
-flow rate and duration for which to run the pumps::
+flow rate and duration for which to run the pumps:
 
-    # create the Protocol object
-    P = mw.Protocol(A, name="acetaminophen synthesis")
-
-    # add the procedure for the pumps
-    P.add([pump_1, pump_2], duration="10 mins", rate="1 mL/min")
+.. literalinclude:: ../../examples/acetaminophen.py
+   :language: python
+   :lines: 36-38
 
 It's really that simple to create protocols. We can visualize it equally simply
 with :meth:`~mechwolf.Protocol.visualize()`:
@@ -166,7 +142,7 @@ the rest, ensuring that both pumps have their protocols and start in sync.
 About
 -----
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    about/why
    about/faq
