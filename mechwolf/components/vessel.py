@@ -3,9 +3,11 @@ from warnings import warn
 
 from cirpy import Molecule
 from terminaltables import SingleTable
-from colorama import Fore
+from colorama import Fore, init
 
 from .component import Component
+
+init(autoreset=True)
 
 class Vessel(Component):
     """A generic vessel.

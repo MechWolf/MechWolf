@@ -1,7 +1,9 @@
 from math import pi
-from colorama import Fore
+from colorama import Fore, init
 from warnings import warn
 from . import ureg
+
+init(autoreset=True)
 
 class Tube(object):
     """A tube.

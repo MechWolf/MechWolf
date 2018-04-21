@@ -11,12 +11,17 @@ from terminaltables import SingleTable
 import plotly as py
 import plotly.figure_factory as ff
 from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
-from colorama import Fore
+from colorama import Fore, init
 import requests
+from click import prompt, confirm
+import itsdangerous
 
-from . import ureg
+from . import ureg, RESOLVER_URL
 from .components import *
 from .validate_component import validate_component
+
+# initialize colored printing
+init(autoreset=True)
 
 class Apparatus(object):
     '''A unique network of components.
