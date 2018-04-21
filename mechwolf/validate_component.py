@@ -1,6 +1,8 @@
-from colorama import Fore
+from colorama import Fore, init
 from .components import ActiveComponent
 from . import ureg
+
+init(autoreset=True)
 
 def validate_component(component, warnings=True):
     '''Checks if a component's class is valid.
@@ -65,5 +67,5 @@ def validate_component(component, warnings=True):
         if type(v) not in [tuple, list] or len(v) != 2 or type(v[0]) != type:
             if warnings: print(Fore.RED + f"Invalid configuration for {k} in {component}. Should be (type, default).")
             return False
-            
+
     return True
