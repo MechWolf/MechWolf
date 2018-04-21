@@ -48,10 +48,7 @@ class Apparatus(object):
     def _add_single(self, from_component, to_component, tube):
         '''Adds a single connection to the apparatus.
 
-        Args:
-            from_component (Component): The :class:`Component` from which the flow is originating.
-            to_component (Component): The :class:`Component` where the flow is going.
-            tube (Tube): The :class:`components.Tube` that connects the components.
+        For args, see add().
         '''
         if not issubclass(from_component.__class__, Component):
             raise ValueError(Fore.RED + "From component must be a subclass of Component")
@@ -67,9 +64,9 @@ class Apparatus(object):
         '''Adds connections to the apparatus.
 
         Args:
-            from_component (Component or Iterable): The :class:`Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
-            to_component (Component): The :class:`Component` where the flow is going.
-            tube (Tube): The :class:`components.Tube` that connects the components.
+            from_component (Component or Iterable): The :class:`~mechwolf.components.component.Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
+            to_component (Component): The :class:`~mechwolf.components.component.Component` where the flow is going.
+            tube (Tube): The :class:`~mechwolf.components.tube.Tube` that connects the components.
         '''
 
         try:
@@ -354,16 +351,11 @@ class Protocol(object):
                 ``"5 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to ``"0 seconds"``, *i.e.* the
                 beginning of the protocol.
             stop (str, optional): The stop time of the procedure relative to the start of the protocol, such as
-                ``"30 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to None.
+                ``"30 seconds"``. May also be a :class:`datetime.timedelta`. May not be given if ``duration`` is
+                 used. Defaults to None.
             duration (str, optional): The duration of the procedure, such as "1 hour". May also be a
-                :class:`datetime.timedelta`. Defaults to None.
+                :class:`datetime.timedelta`. May not be used if ``stop`` is used. Defaults to None.
             **kwargs: The state of the component for the procedure.
-
-        Warning:
-            If stop and duration are both None, the procedure's stop time will be inferred as the end of the protocol.
-
-        Note:
-            Only one of stop and duration may be given.
 
         Raises:
             TypeError: A component is not of the correct type (*i.e.* a Component object)
