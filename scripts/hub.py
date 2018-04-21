@@ -81,7 +81,7 @@ def run_schedule():
 
 @app.route("/submit_protocol", methods=["POST"])
 def submit_protocol():
-    '''accepts a protocol posted as a json'''
+    '''Accepts a protocol posted as JSON.'''
     with db.transaction():
         db["protocol"] = request.form.get("protocol_json")
         db["protocol_id"] = str(uuid1())
@@ -102,7 +102,7 @@ def submit_protocol():
 
 @app.route("/protocol", methods=["GET", "POST"])
 def protocol():
-    '''endpoint for devices to check for new protocols to be posted'''
+    '''Returns protocols, if availible.'''
     try:
         with db.transaction():
 
