@@ -7,7 +7,7 @@ def cli():
 
 @cli.command(help="Do this before running hub or client!")
 def setup():
-    from scripts import setup
+    from scripts import config
 
 @cli.command()
 def hub():

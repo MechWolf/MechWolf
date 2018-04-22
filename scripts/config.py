@@ -17,7 +17,6 @@ import mechwolf as mw
 init(autoreset=True)
 
 has_key = False
-
 config_data = OrderedDict()
 config_data["resolver_info"] = OrderedDict()
 config_data["device_info"] = OrderedDict()
@@ -51,9 +50,11 @@ config_data["resolver_info"]["security_key"] = security_key
 device_type, _ = pick(["hub", "client"], "What kind of device is this?", indicator="->")
 
 if device_type == "client":
+    # get device name
     device_name = click.prompt("Device name (case sensitive)", type=str)
     config_data["device_info"]["device_name"] = device_name
 
+    # get device type
     device_classes = ["Import from file"]
     device_objs = [""]
     for name, obj in inspect.getmembers(mw.components):
@@ -73,6 +74,7 @@ if device_type == "client":
     else:
         config_data["device_info"]["device_class"] = device_class
 
+    # get device configuration
     config = {}
     for i in device_objs[device_idx](name="setup").config().items():
         config[i[0]] = click.prompt(i[0], type=i[1][0], default=i[1][1])
