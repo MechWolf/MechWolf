@@ -147,6 +147,7 @@ About
    about/why
    about/faq
    about/security
+   about/license
 
 User Guide
 ----------
