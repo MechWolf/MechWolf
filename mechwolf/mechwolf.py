@@ -78,6 +78,9 @@ class Apparatus(object):
             from_component (Component or Iterable): The :class:`~mechwolf.components.component.Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
             to_component (Component): The :class:`~mechwolf.components.component.Component` where the flow is going.
             tube (Tube): The :class:`~mechwolf.components.tube.Tube` that connects the components.
+
+        Raises:
+            ValueError: When the connection being added is invalid.
         '''
 
         try:
@@ -108,7 +111,10 @@ class Apparatus(object):
                 {"attribute": "value"}. Defaults to orthogonal splines and a node separation of 1.
             file_format (str, optional): The output format of the graph, either "pdf" or "png". Defaults to "pdf".
             filename (str, optional): The name of the output file. Defaults to the name of the apparatus.
-            '''
+
+        Raises:
+            ImportError: When the visualization package is not installed.
+        '''
 
         # legend = False
 
@@ -213,7 +219,11 @@ class Apparatus(object):
         '''Generates a human-readable description of the apparatus.
 
         Returns:
-            str: A description of apparatus.'''
+            str: A description of apparatus.
+
+        Raises:
+            RuntimeError: When a component cannot be described.
+        '''
         def _description(element, capitalize=False):
             '''takes a component and converts it to a string description'''
             if issubclass(element.__class__, Vessel):
@@ -221,7 +231,7 @@ class Apparatus(object):
             elif issubclass(element.__class__, Component):
                 return element.__class__.__name__ + " " + element.name
             else:
-                raise RuntimeError(Fore.RED + f"{element} cannot be described.")
+                raise RuntimeError(Fore.RED + f"{element} cannot be described. If you're seeing this message, something *very* wrong has happened.")
 
         result = ""
 
@@ -360,6 +370,9 @@ class Protocol(object):
 
     def add(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
         '''Adds a procedure to the protocol.
+
+        Warning:
+            If stop and duration are both None, the procedure's stop time will be inferred as the end of the protocol.
 
         Args:
             component_added (ActiveComponent or Iterable): The component(s) for which the procedure being added. If an
@@ -526,7 +539,8 @@ class Protocol(object):
             warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
 
         Raises:
-            Same as :meth:`Protocol.compile`.
+            ImportError: When the visualization package is not installed.
+            Otherwise, same as :meth:`Protocol.compile`.
         '''
 
         if "plotly" not in sys.modules:
@@ -560,12 +574,25 @@ class Protocol(object):
         # plot it
         py.offline.plot(fig, filename=f'{self.name}.html')
 
-    def execute(self, address="http://127.0.0.1:5000/submit_protocol"):
-        '''Executes the procedure
+    def execute(self, address=None, hub_id=None, security_key=None, confirmation=True):
+        '''Executes the procedure.
+
+        Warning:
+            If providing ``security_key`` as a keyword argument, do not share your source code.
+
+        Args:
+            address (str, optional): The address of the hub to connect to. If None, the MechWolf resolver is used.
+            hub_id (str, optional): The hub id to which the protocol should be sent. If None, it is requested via command line.
+            security_key (str, optional): The security key of the hub to which the protocol is being sent. If None, it is requested via command line.
+            confirmation (bool, optional): Whether to ask for confirmation. Defaults to True.
 
         Note:
             Must only contain :class:`~mechwolf.components.component.ActiveComponent` s that have an
-            update method, i.e. real components.'''
+            update method, i.e. real components.
+
+        Raises:
+            RuntimeError: When attempting to execute a protocol on invalid components.
+        '''
 
         # Ensure that execution isn't happening on invalid components
         if not all([validate_component(x["component"]) for x in self.procedures]):
