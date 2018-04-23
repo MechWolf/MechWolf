@@ -22,3 +22,5 @@ pick
 pytest
 rsa
 yamlordereddictloader
+pyopenssl
+sphinx

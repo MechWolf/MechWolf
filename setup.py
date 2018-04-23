@@ -7,14 +7,20 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'readme.md')) as f:
     long_description = f.read()
 
+extras_require = {
+    'vis': ['numpy', 'scipy', 'pandas', 'plotly', "graphviz"],
+    'client': ["pyserial",],
+    'hub': ["schedule", "flask", "aiohttp"]
+}
+
 setup(
-    name='mechwolf',  # Required
-    version='0.0.1',  # Required
-    description='Continuous flow process description, analysis, and automation',  # Required
-    long_description=long_description,  # Optional
-    url='https://github.com/benjamin-lee/MechWolf',  # Optional
-    author='Benjamin Lee and Alex Mijalis',  # Optional
-    author_email='benjamindlee@me.com',  # Optional
+    name='mechwolf',
+    version='0.0.1',
+    description='Continuous flow process description, analysis, and automation',
+    long_description=long_description,
+    url='https://github.com/benjamin-lee/MechWolf',
+    author='Benjamin Lee and Alex Mijalis',
+    author_email='benjamindlee@me.com',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -24,34 +30,21 @@ setup(
         "Topic :: Scientific/Engineering :: Chemistry",
         'Programming Language :: Python :: 3.6',
     ],
-    packages=find_packages(),  # Required
-    setup_requires=['cython'],
+    python_requires='>=3.6',
+    packages=find_packages(),
     tests_require=["pytest"],
     install_requires=[
-        "graphviz",
         "terminaltables",
         "pint",
-        "plotly",
         "networkx",
         "CIRpy",
         "colorama",
-        "pyserial",
         "pyyaml",
-        "flask",
-        "aiohttp",
-        "vedis",
-        "schedule",
         "requests",
         "xkcdpass",
         "pick",
         "click",
         "rsa",
         "yamlordereddictloader"],
-        # scripts=["scripts/mechwolf-client.py", "scripts/mechwolf-hub.py", "scripts/mechwolf-setup.py"],
-
-    entry_points={  # Optional
-        'console_scripts': [
-            'mechwolf=cli:cli',
-        ],
-    },
+    entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )
