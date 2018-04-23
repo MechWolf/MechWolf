@@ -90,7 +90,7 @@ def run_schedule():
 def submit_protocol():
     '''Accepts a protocol posted as JSON.'''
     logging.info("Received protocol")
-    with shelve.open('hub_shelf') as db:
+    with shelve.open('hub') as db:
         try:
             db["protocol_devices"] = list(json.loads(serializer.loads(request.form.get("protocol"), max_age=5)).keys())
             logging.debug("Protocol signature is valid")
@@ -117,7 +117,7 @@ def submit_protocol():
 def protocol():
     '''Returns protocols, if availible.'''
     try:
-        with shelve.open('hub_shelf') as db:
+        with shelve.open('hub') as db:
 
             # load the protocol and add the protocol_id
             protocol = dict(protocol=db["protocol"])
@@ -147,7 +147,7 @@ def protocol():
 
 @app.route("/start_time")
 def start_time():
-    with shelve.open('hub_shelf') as db:
+    with shelve.open('hub') as db:
         try:
             # time out if too long has passed from when the protocol was submitted but not all devices have checked in
             logging.debug("Checking to see if timing out...")
@@ -185,7 +185,7 @@ def start_time():
 @app.route("/log", methods=["POST", "GET"])
 def log():
     logging.info(f"Logging {request.json}")
-    with shelve.open('hub_shelf') as db:
+    with shelve.open('hub') as db:
         protocol_id = db["protocol_id"]
     with shelve.open(protocol_id) as db:
         if request.method == "GET":

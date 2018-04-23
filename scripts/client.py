@@ -1,12 +1,12 @@
 from json import dumps, loads
 import time
+import shelve
 
 import aiohttp
 import asyncio
 import async_timeout
 from colorama import init, Fore, Back, Style
 import yaml
-from vedis import Vedis
 import requests
 import itsdangerous
 
@@ -28,7 +28,7 @@ async def execute_procedure(protocol_id, procedure, session):
                     procedure=procedure)))
 
 async def get_protocol(session):
-    with db.transaction():
+    with shelve.open('client') as db:
         server = db["server"]
     try:
         print(f"connecting to {server}")
@@ -39,15 +39,13 @@ async def get_protocol(session):
                 return response["protocol_id"], response[DEVICE_NAME]
             except:
                 return "", response
-
-
     except aiohttp.client_exceptions.ClientConnectorError:
         print(Fore.YELLOW + f"Unable to connect to {server}")
         resolve_server()
         return "", False
 
 async def get_start_time(session):
-    with db.transaction():
+    with shelve.open('client') as db:
         server = db["server"]
     try:
         async with session.get(f"{server}/start_time", params=dict(device_id=DEVICE_NAME)) as resp:
@@ -65,14 +63,17 @@ async def get_start_time(session):
         return False
 
 async def log(session, data):
-    with db.transaction():
+    with shelve.open('client') as db:
         server = db["server"]
     try:
         async with session.post(f"{server}/log", json=data) as resp:
             await resp.text()
     except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
-        with db.transaction():
-            db.List("log").append(data)
+        with shelve.open('client') as db:
+            try:
+                db["log"] = db["log"] + [data]
+            except KeyError:
+                db["log"] = [data]
         print(Fore.RED + f"Failed to log {data}. Saved to database.")
     return
 
@@ -132,7 +133,7 @@ def resolve_server():
         response = requests.get(mw.RESOLVER_URL + "get_hub", params={"hub_id":HUB_ID})
         s = itsdangerous.Signer(SECURITY_KEY)
         server = s.unsign(response.json()["hub_address"]).decode()
-        with db.transaction():
+        with shelve.open('client') as db:
             db["server"] = f"http://{server}"
         # print("Finding server")
         # data, addr = s.recvfrom(1024) # wait for a packet
@@ -140,8 +141,6 @@ def resolve_server():
         # if data.startswith(KEY):
         #     server = f"http://{data[len(KEY):]}:5000"
         #     print(Fore.GREEN + f"Got service announcement from {server}")
-
-db = Vedis("client.db") # set up db
 
 # get the config data
 with open("client_config.yml", "r") as f:
