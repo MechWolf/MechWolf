@@ -46,5 +46,6 @@ setup(
         "click",
         "rsa",
         "yamlordereddictloader"],
+    extras_require=extras_require,
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )

@@ -1,4 +1,8 @@
-import serial
+try:
+    import serial
+except ImportError:
+    pass
+    
 from .valve import Valve
 
 class ViciValve(Valve):
@@ -17,7 +21,7 @@ class ViciValve(Valve):
     def __exit__(self, exc_type, exc_value, traceback):
         self.ser.close()
         return self
-    
+
     def open(self):
         self.ser = serial.Serial(self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1, timeout=0.1)
 

@@ -4,17 +4,23 @@ import time
 import json
 import yaml
 from warnings import warn
+import sys
 
-from graphviz import Digraph
 import networkx as nx
 from terminaltables import SingleTable
-import plotly as py
-import plotly.figure_factory as ff
-from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
 from colorama import Fore, init
 import requests
 from click import prompt, confirm
 import itsdangerous
+
+# If visualization extras are available, import them
+try:
+    from graphviz import Digraph
+    import plotly as py
+    import plotly.figure_factory as ff
+    from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
+except ImportError:
+    pass
 
 from . import ureg, RESOLVER_URL
 from .components import *
@@ -103,6 +109,12 @@ class Apparatus(object):
             file_format (str, optional): The output format of the graph, either "pdf" or "png". Defaults to "pdf".
             filename (str, optional): The name of the output file. Defaults to the name of the apparatus.
             '''
+
+        # legend = False
+
+        if "graphviz" not in sys.modules:
+            raise ImportError(Fore.RED + "Visualization package not installed. Install mechwolf with the [vis] extra enabled.")
+
 
         self.validate() # ensure apparatus is valid
         f = Digraph(name=self.name,
@@ -516,6 +528,10 @@ class Protocol(object):
         Raises:
             Same as :meth:`Protocol.compile`.
         '''
+
+        if "plotly" not in sys.modules:
+            raise ImportError(Fore.RED + "Visualization package not installed. Install mechwolf with the [vis] extra enabled.")
+
         df = []
         for component, procedures in self.compile(warnings=warnings, _visualization=True).items():
             for procedure in procedures:

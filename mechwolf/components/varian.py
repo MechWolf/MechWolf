@@ -1,6 +1,10 @@
 from .pump import Pump
 from . import ureg
-import serial
+
+try:
+    import serial
+except ImportError:
+    pass
 
 class VarianPump(Pump):
     '''A Varian pump.
@@ -38,12 +42,12 @@ class VarianPump(Pump):
         #Flow rate must be supplied as an string from 000000 to 100000, where 100000 = 100% of the maximum pump flow rate.
         percentage = 100000 * flow_rate / self.max_rate
         print(percentage)
-        flow_command = [0xFF, self.pump_id, 0x0A, 0x58]        
+        flow_command = [0xFF, self.pump_id, 0x0A, 0x58]
         flow_command.extend(list(str(int(percentage)).zfill(6).encode()))
         flow_command.append(0x0D)
         print(flow_command)
         self.ser.write(flow_command)
-        print(self.ser.read_all())    
+        print(self.ser.read_all())
 
     def update(self):
         new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude

@@ -9,8 +9,6 @@ pyserial
 pyyaml
 flask
 aiohttp
-cython
-vedis
 schedule
 requests
 sphinx
