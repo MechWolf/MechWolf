@@ -603,13 +603,18 @@ class Protocol(object):
 
         if security_key is None:
             security_key = prompt("Please enter your security_key", type=str)
-        s = itsdangerous.Signer(security_key)
+        else:
+            print(Fore.YELLOW + "Remember never to share source code containing your security key!")
+        signer = itsdangerous.Signer(security_key)
+        serializer = itsdangerous.URLSafeTimedSerializer(security_key)
+        timestamp_signer = itsdangerous.TimestampSigner(security_key)
 
-        confirm("Are you sure you want to execute this procedure?", abort=True, default=True)
+        if confirmation:
+            confirm("Are you sure you want to execute this procedure?", abort=True, default=True)
 
-        response = requests.request("GET", RESOLVER_URL + "get_hub", params={"hub_id": hub_id})
         if address is None:
-            address = s.unsign(response.json()["hub_address"]).decode()
+            response = requests.request("GET", RESOLVER_URL + "get_hub", params={"hub_id": hub_id})
+            address = signer.unsign(response.json()["hub_address"]).decode()
 
-        serializer = itsdangerous.TimedSerializer(security_key)
-        print(requests.post(f"http://{address}/submit_protocol", data=dict(protocol_json=serializer.dumps(self.json()))).text)
+        response = requests.post(f"http://{address}/submit_protocol", data=dict(protocol=serializer.dumps(self.json()))).text
+        print(f"Protocol id: {timestamp_signer.unsign(response).decode()}")
