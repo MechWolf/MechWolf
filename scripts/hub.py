@@ -12,7 +12,7 @@ import schedule
 import yaml
 import rsa
 import requests
-from itsdangerous import Signer, TimedSerializer
+from itsdangerous import Signer, TimestampSigner, URLSafeTimedSerializer, BadSignature
 
 import mechwolf as mw
 
@@ -30,7 +30,7 @@ with open("hub_config.yml", "r") as f:
     config = yaml.load(f)
 SECURITY_KEY = config['resolver_info']['security_key']
 HUB_ID = config['resolver_info']['hub_id']
-signer, serializer = Signer(SECURITY_KEY), TimedSerializer(SECURITY_KEY)
+signer, timestamp_signer, serializer = Signer(SECURITY_KEY), TimestampSigner(SECURITY_KEY), URLSafeTimedSerializer(SECURITY_KEY)
 
 # get the private key
 with open(config['resolver_info']['rsa_private_filepath'], mode='rb') as privatefile:
@@ -42,6 +42,9 @@ with open(config['resolver_info']['rsa_public_filepath'], mode='rb') as pubfile:
     keydata = pubfile.read()
 # the inverse function call here is to verify that they public key is valid
 PUB_KEY_HEX = binascii.hexlify(rsa.PublicKey.load_pkcs1(keydata).save_pkcs1()).decode()
+
+def timestamp_sign(string):
+    return timestamp_signer.sign(string.encode())
 
 def update_ip():
     '''send out the location of our server to the resolver if nescessary '''
@@ -55,9 +58,9 @@ def update_ip():
     with shelve.open('hub_config') as config_db:
         # return early if address on file matches
         try:
-                if my_ip == config_db["current_ip"]:
-                    logging.debug("No change to IP")
-                    return
+            if my_ip == config_db["current_ip"]:
+                logging.debug("No change to IP")
+                return
         except KeyError:
             pass
 
@@ -87,15 +90,15 @@ def run_schedule():
 def submit_protocol():
     '''Accepts a protocol posted as JSON.'''
     logging.info("Recieved protocol")
-    try:
-        protocol = serializer.loads(request.form.get("protocol_json"), max_age=5)
-        logging.debug("Protocol signature is valid")
-    except:
-        logging.warning("Protocol signature is invalid!")
-        return "protocol rejected: invalid signature"
-
     with shelve.open('hub_shelf') as db:
-        db["protocol"] = protocol
+        try:
+            db["protocol_devices"] = list(json.loads(serializer.loads(request.form.get("protocol"), max_age=5)).keys())
+            logging.debug("Protocol signature is valid")
+        except BadSignature:
+            logging.warning("Protocol signature is invalid!")
+            return timestamp_sign("protocol rejected: invalid signature")
+
+        db["protocol"] = request.form.get("protocol")
         db["protocol_id"] = str(uuid1())
 
         # clear the stored values when a new protocol comes in
@@ -108,41 +111,39 @@ def submit_protocol():
 
         # store the time when the protocol came in
         db["protocol_submit_time"] = time()
-        return jsonify(dict(protocol_id=db["protocol_id"]))
+        return timestamp_sign(db["protocol_id"])
 
-@app.route("/protocol", methods=["GET", "POST"])
+@app.route("/protocol")
 def protocol():
     '''Returns protocols, if availible.'''
     try:
         with shelve.open('hub_shelf') as db:
 
             # load the protocol and add the protocol_id
-            parsed_protocol = json.loads(db["protocol"])
-            parsed_protocol.update({"protocol_id": db["protocol_id"]})
+            protocol = dict(protocol=db["protocol"])
+            protocol.update({"protocol_id": db["protocol_id"]})
 
             # to allow easier introspection, let people view the protocol
-            if request.method == "GET":
-                return jsonify(parsed_protocol)
+            if not request.args:
+                return jsonify(protocol)
 
             # only give the protocol once
-            device_id = request.form["device_id"]
+            device_id = request.args["device_id"]
             try:
                 if device_id in db["protocol_acks"]:
-                    return "no protocol"
+                    return timestamp_sign("no protocol")
             except KeyError:
                 pass
 
             # store the device that checked in and and return the protocol
             db["protocol_acks"] = db["protocol_acks"].union([device_id])
 
-            return app.response_class(
-                response=json.dumps({k: parsed_protocol[k] for k in ["protocol_id", device_id]}),
-                status=200,
-                mimetype="application/json")
+
+            return jsonify(protocol)
 
     # if no protocol has been given
     except KeyError:
-        return "no protocol"
+        return timestamp_sign("no protocol")
 
 @app.route("/start_time")
 def start_time():
@@ -151,17 +152,17 @@ def start_time():
             # time out if too long has passed from when the protocol was submitted but not all devices have checked in
             logging.debug("Checking to see if timing out...")
             if time() - float(db["protocol_submit_time"]) > TIMEOUT:
-                return "abort"
+                return timestamp_sign("abort")
             logging.debug("Not timing out")
 
             # if every device has gotten the protocol, give them the start time
-            logging.debug(f'Checking if all of {db["protocol_acks"]} are in {list(json.loads(db["protocol"]))}.')
-            if all([x in db["protocol_acks"] for x in list(json.loads(db["protocol"]))]):
+            logging.debug(f'Checking if all of {db["protocol_acks"]} are in {db["protocol_devices"]}.')
+            if all([x in db["protocol_acks"] for x in db["protocol_devices"]]):
                 logging.debug("They are!")
 
                 # log the device ID as having gotten start time
                 if request.args.get("device_id") in db["start_time_acks"]:
-                        return "no start time"
+                        return timestamp_sign("no start time")
                 elif request.args.get("device_id") is not None:
                     db["start_time_acks"] = db["start_time_acks"].union([request.args.get("device_id")])
 
@@ -169,17 +170,17 @@ def start_time():
 
                 # the first device after all have checked in will determine start time
                 try:
-                    return str(db["start_time"])
+                    return db["start_time"]
                 except KeyError:
                     if request.args.get("device_id") is not None: # return "no start time" if a blank request is gotten
                         logging.debug("No start time set. Setting new one...")
-                        db["start_time"] = time() + 5
+                        db["start_time"] = timestamp_sign(str(time() + 5))
                         logging.debug(f'Start time is {db["start_time"]}')
-                        return str(db["start_time"])
+                        return db["start_time"]
 
         except KeyError:
             pass
-        return "no start time"
+        return timestamp_sign("no start time")
 
 @app.route("/log", methods=["POST", "GET"])
 def log():
@@ -196,7 +197,7 @@ def log():
             db["log"] = db["log"] + [request.json]
         except KeyError:
             db["log"] = [request.json]
-    return "logged"
+    return timestamp_sign("logged")
 
 
 schedule.every(5).seconds.do(update_ip)
