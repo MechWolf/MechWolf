@@ -7,12 +7,6 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'readme.md')) as f:
     long_description = f.read()
 
-extras_require = {
-    'vis': ['numpy', 'scipy', 'pandas', 'plotly', "graphviz"],
-    'client': ["pyserial",],
-    'hub': ["schedule", "flask", "aiohttp"]
-}
-
 setup(
     name='mechwolf',
     version='0.0.1',
@@ -46,6 +40,10 @@ setup(
         "click",
         "rsa",
         "yamlordereddictloader"],
-    extras_require=extras_require,
+    extras_require={
+        'vis': ['plotly', "graphviz"],
+        'client': ["pyserial",],
+        'hub': ["schedule", "flask", "aiohttp"]
+    },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )
