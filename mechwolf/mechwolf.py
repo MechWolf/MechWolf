@@ -615,6 +615,8 @@ class Protocol(object):
         if address is None:
             response = requests.request("GET", RESOLVER_URL + "get_hub", params={"hub_id": hub_id})
             address = signer.unsign(response.json()["hub_address"]).decode()
-
-        response = requests.post(f"http://{address}/submit_protocol", data=dict(protocol=serializer.dumps(self.json()))).text
-        print(f"Protocol id: {timestamp_signer.unsign(response).decode()}")
+        try:
+            response = requests.post(f"http://{address}/submit_protocol", data=dict(protocol=serializer.dumps(self.json()))).text
+            print(f"Protocol id: {timestamp_signer.unsign(response).decode()}")
+        except itsdangerous.BadSignature:
+            raise RuntimeError(Fore.RED + "Bad signature from server! Make sure that your security key is correct in both places.")

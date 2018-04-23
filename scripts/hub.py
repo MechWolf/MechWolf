@@ -16,7 +16,7 @@ from itsdangerous import Signer, TimestampSigner, URLSafeTimedSerializer, BadSig
 
 import mechwolf as mw
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logging.getLogger("schedule").setLevel(logging.WARNING)
 logging.getLogger("werkzeug").setLevel(logging.INFO)
 
@@ -89,7 +89,7 @@ def run_schedule():
 @app.route("/submit_protocol", methods=["POST"])
 def submit_protocol():
     '''Accepts a protocol posted as JSON.'''
-    logging.info("Recieved protocol")
+    logging.info("Received protocol")
     with shelve.open('hub_shelf') as db:
         try:
             db["protocol_devices"] = list(json.loads(serializer.loads(request.form.get("protocol"), max_age=5)).keys())
@@ -203,4 +203,4 @@ def log():
 schedule.every(5).seconds.do(update_ip)
 t = Thread(target=run_schedule)
 t.start()
-app.run(debug=True, host="0.0.0.0", use_reloader=True, threaded=True, port=80)
+app.run(debug=False, host="0.0.0.0", use_reloader=True, threaded=True, port=80)

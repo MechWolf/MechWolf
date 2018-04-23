@@ -42,6 +42,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
+    'sphinxcontrib.autohttp.flask'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -171,6 +172,6 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None), 'itsdangerous': ('https://pythonhosted.org/itsdangerous', None)}
 autodoc_member_order = 'bysource'
 add_module_names = False

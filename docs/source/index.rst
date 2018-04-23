@@ -166,6 +166,7 @@ API Reference
 
    mechwolf
    mechwolf.components
+   hub
 
 
 Indices and tables
