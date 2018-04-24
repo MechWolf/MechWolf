@@ -124,5 +124,5 @@ elif device_type == "hub":
 
 # save the config file
 yaml.dump(config_data, open(f"{device_type}_config.yml", "w+"), Dumper=yamlordereddictloader.Dumper, default_flow_style=False)
-print(Fore.GREEN + "\nSetup complete! When you're ready to start your hub server, run the following command:\n\n\t$ mechwolf-hub\n")
+print(Fore.GREEN + "\nSetup complete! When you're ready to start your hub server, run the following command:\n\n\t$ mechwolf hub\n")
 print(Fore.RED + f"Be sure to guard {device_type}_config.yml; it contains the plaintext of your security key!\n")
