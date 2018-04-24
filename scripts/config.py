@@ -10,6 +10,7 @@ import click
 from pick import pick
 import rsa
 import yamlordereddictloader
+from serial.tools import list_ports
 
 import mechwolf as mw
 
@@ -77,7 +78,10 @@ if device_type == "client":
     # get device configuration
     config = {}
     for i in device_objs[device_idx](name="setup").config().items():
-        config[i[0]] = click.prompt(i[0], type=i[1][0], default=i[1][1])
+        if i[0] == 'serial_port':
+            config[i[0]]  = pick([port[0] for port in list_ports.comports()], "Select the serial port your device is connected to:", indicator = '->')[0]
+        else:
+            config[i[0]] = click.prompt(i[0], type=i[1][0], default=i[1][1])
     config_data["device_info"]["device_settings"] = config
 
 elif device_type == "hub":
