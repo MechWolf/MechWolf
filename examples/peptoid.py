@@ -1,4 +1,5 @@
 import mechwolf as mw
+from datetime import timedelta
 
 # define vessels
 coupling_agent = mw.Vessel("HATU", name="coupling_agent")
@@ -7,9 +8,9 @@ solvent = mw.Vessel("solvent", name="solvent")
 output = mw.Vessel("waste", name="output")
 
 # define pumps
-coupling_pump = mw.Pump(name="coupling_pump")
-base_pump = mw.Pump(name="base_pump")
-amine_pump = mw.Pump(name="amine_pump")
+coupling_pump = mw.VarianPump(name="coupling_pump")
+base_pump = mw.VarianPump(name="base_pump")
+amine_pump = mw.VarianPump(name="amine_pump")
 mixer = mw.TMixer()
 
 # define amines
@@ -22,6 +23,9 @@ amine_6 = mw.Vessel("amine_6", name="amine_6")
 amine_7 = mw.Vessel("amine_7", name="amine_7")
 amine_8 = mw.Vessel("amine_8", name="amine_8")
 
+# dummy passive heater
+# heater = mw.Component("heater")
+
 # define valve
 mapping = dict(amine_1=1,
                amine_2=2,
@@ -31,21 +35,61 @@ mapping = dict(amine_1=1,
                amine_6=6,
                amine_7=7,
                amine_8=8,
-               solvent=9,
-               acid=10)
-valve = mw.Valve(name="valve", mapping=mapping)
+               acid=9,
+               solvent=10)
+valve = mw.ViciValve(name="valve", mapping=mapping)
 
 
-tube = mw.Tube(length="1 foot", ID="1/16 in", OD="1/8 in", material="PFA")
+fat_tube = mw.Tube(length="2 foot", ID="1/16 in", OD="1/8 in", material="PFA")
+thin_tube = mw.Tube(length="2 foot", ID="0.04 in", OD="1/16 in", material="PFA")
 
 A = mw.Apparatus("Automated Fast Flow Peptoid Synthesizer")
 
-A.add(coupling_agent, coupling_pump, tube)
-A.add(coupling_pump, mixer, tube = mw.Tube(length="1 foot", ID="0.0030 in", OD="1/16 in", material="PFA"))
-A.add([amine_1, amine_2, amine_3, amine_4, amine_5, amine_6, amine_7, amine_8, solvent, acid], valve, tube)
-A.add(valve, amine_pump, tube)
-A.add(amine_pump, mixer, tube = mw.Tube(length="1 foot", ID="0.0030 in", OD="1/16 in", material="PFA"))
-A.add(mixer, output, tube = mw.Tube(length="1 foot", ID="0.0030 in", OD="1/16 in", material="PFA"))
+A.add(coupling_agent, coupling_pump, fat_tube)
+A.add(coupling_pump, mixer, thin_tube)
+A.add([amine_1, amine_2, amine_3, amine_4, amine_5, amine_6, amine_7, amine_8, solvent, acid], valve, fat_tube)
+A.add(valve, amine_pump, fat_tube)
+A.add(amine_pump, mixer, thin_tube)
+# A.add(mixer, heater, thin_tube)
+# A.add(heater, output, thin_tube)
 
-A.summarize()
-A.visualize(graph_attr=dict(splines="ortho", nodesep="0.5"))
+# A.describe()
+# A.visualize(graph_attr=dict(splines="ortho", nodesep="0.75"), label_tubes=False)
+
+P = mw.Protocol(A, duration="auto")
+start = timedelta(seconds=0)
+
+# how much time to leave the pumps off before and after switching the valve
+switching_time = timedelta(seconds=1)
+
+def add_rinse():
+    global start
+    rinse_duration = timedelta(minutes=2)
+    P.add(valve, start=start, duration=rinse_duration, setting="solvent")
+    P.add(amine_pump, start=start+switching_time, duration=rinse_duration - 2*switching_time, rate="5 mL/min")
+    start += rinse_duration
+
+peptoid = ["amine_1", "amine_5", "amine_3"]
+
+for amine in peptoid:
+    add_rinse()
+
+    # acid coupling
+    coupling_duration = timedelta(minutes=1, seconds=30)
+    P.add([amine_pump, coupling_pump], start=start+switching_time, duration=coupling_duration - 2*switching_time, rate="5 mL/min")
+    P.add(valve, start=start, duration=coupling_duration, setting="acid")
+    start += coupling_duration
+
+    add_rinse()
+
+    # amine addition
+    amine_addition_duration = timedelta(minutes=1, seconds=30)
+    P.add(amine_pump, start=start+switching_time, duration=coupling_duration - 2*switching_time, rate="5 mL/min")
+    P.add(valve, start=start, duration=coupling_duration, setting=amine)
+    start += amine_addition_duration
+
+add_rinse()
+add_rinse()
+
+print(P.yaml())
+print(P.visualize())
