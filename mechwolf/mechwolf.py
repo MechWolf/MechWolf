@@ -282,24 +282,7 @@ class Protocol(object):
     def _add_single(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
         '''Adds a single procedure to the protocol.
 
-        Args:
-            component (Component): The component which the procedure being added is for.
-            start (str, optional): The start time of the procedure relative to the start of the protocol, such as
-                ``"5 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to ``"0 seconds"``, *i.e.* the
-                beginning of the protocol.
-            stop (str, optional): The stop time of the procedure relative to the start of the protocol, such as
-                ``"30 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to None.
-            duration (str, optional): The duration of the procedure, such as "1 hour". May also be a
-                :class:`datetime.timedelta`. Defaults to None.
-
-        Note:
-            Only one of stop and duration may be given.
-            If stop and duration are both None, the procedure's stop time will be inferred as the end of the protocol.
-
-        Raises:
-            TypeError: A component is not of the correct type (*i.e.* a Component object)
-            ValueError: An error occurred when attempting to parse the kwargs.
-            RuntimeError: Stop time of procedure is unable to be determined or invalid component.
+        See add() for full documentation.
         '''
 
         # make sure that the component being added to the protocol is part of the apparatus
@@ -315,7 +298,11 @@ class Protocol(object):
                 if type(kwargs["setting"]) == int:
                     pass
 
-        # make sure the component is valid to add
+        # don't let users give empty procedures
+        if not kwargs:
+            raise RuntimeError(Fore.RED + "No kwargs supplied. This will not manipulate the state of your sythesizer. Ensure your call to add() is valid.")
+
+        # make sure the component and keywords are valid
         for kwarg, value in kwargs.items():
             if isinstance(component, type):
                 raise TypeError(Fore.RED + f"Must add an instance of {component}, not the class itself.")
