@@ -31,6 +31,12 @@ class Component(object):
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}>"
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
 class ActiveComponent(Component):
     """A connected, controllable component.
 

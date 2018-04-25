@@ -164,9 +164,19 @@ API Reference
 .. toctree::
    :maxdepth: 2
 
-   mechwolf
-   mechwolf.components
-   hub
+   api/mechwolf
+   api/mechwolf.components
+   api/hub
+
+CLI Reference
+-------------
+
+.. toctree::
+   :maxdepth: 2
+
+   cli/mechwolf
+   cli/client
+   cli/hub
 
 
 Indices and tables

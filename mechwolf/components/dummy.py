@@ -1,6 +1,6 @@
 from .component import ActiveComponent
 
-class _Dummy(ActiveComponent):
+class Dummy(ActiveComponent):
     def __init__(self, name=None):
         super().__init__(name=name)
         self.active = False
@@ -14,3 +14,6 @@ class _Dummy(ActiveComponent):
         else:
             print("Inactive.")
         return self.__dict__
+
+    def config(self):
+        return {}

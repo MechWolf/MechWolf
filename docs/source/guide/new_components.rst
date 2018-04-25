@@ -62,7 +62,7 @@ what you need. In that case, you'll have to create your own component. Here's ho
     like::
 
         >>> ViciValve(name="valve").config()
-        {"positions": (int, None), "serial_port": (int, None)}
+        {"positions": (int, None), "serial_port": (str, None)}
 
     Note that, when there is no default, the second value of the tuple is
     ``None``. When your component is instantiated on the client, these values
