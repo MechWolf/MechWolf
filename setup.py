@@ -27,6 +27,7 @@ setup(
     python_requires='>=3.6',
     packages=find_packages(),
     tests_require=["pytest"],
+    setup_requires=['pytest-runner'],
     install_requires=[
         "terminaltables",
         "pint",
