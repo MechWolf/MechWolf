@@ -600,12 +600,12 @@ class Protocol(object):
             if keyring.get_password("mechwolf", "security_key") is None:
                     security_key = prompt("Please enter your security_key", type=str)
                     if confirm("Save security_key?", default=True):
-                        keyring.set_password("mechwolf", "security_key", hub_id)
+                        keyring.set_password("mechwolf", "security_key", security_key)
             else:
                 hub_id = keyring.get_password("mechwolf", "security_key")
         else:
             print(Fore.YELLOW + "Remember never to share source code containing your security key!")
-            
+
         signer = itsdangerous.Signer(security_key)
         serializer = itsdangerous.URLSafeTimedSerializer(security_key)
         timestamp_signer = itsdangerous.TimestampSigner(security_key)

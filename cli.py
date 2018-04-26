@@ -1,5 +1,5 @@
 import click
-
+import keyring
 from scripts.client import run_client
 
 @click.group()
@@ -24,6 +24,14 @@ def hub():
     help="The configuration file for the client")
 def client(v, config):
     run_client(verbosity=v, config=config)
+
+@cli.command(help="Update the stored hub_id and security_key")
+@click.option('-h', '--hub_id', prompt=True, default=lambda: keyring.get_password("mechwolf", "hub_id"))
+@click.option('-s', "--security_key", prompt=True, default=lambda: keyring.get_password("mechwolf", "security_key"))
+def update(hub_id, security_key):
+    keyring.set_password("mechwolf", "hub_id", hub_id)
+    keyring.set_password("mechwolf", "security_key", security_key)
+
 
 if __name__ == '__main__':
     cli()
