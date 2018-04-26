@@ -608,6 +608,7 @@ class Protocol(object):
                     hub_id = prompt("Please enter your hub_id", type=str)
                     if confirm("Save hub_id?", default=True):
                         keyring.set_password("mechwolf", "hub_id", hub_id)
+                        print("Storing hub_id! To change, run the command: $ mechwolf update")
             else:
                 hub_id = keyring.get_password("mechwolf", "hub_id")
 
@@ -617,6 +618,7 @@ class Protocol(object):
                     security_key = prompt("Please enter your security_key", type=str)
                     if confirm("Save security_key?", default=True):
                         keyring.set_password("mechwolf", "security_key", security_key)
+                        print("Storing security_key! To change, run the command: $ mechwolf update")
             else:
                 hub_id = keyring.get_password("mechwolf", "security_key")
         else:
