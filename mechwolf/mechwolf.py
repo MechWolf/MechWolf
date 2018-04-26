@@ -12,6 +12,7 @@ from colorama import Fore, init
 import requests
 from click import prompt, confirm
 import itsdangerous
+import keyring
 
 # If visualization extras are available, import them
 try:
@@ -585,13 +586,26 @@ class Protocol(object):
         if not all([validate_component(x["component"]) for x in self.procedures]):
             raise RuntimeError(Fore.RED + f"Attempting to execute protocol on invalid component {component}. Aborted.")
 
+        # get hub_id
         if hub_id is None:
-            hub_id = prompt("Please enter your hub_id", type=str)
+            if keyring.get_password("mechwolf", "hub_id") is None:
+                    hub_id = prompt("Please enter your hub_id", type=str)
+                    if confirm("Save hub_id?", default=True):
+                        keyring.set_password("mechwolf", "hub_id", hub_id)
+            else:
+                hub_id = keyring.get_password("mechwolf", "hub_id")
 
+        # get security_key
         if security_key is None:
-            security_key = prompt("Please enter your security_key", type=str)
+            if keyring.get_password("mechwolf", "security_key") is None:
+                    security_key = prompt("Please enter your security_key", type=str)
+                    if confirm("Save security_key?", default=True):
+                        keyring.set_password("mechwolf", "security_key", hub_id)
+            else:
+                hub_id = keyring.get_password("mechwolf", "security_key")
         else:
             print(Fore.YELLOW + "Remember never to share source code containing your security key!")
+            
         signer = itsdangerous.Signer(security_key)
         serializer = itsdangerous.URLSafeTimedSerializer(security_key)
         timestamp_signer = itsdangerous.TimestampSigner(security_key)
