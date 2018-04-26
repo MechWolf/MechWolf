@@ -15,3 +15,4 @@ Utilities
 ---------
 .. autofunction:: mechwolf.validate_component
 .. autofunction:: mechwolf.generate_security_key
+.. autofunction:: mechwolf.validate_security_key

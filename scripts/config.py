@@ -38,7 +38,7 @@ if has_key:
                                 "If so, you should already have a security_key. "\
                                 "What is your key?",
                                 type=str)
-    if not re.match(r"\w*-\w*-\w*-\w*-\w*-\w*", security_key):
+    if not mw.validate_security_key(security_key):
         raise ValueError("Invalid security_key.")
 else:
     security_key = mw.generate_security_key()
