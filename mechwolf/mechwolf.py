@@ -565,6 +565,22 @@ class Protocol(object):
     def execute(self, address=None, hub_id=None, security_key=None, confirmation=True):
         '''Executes the procedure.
 
+        When a ``hub_id`` and ``security_key`` are not provided, there will be a
+        command line prompt with the  option to save them to the keychain.
+        Subsequent invocations of this function will not prompt the user  for
+        the ``hub_id`` and ``security_key``.
+
+        To change the stored values of ``hub_id`` and ``security_key``, run this command::
+
+            $ mechwolf update
+
+        For more information, run::
+
+            $ mechwolf update --help
+
+        Providing ``hub_id`` and ``security_key`` as keyword arguments will
+        override stored values and will not save the new values to the keychain.
+
         Warning:
             If providing ``security_key`` as a keyword argument, do not share your source code.
 
