@@ -91,11 +91,12 @@ class ActiveComponent(Component):
         '''A placeholder method containing the information needed to configure the component.
 
         When an ActiveComponent is used in the real world, there is likely
-        variables that will need to be configured such as serial port.
+        variables that will need to be configured such as serial port. This
+        method returns that information.
 
         Returns:
             dict: A dict of the form ``{attribute: (type, default)}``. If there is no
-            default, the value should be (type, None).
+            default, the value should be ``(type, None)``.
 
         Example:
             >>> ViciValve.config()
