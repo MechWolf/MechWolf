@@ -9,7 +9,7 @@ except ImportError:
 class VarianPump(Pump):
     '''A Varian pump.
     '''
-    def __init__(self, name=None, serial_port=None, max_rate=0):
+    def __init__(self, name, serial_port=None, max_rate=0):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
         self.max_rate = max_rate

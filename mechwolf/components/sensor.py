@@ -11,7 +11,7 @@ class Sensor(ActiveComponent):
         name (str, optional): The name of the Sensor.
         active (bool): Whether the sensor is active.
     """
-    def __init__(self, name=None):
+    def __init__(self, name):
         super().__init__(name=name)
         self.active = False
 

@@ -16,7 +16,7 @@ class TempControl(ActiveComponent):
         temp (str): The temperature setting. Converted to a Quantity.
         active (bool): Whether the temperature controller is active.
     """
-    def __init__(self, internal_tubing, name=None):
+    def __init__(self, name, internal_tubing):
         super().__init__(name=name)
         if not isinstance(internal_tubing, Tube):
             raise TypeError(Fore.RED + "TempControl must have internal_tubing of type Tube.")

@@ -1,15 +1,17 @@
+# NOTE: When changing this file, be sure to update new_components.rst because it references specific line numbers here.
+
 try:
     import serial
 except ImportError:
     pass
-    
+
 from .valve import Valve
 
 class ViciValve(Valve):
     '''Controls a VICI Valco Valve'''
 
-    def __init__(self, mapping={}, name=None, serial_port=None, positions=10):
-        super().__init__(mapping=mapping, name=name)
+    def __init__(self, name, mapping, serial_port=None, positions=10):
+        super().__init__(name=name, mapping=mapping)
 
         self.serial_port = serial_port
         self.positions = positions
