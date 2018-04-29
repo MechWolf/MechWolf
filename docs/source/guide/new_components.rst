@@ -276,17 +276,23 @@ Similarly, ``__exit__`` closes the connection:
 .. literalinclude:: ../../../mechwolf/components/vici.py
     :pyobject: ViciValve.__exit__
 
-:pep:`343` has more details.
+:pep:`343` and this `StackOverflow answer
+<https://stackoverflow.com/questions/1984325/explaining-pythons-enter-and-exit>`_
+have more about information about how to use ``__enter__`` and ``__exit__``
+methods.
 
-.. glossary::
+That's it! We now have a functioning Vici valve. Let's test it with
+:func:`~mechwolf.validate_component`::
 
-    Client
-        The device
+    >>> import mechwolf as mw
+    >>> mw.validate_component(mw.ViciValve(name="test", mapping={}))
+    True
 
-    Hub
-        Another device
+Sure enough, it works. This isn't just an example however, it's exactly how the
+Vici valve in the :mod:`~mechwolf.components.vici` module works!
 
-:term:`client` is a useful tool
+If you're stuck trying to make a new component, don't hesitate to reach out for
+:ref:`help <help>`.
 
 A Note on Naming
 ----------------

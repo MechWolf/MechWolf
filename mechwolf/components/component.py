@@ -98,7 +98,7 @@ class ActiveComponent(Component):
 
         Example:
             >>> ViciValve.config()
-            {"serial_port": (int, None), "positions": (int, 10)}
+            {"serial_port": (str, None)}
 
         '''
         pass

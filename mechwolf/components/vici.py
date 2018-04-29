@@ -47,7 +47,7 @@ class ViciValve(Valve):
         return False
 
     def config(self):
-        return {serial_port: (str, None)}
+        return {"serial_port": (str, None)}
 
     def update(self):
         message = f'GO{self.setting}\r'
