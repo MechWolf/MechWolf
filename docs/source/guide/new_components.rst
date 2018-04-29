@@ -7,7 +7,7 @@ General Approach
 You may find yourself in the position that MechWolf's included components aren't
 what you need. In that case, you'll have to create your own component. Here's how:
 
-1. **Decide what kind of component it is.**
+#. **Decide what kind of component it is.**
     If you're trying to make a new kind of pump, for example, you'll want to be
     inheriting from :class:`~mechwolf.components.pump.Pump`. For components
     being controlled (i.e. not aliases of
@@ -16,7 +16,7 @@ what you need. In that case, you'll have to create your own component. Here's ho
     are only creating an alias of :func:`~mechwolf.validate_component`, you can
     skip 4–6.
 
-2. **Create a new class.**
+#. **Create a new class.**
     If you're struggling, see `the official Python docs
     <https://docs.python.org/3/tutorial/classes.html>`_, a handy `tutorial on
     classes
@@ -26,13 +26,13 @@ what you need. In that case, you'll have to create your own component. Here's ho
     Python to pass the name argument up to the
     :class:`~mechwolf.components.component.ActiveComponent` class.
 
-3. **Give the component its attributes.**
+#. **Give the component its attributes.**
     This means that anything that you will be using as keywords during your
     calls to :meth:`~mechwolf.Protocol.add` must be attributes. Furthermore, if
     they are quantities such as "10 mL/min", these attributes should be parsed
     Quantity objects.
 
-4. **Give it a base state method.**
+#. **Give it a base state method.**
     MechWolf requires that any component being modified as part of a protocol
     have a base state which it will return to after the protocol. For things
     that turn on, this base state is usually "off". The base state method must
@@ -51,24 +51,23 @@ what you need. In that case, you'll have to create your own component. Here's ho
     :class:`~mechwolf.components.component.ActiveComponent` in the protocol to
     return to its base state.
 
-5. **Give it a config method.**
+#. **Give it a config method.**
     Often times, components will require some configuration information when
-    running mechwolf-setup. For example, Vici valves need to know to what serial
-    port they are connected. To get this information, give your component a
-    configuration method, called ``config`` that returns a dictionary whose keys
-    are parameters to be confiured and whose values are tuples with the desired
-    type and default value for the parameter. Going back to the Vici valve
-    example, these valves usually have 10 positions, so a config dict could look
-    like::
+    running mechwolf-setup. For example, Varian pumps need to know to what
+    serial port they are connected. To get this information, give your component
+    a configuration method, called ``config`` that returns a dictionary whose
+    keys are parameters to be configured and whose values are tuples with the
+    desired type and default value for the parameter. Going back to the Varian
+    pump example, a config dict could look like this::
 
-        >>> ViciValve(name="valve").config()
-        {"positions": (int, None), "serial_port": (str, None)}
+        >>> VarianPump(name="pump").config()
+        {"serial_port": (str, None), "max_rate": (int, None)}
 
     Note that, when there is no default, the second value of the tuple is
     ``None``. When your component is instantiated on the client, these values
     will be passed to ``__init__()`` as keyword arguments.
 
-6. **Give it an update method.**
+#. **Give it an update method.**
     The job of the update method is to make the object's real-world state match
     its virtual representation. This is where the hardware interfacing happens.
 
@@ -81,12 +80,12 @@ what you need. In that case, you'll have to create your own component. Here's ho
     your script. The object that is being run on your client *would* need to
     know that though, so the object has to be able to support both uses.
 
-7. **Test thoroughly with** :func:`~mechwolf.validate_component`.
+#. **Test thoroughly with** :func:`~mechwolf.validate_component`.
     For your convenience, the :func:`~mechwolf.validate_component` function will
     take an instance of your class (not the class itself) and verify that it
     meets the requirements to be used in a protocol.
 
-8. **Contribute to GitHub** *(optional)*
+#. **Contribute to GitHub** *(optional)*
     Odds are you're not the only person in the world who could use the component
     you're making. In the spirit of collaboration, we welcome any and all components
     submitted to us that are compatible with our API and encourage you to submit
@@ -184,6 +183,110 @@ valid::
 
 :func:`~mechwolf.validate_component` returned ``True``, meaning that the
 philosopher's stone class is facially valid.
+
+Example: The Vici Valve
+-----------------------
+
+The last example, though illustrative, isn't actually a working component, since
+(unfortunately) philosophers' stones don't exist. Luckily, we have the next best
+thing: a Vici valve. To show how to create working components, we'll walk
+through MechWolf's implementation of
+:class:`~mechwolf.components.vici.ViciValve`.
+
+First, we need to include the import statements at the top. We communicate with
+Vici valves via serial on the client, but don't actually *need* the serial
+package in order to instantiate a :class:`~mechwolf.components.vici.ViciValve`
+object. That's because you need to be able to instantiate
+:class:`~mechwolf.components.vici.ViciValve` objects on devices without the
+client extras installed (which includes the serial package), such as when designing
+apparatuses on your personal computer. For that reason, we wrap ``import
+serial`` in a try-except clause:
+
+.. literalinclude:: ../../../mechwolf/components/vici.py
+    :lines: 3-6
+
+Because Vici valves are subclasses of :class:`~mechwolf.components.valve.Valve`,
+we also need to import :class:`~mechwolf.components.valve.Valve`. Since
+``vici.py`` is in the components directory, we do a local import:
+
+.. literalinclude:: ../../../mechwolf/components/vici.py
+    :lines: 8
+
+If we were creating the object in a different directory, we would import
+:class:`~mechwolf.components.valve.Valve` the usual way::
+
+    from mechwolf import Valve
+
+Now that we've got the modules we'll need, let's create the class:
+
+.. literalinclude:: ../../../mechwolf/components/vici.py
+    :lines: 10-11
+
+And we'll create an ``__init__()`` method:
+
+.. literalinclude:: ../../../mechwolf/components/vici.py
+    :pyobject: ViciValve.__init__
+
+Note that the arguments include the ones required by
+:class:`~mechwolf.components.valve.Valve` (``name`` and ``mapping``) and
+``serial_port``, which is needed to connect to the physical component on the
+client.
+
+We can skip adding a base state because
+:class:`~mechwolf.components.valve.Valve` already has one, meaning that
+:class:`~mechwolf.components.vici.ViciValve` will inherit it automatically. We
+do need to tell MechWolf about what to ask for during configuration using the
+``config`` method. All we actually need to know is what the serial port is:
+
+.. literalinclude:: ../../../mechwolf/components/vici.py
+    :pyobject: ViciValve.config
+
+.. note::
+
+    MechWolf will automatically offer serial port suggestions during
+    configuration if there is an argument called ``serial_port`` in the
+    ``config`` dictionary.
+
+Now for the important parts: we need to make the object be able to make its
+real-world state match the object's state. We do that with the ``update``
+method. This is the driver, the heart of the component that allows for execution:
+
+.. literalinclude:: ../../../mechwolf/components/vici.py
+    :pyobject: ViciValve.update
+
+The exact implementation will vary from component to component, but the basic
+idea is that it sends the message in a format that the component can understand.
+
+One thing to know about serial connections is that they need to be opened and
+closed. However, you don't want to open and close the connection after every
+procedure, especially if you'll be doing a lot of procedures in a short
+duration. Instead, you want to open the connection once at the beginning and
+close it at the end when you're done with the component. MechWolf can handle
+that automatically if you give it some additional information, namely functions
+called ``__enter__`` and ``__exit__``.
+
+In Vici valves, ``__enter__`` creates a serial connection once when you start
+the client and then returns ``self``:
+
+.. literalinclude:: ../../../mechwolf/components/vici.py
+    :pyobject: ViciValve.__enter__
+
+Similarly, ``__exit__`` closes the connection:
+
+.. literalinclude:: ../../../mechwolf/components/vici.py
+    :pyobject: ViciValve.__exit__
+
+:pep:`343` has more details.
+
+.. glossary::
+
+    Client
+        The device
+
+    Hub
+        Another device
+
+:term:`client` is a useful tool
 
 A Note on Naming
 ----------------

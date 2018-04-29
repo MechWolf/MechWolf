@@ -49,14 +49,12 @@ class ActiveComponent(Component):
         instrument.
 
     Attributes:
-        name (str, optional): The name of the component.
+        name (str): The name of the component.
 
     """
     _id_counter = 0
 
-    def __init__(self, name=None):
-        if name is None:
-            raise ValueError(Fore.RED + "No name given for ActiveComponent. Specify the name of the component by adding name=\"[name of component]\".")
+    def __init__(self, name):
         super().__init__(name=name)
 
     def update_from_params(self, params):
