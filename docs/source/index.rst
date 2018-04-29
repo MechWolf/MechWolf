@@ -168,6 +168,7 @@ API Reference
    api/mechwolf
    api/mechwolf.components
    api/hub
+   api/resolver
 
 CLI Reference
 -------------

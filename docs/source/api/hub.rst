@@ -33,7 +33,7 @@ Hub API
     .. note::
         A device may not get a protocol a second time.
 
-    :resheader Content-Type: text/html.
+    :resheader Content-Type: text/html or application/json.
 
     **Example response (no protocol submitted)**:
 
