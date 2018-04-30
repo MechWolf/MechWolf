@@ -45,7 +45,11 @@ def get_key():
 
 # Get the security_key
 if has_key:
-    security_key = get_key()
+    security_key = keyring.get_password("mechwolf", "security_key")
+    if security_key is None:
+        security_key = get_key()
+    else:
+        print(f"Using security_key stored in keyring: {security_key}. If this is not correct the correct security key, run 'mechwolf update'.")
 else:
     if click.confirm("Have you been issued a security key?", default=False):
         security_key = get_key()
