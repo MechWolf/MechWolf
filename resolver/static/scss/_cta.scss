@@ -1,0 +1,29 @@
+// Styling for the download section
+section.cta {
+    position: relative;
+    padding: 250px 0;
+    i {
+        font-size: 106px;
+        display: block;
+        margin-bottom: 15px;
+        background: white;
+        // background: -webkit-linear-gradient(to left, $theme-secondary, $theme-tertiary);
+        // background: linear-gradient(to left, $theme-secondary, $theme-tertiary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    h2 {
+        color: white;
+        font-size: 40px;
+        margin-top: 0;
+    }
+    p {
+        color: fade-out(white, .7)
+    }
+
+    @media(min-width: 768px) {
+        h2 {
+            font-size: 50px;
+        }
+    }
+}

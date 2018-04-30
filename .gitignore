@@ -115,3 +115,9 @@ _templates
 
 # encryption keys
 *.pem
+
+# node.js
+node_modules
+
+# don't store aws secret key
+aws_key.json

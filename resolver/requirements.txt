@@ -1,0 +1,4 @@
+flask
+zappa
+boto3
+rsa

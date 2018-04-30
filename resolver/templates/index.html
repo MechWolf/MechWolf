@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>MechWolf</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{{url_for('static', filename='vendor/simple-line-icons/css/simple-line-icons.css')}}">
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{{url_for('static', filename='css/new-age.css')}}" rel="stylesheet">
+
+  </head>
+
+  <body id="page-top">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+      <div class="container">
+        <!-- <a class="navbar-brand js-scroll-trigger" href="#page-top">MechWolf</a> -->
+        <img src="{{url_for('static', filename='img/wordmark3x.png')}}" alt="" width="200"></img>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          Menu
+          <i class="fa fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#features">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#download">Install</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#contact">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <header class="masthead">
+      <div class="container h-100">
+        <div class="row h-100">
+          <div class="col-lg-12 my-auto">
+	 	<!-- <img src="img/MechWolfLogo.png" class="img-fluid" alt=""> -->
+            <div class="header-content mx-auto" >
+                <br>
+                <br>
+                <br>
+                <h1  id="example1"></h1>
+                  <!-- <a href="#download" class="btn btn-outline btn-xl js-scroll-trigger" >Start building your own automated synthesis machine now!</a> -->
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <a href="#desc" class="btn btn-outline btn-xl js-scroll-trigger">Learn more <i class="icon-arrow-down"></i></a>
+                </div>
+          </div>
+
+        </div>
+      </div>
+    </header>
+    <section class="cta bg-secondary text-center" id="desc">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12 mx-auto">
+            <i class="icon-chemistry"></i>
+            <br>
+            <br>
+            <h2 class="section-heading">MechWolf is a fast and easy way to build an automated synthesizer from modular parts to make molecules and biologics in flow or batch.</h2>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="features" id="features">
+      <div class="container">
+        <div class="section-heading text-center">
+          <h2>Go from idea to experiment to results in no time.</h2>
+          <p class="text-muted">Speed, efficiency, and reproducibility are the keys to effective research. See why MechWolf can make all the difference.</p>
+        </div>
+        <div class="row">
+          <div class="col-lg-12 my-auto">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-lg-4">
+                  <div class="feature-item">
+                    <i class="icon-puzzle text-primary"></i>
+                    <h3>Modular</h3>
+                    <p class="text-muted">MechWolf provides all the building blocks you need. The possibilities are unlimited!</p>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="feature-item">
+                    <i class="icon-share text-primary"></i>
+                    <h3>IoT Enabled</h3>
+                    <p class="text-muted">Control your apparatuses remotely with millisecond precision</p>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="feature-item">
+                    <i class="icon-lock text-primary"></i>
+                    <h3>Secure</h3>
+                    <p class="text-muted">Your data stays on your network and only you can control your sythesizer</p>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-4">
+                  <div class="feature-item">
+                    <i class="icon-docs text-primary"></i>
+                    <h3>SI-Ready Output</h3>
+                    <p class="text-muted">Produce publication-worthy supporting information while designing your experiment</p>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="feature-item">
+                    <i class="icon-social-github text-primary"></i>
+                    <h3>Open Source</h3>
+                    <p class="text-muted">MechWolf is free and open source forever, licensed under the permissive GPLv3 license</a></p>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="feature-item">
+                    <i class="icon-bubble text-primary"></i>
+                    <h3>Natural Units</h3>
+                    <p class="text-muted">Use units that make sense to you, like "1 hour" rather than "3600 seconds"</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="download bg-primary text-center" id="download">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12 mx-auto">
+            <h2 class="section-heading"><samp>$ pip install mechwolf</samp></h2>
+            <p>Installation is a breeze. Need help? Our <a href="#">docs</a> give you step-by-step instructions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="contact" id="contact">
+      <div class="container">
+        <h2>MechWolf doesn't bite. Feel free to contact us.</h2>
+        <ul class="list-inline list-social">
+          <li class="list-inline-item social-twitter">
+            <a href="https://twitter.com/search?q=%23mechwolf" target="_blank">
+              <i class="fab fa-twitter"></i>
+            </a>
+          </li>
+          <li class="list-inline-item social-github">
+            <a href="https://github.com/Benjamin-Lee/MechWolf" target="_blank">
+              <i class="fab fa-github"></i>
+            </a>
+          </li>
+          <!-- <li class="list-inline-item social-email">
+            <a href="mailto:npohl@indiana.edu?cc=mingram01@college.harvard.edu, benjamin_lee@college.harvard.edu, Mijalis@mit.edu&subject=MechWolf">
+              <i class="far fa-envelope"></i>
+            </a>
+          </li> -->
+          <li class="list-inline-item social-gitter">
+            <a href="https://gitter.im/mechwolf-project" target="_blank">
+              <i class="fab fa-gitter"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <p>&copy; MechWolf 2018. All Rights Reserved.</p>
+        <!-- <ul class="list-inline">
+          <li class="list-inline-item">
+            <a href="#">Privacy</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="#">Terms</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="#">FAQ</a>
+          </li>
+        </ul> -->
+      </div>
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="{{url_for('static', filename='vendor/jquery/jquery.min.js')}}"></script>
+    <script src="{{url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="{{url_for('static', filename='vendor/jquery-easing/jquery.easing.min.js')}}"></script>
+
+    <!-- Custom scripts for site -->
+    <script src="{{url_for('static', filename='js/new-age.min.js')}}"></script>
+
+    <!-- TypeIt -->
+    <script src="https://cdn.jsdelivr.net/npm/typeit@5.6.1/dist/typeit.min.js"></script>
+
+    <script>
+        var delay = 750;
+        var delete_coeff = 0.75;
+
+        new TypeIt('#example1', {
+            speed: 75,
+        })
+        .type("Continuous processes made <b>reproducible</b>.")
+        .pause(delay)
+        .delete(13)
+        .pause(delay * delete_coeff)
+        .type("<b>automated</b>.")
+        .pause(delay)
+        .delete(10)
+        .pause(delay * delete_coeff)
+        .type("<b>self-documenting</b>.")
+        .pause(delay)
+        .delete(17)
+        .pause(delay * delete_coeff)
+        .type("<b>IoT enabled</b>.")
+        .pause(delay)
+        .delete()
+        .pause(delay * delete_coeff)
+        .type("Welcome to the <b>future</b>.")
+        .pause(delay)
+        .delete(11)
+        .pause(delay * delete_coeff)
+        .type("<b>MechWolf</b>.")
+    </script>
+
+  </body>
+</html>
