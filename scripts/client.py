@@ -11,6 +11,7 @@ from colorama import init, Fore, Back, Style
 import yaml
 import requests
 import itsdangerous
+import keyring
 
 from mechwolf.components import *
 import mechwolf as mw
@@ -190,7 +191,7 @@ def run_client(verbosity=0, config="client_config.yml"):
 
     # set up global variables
     global SECURITY_KEY
-    SECURITY_KEY = config['resolver_info']['security_key']
+    SECURITY_KEY = keyring.get_password("mechwolf", "security_key")
     global HUB_ID
     HUB_ID = config['resolver_info']['hub_id']
     global DEVICE_NAME

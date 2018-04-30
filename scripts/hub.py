@@ -13,6 +13,7 @@ import yaml
 import rsa
 import requests
 from itsdangerous import Signer, TimestampSigner, URLSafeTimedSerializer, BadSignature
+import keyring
 
 import mechwolf as mw
 
@@ -28,7 +29,7 @@ TIMEOUT = 60
 # get the config data
 with open("hub_config.yml", "r") as f:
     config = yaml.load(f)
-SECURITY_KEY = config['resolver_info']['security_key']
+SECURITY_KEY = keyring.get_password("mechwolf", "security_key")
 HUB_ID = config['resolver_info']['hub_id']
 signer, timestamp_signer, serializer = Signer(SECURITY_KEY), TimestampSigner(
     SECURITY_KEY), URLSafeTimedSerializer(SECURITY_KEY)

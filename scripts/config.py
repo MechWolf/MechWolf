@@ -11,6 +11,7 @@ from pick import pick
 import rsa
 import yamlordereddictloader
 from serial.tools import list_ports
+import keyring
 
 import mechwolf as mw
 
@@ -24,7 +25,7 @@ config_data["device_info"] = OrderedDict()
 
 # Get the hub_id
 hub_id = click.prompt("Welcome to MechWolf! What is your hub_id? If you don't have one, please choose one. (case sensitive)", type=str)
-while requests.request("GET", mw.RESOLVER_URL + "get_hub", params={"hub_id":hub_id}).text != "request failed: unable to locate":
+while requests.request("GET", mw.RESOLVER_URL + "get_hub", params={"hub_id":hub_id}).text != "failure: unable to locate":
     if click.confirm("This hub_id already exists. If you have previously set up a hub_id, please proceed. Proceed?", default=True):
         has_key = True
         break
@@ -32,20 +33,29 @@ while requests.request("GET", mw.RESOLVER_URL + "get_hub", params={"hub_id":hub_
         hub_id = click.prompt("Please select a new hub_id", type=str)
 config_data["resolver_info"]["hub_id"] = hub_id
 
-# Get the security_key
-if has_key:
+def get_key():
     security_key = click.prompt("You stated that you already have a hub_id. "\
                                 "If so, you should already have a security_key. "\
                                 "What is your key?",
                                 type=str)
     if not mw.validate_security_key(security_key):
         raise ValueError("Invalid security_key.")
+    return security_key
+
+
+# Get the security_key
+if has_key:
+    security_key = get_key()
 else:
-    security_key = mw.generate_security_key()
-    print(f"\nYour security key is {security_key}.")
-    print(Fore.RED + "It is CRITICAL that this key be kept secret to prevent someone else from being able to control your synthesizer.")
-    print("Please store this key somewhere safe.\n")
-config_data["resolver_info"]["security_key"] = security_key
+    if click.confirm("Have you been issued a security key?", default=False):
+        security_key = get_key()
+    else:
+        security_key = mw.generate_security_key()
+        print(f"\nYour security key is {security_key}.")
+        print(Fore.RED + "It is CRITICAL that this key be kept secret to prevent someone else from being able to control your synthesizer.")
+        print("It is stored in your secure keyring.\n")
+keyring.set_password("mechwolf", "security_key", security_key)
+# config_data["resolver_info"]["security_key"] = security_key
 
 # Get the device type
 device_type, _ = pick(["hub", "client"], "What kind of device is this?", indicator="->")
@@ -124,5 +134,5 @@ elif device_type == "hub":
 
 # save the config file
 yaml.dump(config_data, open(f"{device_type}_config.yml", "w+"), Dumper=yamlordereddictloader.Dumper, default_flow_style=False)
-print(Fore.GREEN + "\nSetup complete! When you're ready to start your hub server, run the following command:\n\n\t$ mechwolf hub\n")
-print(Fore.RED + f"Be sure to guard {device_type}_config.yml; it contains the plaintext of your security key!\n")
+print(Fore.GREEN + f"\nSetup complete! When you're ready to start your {device_type}, run the following command:\n\n\t$ mechwolf {device_type}\n")
+# print(Fore.RED + f"Be sure to guard {device_type}_config.yml; it contains the plaintext of your security key!\n")
