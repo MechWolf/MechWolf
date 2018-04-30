@@ -18,16 +18,18 @@ import mechwolf as mw
 # initialize colored printing
 init(autoreset=True)
 
+
 async def execute_procedure(protocol_id, procedure, session):
-        await asyncio.sleep(procedure["time"])
-        logging.info(Fore.GREEN + f"executing: {procedure} at {time.time()}")
-        me.update_from_params(procedure["params"])
-        me.update()
-        await log(session, dumps(dict(
-                    protocol_id=protocol_id,
-                    timestamp=time.time(),
-                    success=True,
-                    procedure=procedure)))
+    await asyncio.sleep(procedure["time"])
+    logging.info(Fore.GREEN + f"executing: {procedure} at {time.time()}")
+    me.update_from_params(procedure["params"])
+    me.update()
+    await log(session, dumps(dict(
+        protocol_id=protocol_id,
+        timestamp=time.time(),
+        success=True,
+        procedure=procedure)))
+
 
 async def get_protocol(session):
     logging.debug("attempting to get protocol")
@@ -40,13 +42,16 @@ async def get_protocol(session):
             if response.startswith("no protocol"):
                 return "", timestamp_signer.unsign(response).decode()
             response = loads(response)
-            protocol = loads(serializer.loads(response["protocol"]))[DEVICE_NAME]
+            protocol = loads(
+                serializer.loads(
+                    response["protocol"]))[DEVICE_NAME]
             return response["protocol_id"], protocol
 
     except aiohttp.client_exceptions.ClientConnectorError:
         logging.error(Fore.YELLOW + f"Unable to connect to {server}")
         resolve_server()
         return "", False
+
 
 async def get_start_time(session):
     with shelve.open('client') as db:
@@ -59,14 +64,17 @@ async def get_start_time(session):
             logging.debug(f"Got {response} as response to start time request")
             try:
                 return float(response)
-            except ValueError: # if the response is "no start time"
+            except ValueError:  # if the response is "no start time"
                 return response
 
     # if the server is down, try again
     except aiohttp.client_exceptions.ClientConnectorError:
-        logging.error(Fore.YELLOW + f"Unable to connect to {server}. Trying again...")
+        logging.error(
+            Fore.YELLOW +
+            f"Unable to connect to {server}. Trying again...")
         resolve_server()
         return False
+
 
 async def log(session, data):
     with shelve.open('client') as db:
@@ -80,8 +88,11 @@ async def log(session, data):
                 db["log"] = db["log"] + [data]
             except KeyError:
                 db["log"] = [data]
-        logging.error(Fore.YELLOW + f"Failed to log {data}. Saved to database.")
+        logging.error(
+            Fore.YELLOW +
+            f"Failed to log {data}. Saved to database.")
     return
+
 
 async def main(loop):
     async with aiohttp.ClientSession(loop=loop) as session:
@@ -101,9 +112,12 @@ async def main(loop):
             start_time = await get_start_time(session)
             while start_time == "no start time":
                 start_time = await get_start_time(session)
-                logging.warning(Fore.YELLOW + "No start time received yet. Trying again in 5 seconds.")
+                logging.warning(
+                    Fore.YELLOW +
+                    "No start time received yet. Trying again in 5 seconds.")
                 time.sleep(5)
-            # if the server doesn't get hear from all active components, it will abort execution
+            # if the server doesn't get hear from all active components, it
+            # will abort execution
             if start_time == "abort":
                 logging.info("Aborting upon command from server.")
                 continue
@@ -120,8 +134,13 @@ async def main(loop):
             # wait until the beginning of the protocol
             time.sleep(start_time - time.time())
 
-            # create futures for each procedure in the protocol and execute them
-            coros = [execute_procedure(protocol_id, procedure, session) for procedure in protocol]
+            # create futures for each procedure in the protocol and execute
+            # them
+            coros = [
+                execute_procedure(
+                    protocol_id,
+                    procedure,
+                    session) for procedure in protocol]
             await asyncio.gather(*coros)
 
             # upon completion, alert the user and begin the loop again
@@ -144,10 +163,15 @@ async def main(loop):
                     db["log"] = failed_submissions
                     sys.exit()
 
+
 def resolve_server():
     server = ""
     while not server:
-        response = requests.get(mw.RESOLVER_URL + "get_hub", params={"hub_id":HUB_ID})
+        response = requests.get(
+            mw.RESOLVER_URL +
+            "get_hub",
+            params={
+                "hub_id": HUB_ID})
         server = signer.unsign(response.json()["hub_address"]).decode()
         with shelve.open('client') as db:
             db["server"] = f"http://{server}"
@@ -157,6 +181,7 @@ def resolve_server():
         # if data.startswith(KEY):
         #     server = f"http://{data[len(KEY):]}:5000"
         #     print(Fore.GREEN + f"Got service announcement from {server}")
+
 
 def run_client(verbosity=0, config="client_config.yml"):
     # get the config data
@@ -178,7 +203,11 @@ def run_client(verbosity=0, config="client_config.yml"):
     serializer = itsdangerous.URLSafeTimedSerializer(SECURITY_KEY)
 
     # set up logging
-    verbosity_dict = {0: logging.ERROR, 1: logging.WARNING, 2: logging.INFO, 3: logging.DEBUG}
+    verbosity_dict = {
+        0: logging.ERROR,
+        1: logging.WARNING,
+        2: logging.INFO,
+        3: logging.DEBUG}
     logging.basicConfig(level=verbosity_dict[verbosity])
 
     # find the server
@@ -196,6 +225,7 @@ def run_client(verbosity=0, config="client_config.yml"):
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(main(loop))
+
 
 if __name__ == "__main__":
     run_client(verbosity=3)
