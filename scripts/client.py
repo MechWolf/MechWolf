@@ -21,7 +21,7 @@ import mechwolf as mw
 init(autoreset=True)
 
 
-async def execute_procedure(protocol_id, procedure, session):
+async def execute_procedure(protocol_id, procedure, session, me):
     await asyncio.sleep(procedure["time"])
     logging.info(Fore.GREEN + f"executing: {procedure} at {time.time()}")
     me.update_from_params(procedure["params"])
@@ -44,6 +44,7 @@ async def get_protocol(session):
             if response.startswith("no protocol"):
                 return "", timestamp_signer.unsign(response).decode()
             response = loads(response)
+            global serializer
             protocol = loads(
                 serializer.loads(
                     response["protocol"]))[DEVICE_NAME]
@@ -96,7 +97,7 @@ async def log(session, data):
     return
 
 
-async def main(loop):
+async def main(loop, me):
     async with aiohttp.ClientSession(loop=loop) as session:
         while True:
             # try to get a protocol
@@ -142,7 +143,8 @@ async def main(loop):
                 execute_procedure(
                     protocol_id,
                     procedure,
-                    session) for procedure in protocol]
+                    session,
+                    me) for procedure in protocol]
             await asyncio.gather(*coros)
 
             # upon completion, alert the user and begin the loop again
@@ -198,7 +200,7 @@ def run_client(verbosity=0, config="client_config.yml"):
     signer = itsdangerous.Signer(SECURITY_KEY)
     global timestamp_signer
     timestamp_signer = itsdangerous.TimestampSigner(SECURITY_KEY)
-    global serial
+    global serializer
     serializer = itsdangerous.URLSafeTimedSerializer(SECURITY_KEY)
 
     # set up logging
@@ -223,7 +225,7 @@ def run_client(verbosity=0, config="client_config.yml"):
     with class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"]) as me:
 
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(main(loop))
+        loop.run_until_complete(main(loop, me))
 
 
 if __name__ == "__main__":

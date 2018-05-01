@@ -620,7 +620,7 @@ class Protocol(object):
                         keyring.set_password("mechwolf", "security_key", security_key)
                         print("Storing security_key! To change, run the command: $ mechwolf update")
             else:
-                hub_id = keyring.get_password("mechwolf", "security_key")
+                security_key = keyring.get_password("mechwolf", "security_key")
         else:
             print(Fore.YELLOW + "Remember never to share source code containing your security key!")
 
@@ -631,9 +631,17 @@ class Protocol(object):
         if confirmation:
             confirm("Are you sure you want to execute this procedure?", abort=True, default=True)
 
+        # get the address
         if address is None:
             response = requests.request("GET", RESOLVER_URL + "get_hub", params={"hub_id": hub_id})
-            address = signer.unsign(response.json()["hub_address"]).decode()
+            try:
+                address = signer.unsign(response.json()["hub_address"]).decode()
+            except json.decoder.JSONDecodeError:
+                raise RuntimeError(Fore.RED + "Invalid hub_id. Ensure that you have the correct hub_id. "
+                                              "To update the hub_id stored on this device, run 'mechwolf update'. "
+                                              "To update your client or hub, update their config file.")
+
+        # subit the protocol to the hub
         try:
             response = requests.post(f"http://{address}/submit_protocol", data=dict(protocol=serializer.dumps(self.json()))).text
             print(f"Protocol id: {timestamp_signer.unsign(response).decode()}")
