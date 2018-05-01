@@ -1,4 +1,5 @@
 from json import dumps, loads
+from json.decoder import JSONDecodeError
 import time
 import shelve
 import logging
@@ -173,15 +174,12 @@ def resolve_server():
             "get_hub",
             params={
                 "hub_id": HUB_ID})
-        server = signer.unsign(response.json()["hub_address"]).decode()
+        try:
+            server = signer.unsign(response.json()["hub_address"]).decode()
+        except JSONDecodeError:
+            raise RuntimeError(Fore.RED + "Invalid hub_id. Unable to resolve.")
         with shelve.open('client') as db:
             db["server"] = f"http://{server}"
-        # print("Finding server")
-        # data, addr = s.recvfrom(1024) # wait for a packet
-        # data = data.decode()
-        # if data.startswith(KEY):
-        #     server = f"http://{data[len(KEY):]}:5000"
-        #     print(Fore.GREEN + f"Got service announcement from {server}")
 
 
 def run_client(verbosity=0, config="client_config.yml"):
