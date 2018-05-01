@@ -84,7 +84,7 @@ def update_ip():
                "hub_public_key": PUB_KEY_HEX}
     requests.post(mw.RESOLVER_URL + "register", data=payload)
 
-    logging.info(f"Updated resolver with IP {my_ip}.")
+    logging.info(f"Updated resolver with {payload}.")
 
 
 def run_schedule():
