@@ -14,6 +14,12 @@ def validate_component(component, warnings=True):
     Returns:
         bool: True if valid, else False.
     '''
+
+    # ensure is instance, not class
+    if type(component) == type:
+        if warnings: print(Fore.RED + f"{component} is a class, not an instance of one.")
+        return False
+
     # ensure is an ActiveComponent
     if not issubclass(component.__class__, ActiveComponent):
         if warnings: print(Fore.RED + f"{component} is not an instance of ActiveComponent")
