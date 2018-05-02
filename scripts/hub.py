@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO)
 logging.getLogger("schedule").setLevel(logging.WARNING)
 logging.getLogger("werkzeug").setLevel(logging.INFO)
 
-app = Flask(__name__)  # create flask app
+app = Flask(__name__) # create flask app
 
 # how long to wait for check ins before aborting a protcol
 TIMEOUT = 60
@@ -98,17 +98,34 @@ def submit_protocol():
     '''Accepts a protocol posted as JSON.'''
     logging.info("Received protocol")
     with shelve.open('hub') as db:
+
+        # check to see if a protocol is being executed
         try:
-            db["protocol_devices"] = list(
-                json.loads(
-                    serializer.loads(
-                        request.form.get("protocol"),
-                        max_age=5)).keys())
+            if time() - float(timestamp_signer.unsign(db["start_time"])) < db["duration"]:
+                logging.warning("Attempting to start protocol while one is being executed")
+                return timestamp_sign("protocol rejected: different protocol being executed")
+            else:
+                logging.debug("No protocol is being executed.")
+        except KeyError:
+            logging.debug("No recorded start time/duration")
+            pass
+
+        try:
+            protocol = json.loads(serializer.loads(request.form.get("protocol"), max_age=5))
             logging.debug("Protocol signature is valid")
         except BadSignature:
             logging.warning("Protocol signature is invalid!")
             return timestamp_sign("protocol rejected: invalid signature")
 
+        # calculate the duration of the protocol in seconds
+        duration = 0
+        for i in range(len(protocol)):
+            component_duration = max([x["time"] for x in list(protocol.values())[i]])
+            if component_duration > duration:
+                duration = component_duration
+        db["duration"] = duration
+
+        db["protocol_devices"] = list(protocol.keys())
         db["protocol"] = request.form.get("protocol")
         db["protocol_id"] = str(uuid1())
 

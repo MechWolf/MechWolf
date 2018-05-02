@@ -644,6 +644,12 @@ class Protocol(object):
         # subit the protocol to the hub
         try:
             response = requests.post(f"http://{address}/submit_protocol", data=dict(protocol=serializer.dumps(self.json()))).text
-            print(f"Protocol id: {timestamp_signer.unsign(response).decode()}")
+            response = timestamp_signer.unsign(response).decode()
+            if response == "protocol rejected: different protocol being executed":
+                raise RuntimeError(Fore.RED + "Protocol rejected because hub is currently executing a different protocol.")
+            elif response != "protocol rejected: invalid signature":
+                print(f"Protocol id: {response}")
+                return
         except itsdangerous.BadSignature:
-            raise RuntimeError(Fore.RED + "Bad signature from server! Make sure that your security key is correct in both places.")
+            pass
+        raise RuntimeError(Fore.RED + "Bad signature! Make sure that your security key is correct in both places.")
