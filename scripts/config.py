@@ -14,6 +14,11 @@ from serial.tools import list_ports
 import keyring
 
 import mechwolf as mw
+# Only needed for hubs
+try:
+    from .get_cert import create_self_signed_cert
+except ImportError:
+    pass
 
 # initialize colored printing
 init(autoreset=True)
@@ -132,9 +137,13 @@ elif device_type == "hub":
         with open("private.pem", "wb+") as f:
             f.write(private.save_pkcs1())
             rsa_private_filepath = os.path.realpath(f.name)
+
     # store key location
     config_data["resolver_info"]["rsa_private_filepath"] = rsa_private_filepath
     config_data["resolver_info"]["rsa_public_filepath"] = rsa_public_filepath
+
+    print("Now generating SSL certificate to encrypt communications between hub and client...")
+    create_self_signed_cert()
 
 # save the config file
 yaml.dump(config_data, open(f"{device_type}_config.yml", "w+"), Dumper=yamlordereddictloader.Dumper, default_flow_style=False)

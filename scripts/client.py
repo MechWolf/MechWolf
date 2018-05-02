@@ -39,10 +39,10 @@ async def get_protocol(session):
         server = db["server"]
     try:
         logging.debug(f"connecting to {server}")
-        async with session.get(f"{server}/protocol", params=dict(device_id=DEVICE_NAME)) as resp:
+        async with session.get(f"{server}/protocol", params=dict(device_id=timestamp_signer.sign(DEVICE_NAME).decode())) as resp:
             response = await resp.text()
             if response.startswith("no protocol"):
-                return "", timestamp_signer.unsign(response).decode()
+                return "", timestamp_signer.unsign(response, max_age=5).decode()
             response = loads(response)
             global serializer
             protocol = loads(
@@ -61,9 +61,9 @@ async def get_start_time(session):
         server = db["server"]
     try:
         logging.debug("Getting start time")
-        async with session.get(f"{server}/start_time", params=dict(device_id=DEVICE_NAME)) as resp:
+        async with session.get(f"{server}/start_time", params=dict(device_id=timestamp_signer.sign(DEVICE_NAME).decode())) as resp:
             response = await resp.text()
-            response = timestamp_signer.unsign(response).decode()
+            response = timestamp_signer.unsign(response, max_age=5).decode()
             logging.debug(f"Got {response} as response to start time request")
             try:
                 return float(response)
@@ -98,7 +98,7 @@ async def log(session, data):
 
 
 async def main(loop, me):
-    async with aiohttp.ClientSession(loop=loop) as session:
+    async with aiohttp.ClientSession(loop=loop, connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         while True:
             # try to get a protocol
             protocol = "no protocol"
@@ -182,7 +182,7 @@ def resolve_server():
         except JSONDecodeError:
             raise RuntimeError(Fore.RED + "Invalid hub_id. Unable to resolve.")
         with shelve.open('client') as db:
-            db["server"] = f"http://{server}"
+            db["server"] = f"https://{server}"
 
 
 def run_client(verbosity=0, config="client_config.yml"):

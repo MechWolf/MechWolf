@@ -1,6 +1,7 @@
 import click
 import keyring
 from scripts.client import run_client
+from gevent.pywsgi import WSGIServer
 
 @click.group()
 def cli():
@@ -12,7 +13,9 @@ def setup():
 
 @cli.command(help="Run a MechWolf hub")
 def hub():
-    from scripts import hub
+    from scripts.hub import app
+    http_server = WSGIServer(('0.0.0.0', 443), app, keyfile='ssl.key', certfile='ssl.cert')
+    http_server.serve_forever()
 
 @cli.command(help="Run a MechWolf client")
 @click.option('-v', count=True, help="Verbose mode. Multiple -v options increase the verbosity. The maximum is 3.")

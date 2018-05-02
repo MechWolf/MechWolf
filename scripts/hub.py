@@ -12,7 +12,7 @@ import schedule
 import yaml
 import rsa
 import requests
-from itsdangerous import Signer, TimestampSigner, URLSafeTimedSerializer, BadSignature
+import itsdangerous
 import keyring
 
 import mechwolf as mw
@@ -31,8 +31,9 @@ with open("hub_config.yml", "r") as f:
     config = yaml.load(f)
 SECURITY_KEY = keyring.get_password("mechwolf", "security_key")
 HUB_ID = config['resolver_info']['hub_id']
-signer, timestamp_signer, serializer = Signer(SECURITY_KEY), TimestampSigner(
-    SECURITY_KEY), URLSafeTimedSerializer(SECURITY_KEY)
+signer = itsdangerous.Signer(SECURITY_KEY)
+timestamp_signer = itsdangerous.TimestampSigner(SECURITY_KEY)
+serializer = itsdangerous.URLSafeTimedSerializer(SECURITY_KEY)
 
 # get the private key
 with open(config['resolver_info']['rsa_private_filepath'], mode='rb') as privatefile:
@@ -113,7 +114,7 @@ def submit_protocol():
         try:
             protocol = json.loads(serializer.loads(request.form.get("protocol"), max_age=5))
             logging.debug("Protocol signature is valid")
-        except BadSignature:
+        except itsdangerous.BadSignature:
             logging.warning("Protocol signature is invalid!")
             return timestamp_sign("protocol rejected: invalid signature")
 
@@ -156,8 +157,12 @@ def protocol():
             if not request.args:
                 return jsonify(protocol)
 
+            try:
+                device_id = timestamp_signer.unsign(request.args["device_id"], max_age=5).decode()
+            except itsdangerous.BadSignature:
+                return timestamp_signer("Bad device id signature")
+
             # only give the protocol once
-            device_id = request.args["device_id"]
             try:
                 if device_id in db["protocol_acks"]:
                     return timestamp_sign("no protocol")
@@ -185,6 +190,13 @@ def start_time():
                 return timestamp_sign("abort")
             logging.debug("Not timing out")
 
+            try:
+                device_id = timestamp_signer.unsign(request.args["device_id"], max_age=5).decode()
+            except itsdangerous.BadSignature:
+                return timestamp_signer("Bad device id signature")
+            except KeyError:
+                device_id = None
+
             # if every device has gotten the protocol, give them the start time
             logging.debug(
                 f'Checking if all of {db["protocol_acks"]} are in {db["protocol_devices"]}.')
@@ -192,11 +204,10 @@ def start_time():
                 logging.debug("They are!")
 
                 # log the device ID as having gotten start time
-                if request.args.get("device_id") in db["start_time_acks"]:
+                if device_id in db["start_time_acks"]:
                     return timestamp_sign("no start time")
-                elif request.args.get("device_id") is not None:
-                    db["start_time_acks"] = db["start_time_acks"].union(
-                        [request.args.get("device_id")])
+                elif device_id is not None:
+                    db["start_time_acks"] = db["start_time_acks"].union([device_id])
 
                 logging.debug(
                     f"List of acknowledged start times is now {db['start_time_acks']}")
@@ -235,8 +246,7 @@ def log():
             db["log"] = [request.json]
     return timestamp_sign("logged")
 
-
 schedule.every(5).seconds.do(update_ip)
 t = Thread(target=run_schedule)
 t.start()
-app.run(debug=False, host="0.0.0.0", use_reloader=True, threaded=True, port=80)
+# app.run(debug=False, host="0.0.0.0", use_reloader=True, threaded=True, port=80, ssl_context=('cert.pem', 'key.pem'))

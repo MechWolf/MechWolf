@@ -5,6 +5,7 @@ import json
 import yaml
 from warnings import warn
 import sys
+import urllib3
 
 import networkx as nx
 from terminaltables import SingleTable
@@ -29,6 +30,9 @@ from .validate_component import validate_component
 
 # initialize colored printing
 init(autoreset=True)
+
+# ignore warning when submitting to self signed certificate
+urllib3.disable_warnings()
 
 class Apparatus(object):
     '''A unique network of components.
@@ -643,7 +647,7 @@ class Protocol(object):
 
         # subit the protocol to the hub
         try:
-            response = requests.post(f"http://{address}/submit_protocol", data=dict(protocol=serializer.dumps(self.json()))).text
+            response = requests.post(f"https://{address}/submit_protocol", data=dict(protocol=serializer.dumps(self.json())), verify=False).text
             response = timestamp_signer.unsign(response).decode()
             if response == "protocol rejected: different protocol being executed":
                 raise RuntimeError(Fore.RED + "Protocol rejected because hub is currently executing a different protocol.")
