@@ -110,11 +110,11 @@ Failure Mechanisms
     respectively.
 
 By far the easiest way in which MechWolf's security can fail is if the security
-key is stolen, and, to a lesser extent, if the hub's RSA private key is stolen.
-In addition, we feel obliged to warn you that, if you use a Raspberry Pi to run
-the client or hub, you must change the username and password if you activate
-SSH. Failure to do so can result in remote access and use of your components as
-well as the possible loss or modification of your data.
+key is stolen, and, to a lesser extent, if the hub's RSA private key or SSL keys
+are stolen. In addition, we feel obliged to warn you that, if you use a
+Raspberry Pi to run the client or hub, you must change the username and password
+if you activate SSH. Failure to do so can result in remote access and use of
+your components as well as the possible loss or modification of your data.
 
 Injection Attack Mitigation
 ---------------------------
@@ -130,14 +130,10 @@ Connection Encryption
 
 All connections to `mechwolf.io <https://www.mechwolf.io>`_ are encrypted by
 default with bank-grade encryption. Similarly, all connections between hubs and
-clients are encrypted as well. This prevents eavesdropping.
-
-Man-in-the-Middle Attack Mitigation
------------------------------------
-
-MechWolf uses self-signed certificates to encrypt communications between hubs
-and clients. The normal approach is to have these certificates signed by a
-third-party authority in order to prevent man-in-the-middle attacks. However,
-because MechWolf hubs may not be accessible on the open internet, using a
-certificate authority is not possible. Instead, all communications are signed
-with the security key, which serves the same function.
+clients are encrypted as well to prevents eavesdropping. MechWolf uses
+self-signed certificates to encrypt communications between hubs and clients. The
+normal approach is to have these certificates signed by a third-party authority
+in order to prevent man-in-the-middle attacks. However, because MechWolf hubs
+may not be accessible on the open internet, using a certificate authority is not
+possible. Instead, all communications are signed with the security key, which
+serves the same function of verifying authenticity.
