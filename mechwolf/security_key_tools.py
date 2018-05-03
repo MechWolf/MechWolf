@@ -12,7 +12,7 @@ def generate_security_key():
         'epilogue-stilt-crux-task-corset-carton'
     '''
     wordfile = xp.locate_wordfile()
-    word_list = xp.generate_wordlist(wordfile=wordfile, min_length=4, max_length=8)
+    word_list = xp.generate_wordlist(wordfile=wordfile, min_length=0, max_length=10)
     return xp.generate_xkcdpassword(word_list, delimiter="-")
 
 def validate_security_key(security_key):
@@ -35,7 +35,7 @@ def validate_security_key(security_key):
         return False
 
     wordfile = xp.locate_wordfile()
-    word_list = set(xp.generate_wordlist(wordfile=wordfile, min_length=4, max_length=8))
+    word_list = set(xp.generate_wordlist(wordfile=wordfile, min_length=0, max_length=10))
 
     # check that the words in the security key are valid
     for word in security_key.split("-"):
