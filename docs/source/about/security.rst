@@ -87,8 +87,8 @@ Security Key Generation
 Security keys are generated in the form of six words chosen at random by a
 cryptographically secure pseudorandom number generator from `this list
 <https://github.com/redacted/XKCD-password-generator/blob/master/xkcdpass/static/eff-long>`_
-separated by a dash. There are 7,777 words in the list, meaning that there are
-7777^6 permutations of keys. In terms of entropy, that is 77.5 bits, roughy
+separated by a dash. There are 7,776 words in the list, meaning that there are
+7776^6 permutations of keys. In terms of entropy, that is 77.5 bits, roughy
 comparable to a 13 digit random case-sensitive alphanumeric password. As a real
 example, compare the security key
 ``unseated-monetize-faucet-gravy-gopher-scheming`` to ``tGgg4IlSHZ7QL`` which
