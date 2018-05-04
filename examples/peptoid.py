@@ -84,8 +84,8 @@ for amine in peptoid:
 
     # amine addition
     amine_addition_duration = timedelta(minutes=1, seconds=30)
-    P.add(amine_pump, start=start+switching_time, duration=coupling_duration - 2*switching_time, rate="5 mL/min")
-    P.add(valve, start=start, duration=coupling_duration, setting=amine)
+    P.add(amine_pump, start=start+switching_time, duration=amine_addition_duration - 2*switching_time, rate="5 mL/min")
+    P.add(valve, start=start, duration=amine_addition_duration, setting=amine)
     start += amine_addition_duration
 
 add_rinse()
