@@ -4,10 +4,12 @@ import time
 import shelve
 import logging
 import sys
+import imp
+import os
 
 import aiohttp
 import asyncio
-import async_timeout
+# import async_timeout # pending removal
 from colorama import init, Fore, Back, Style
 import yaml
 import requests
@@ -39,7 +41,7 @@ async def get_protocol(session):
         server = db["server"]
     try:
         logging.debug(f"connecting to {server}")
-        async with session.get(f"{server}/protocol", params=dict(device_id=timestamp_signer.sign(DEVICE_NAME).decode())) as resp:
+        async with session.get(f"{server}/protocol", params=dict(device_id=timestamp_signer.sign(DEVICE_NAME).decode()), timeout=10) as resp:
             response = await resp.text()
             if response.startswith("no protocol"):
                 return "", timestamp_signer.unsign(response, max_age=5).decode()
@@ -50,7 +52,7 @@ async def get_protocol(session):
                     response["protocol"]))[DEVICE_NAME]
             return response["protocol_id"], protocol
 
-    except aiohttp.client_exceptions.ClientConnectorError:
+    except (aiohttp.client_exceptions.ClientConnectorError, asyncio.TimeoutError):
         logging.error(Fore.YELLOW + f"Unable to connect to {server}")
         resolve_server()
         return "", False
@@ -220,7 +222,18 @@ def run_client(verbosity=0, config="client_config.yml"):
             resolve_server()
 
     # create the client object
-    class_type = globals()[config["device_info"]["device_class"]]
+    try:
+        class_type = globals()[config["device_info"]["device_class"]]
+    except KeyError:
+        logging.info("Unable to find component class in standard MechWolf library. Attempting to use user-provided component...")
+        try:
+            absolute_path = config["device_info"]["device_class_filepath"]
+        except KeyError as e:
+            raise e(Fore.RED + "No component filepath given. If you are using a custom component, make sure to run mechwolf setup.")
+
+        module_name, _ = os.path.splitext(os.path.split(absolute_path)[-1])
+        module = imp.load_source(module_name, absolute_path)
+        class_type = getattr(module, config["device_info"]["device_class"])
 
     # get and execute protocols forever
     with class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"]) as me:
