@@ -1,6 +1,9 @@
 import re
 import inspect
 import os
+import sys
+import imp
+import importlib.util
 from collections import OrderedDict
 
 from colorama import init, Fore, Back
@@ -14,6 +17,7 @@ from serial.tools import list_ports
 import keyring
 
 import mechwolf as mw
+
 # Only needed for hubs
 try:
     from .get_cert import create_self_signed_cert
@@ -64,7 +68,6 @@ else:
         print(Fore.RED + "It is CRITICAL that this key be kept secret to prevent someone else from being able to control your synthesizer.")
         print("It is stored in your secure keyring.\n")
 keyring.set_password("mechwolf", "security_key", security_key)
-# config_data["resolver_info"]["security_key"] = security_key
 
 # Get the device type
 device_type, _ = pick(["hub", "client"], "What kind of device is this?", indicator="->")
@@ -85,18 +88,34 @@ if device_type == "client":
         except TypeError:
             pass
     device_class, device_idx = pick(device_classes, "Which type of component is this?", indicator="->")
+
+    # handle user-created components
     if device_class == "Import from file":
-        device_class = click.prompt("Component name", type=str)
+        device_class = click.prompt("Component name (e.g. ViciValve, VarianPump, etc.)", type=str)
         config_data["device_info"]["device_class"] = device_class
-        filepath = click.prompt("Component filepath", type=str)
+
+        # get filepath
+        filepath = click.prompt("Component filepath", type=click.Path(exists=True))
+        if not filepath.endswith(".py"):
+            raise ValueError(Fore.RED + "Component filepath must be a .py file")
         with open(filepath) as f:
-            config_data["device_info"]["device_class_filepath"] = os.path.realpath(f.name)
+            absolute_path = os.path.realpath(f.name)
+            config_data["device_info"]["device_class_filepath"] = absolute_path
+
+        # get the component object
+        module_name, _ = os.path.splitext(os.path.split(absolute_path)[-1])
+        module = imp.load_source(module_name, absolute_path)
+        device_obj = getattr(module, device_class)
+        if not mw.validate_component(device_obj(name="validation_test")):
+            raise RuntimeError(f"Component {device_class} is invalid.")
+
     else:
         config_data["device_info"]["device_class"] = device_class
+        device_obj = device_objs[device_idx]
 
     # get device configuration
     config = {}
-    for i in device_objs[device_idx](name="setup").config().items():
+    for i in device_obj(name="setup").config().items():
         if i[0] == 'serial_port':
             config[i[0]]  = pick([port[0] for port in list_ports.comports()], "Select the serial port your device is connected to:", indicator = '->')[0]
         else:
@@ -148,4 +167,3 @@ elif device_type == "hub":
 # save the config file
 yaml.dump(config_data, open(f"{device_type}_config.yml", "w+"), Dumper=yamlordereddictloader.Dumper, default_flow_style=False)
 print(Fore.GREEN + f"\nSetup complete! When you're ready to start your {device_type}, run the following command:\n\n\t$ mechwolf {device_type}\n")
-# print(Fore.RED + f"Be sure to guard {device_type}_config.yml; it contains the plaintext of your security key!\n")
