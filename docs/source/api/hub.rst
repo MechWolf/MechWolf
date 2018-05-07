@@ -6,7 +6,7 @@ Hub API
 
 .. http:post:: /submit_protocol
 
-        Accepts a protocol posted as JSON. Returns signed unique ID of the protocol execution.
+        Accepts a protocol posted as JSON. Returns timestamp signed unique ID of the protocol execution.
 
         :form protocol: The protocol to be executed by the hub. Must be signed by the security key, specifically by a :class:`~itsdangerous.URLSafeTimedSerializer`.
 
@@ -26,7 +26,7 @@ Hub API
 
 .. http:get:: /protocol
 
-    Returns protocols, if available.
+    Returns timestamp signed protocol, if available.
 
     :arg device_id: The device id of the device requesting the protocol.
 
@@ -52,7 +52,7 @@ Hub API
 
 .. http:get:: /start_time
 
-    Returns start time, if available. If no start time is determined but all of the devices have received the protocol, the start time will be set as five seconds in the future.
+    Returns timestamp signed start time, if available. If no start time is determined but all of the devices have received the protocol, the start time will be set as five seconds in the future.
 
     :arg device_id: The device id of the device requesting the protocol.
 
