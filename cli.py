@@ -4,7 +4,6 @@ import json
 import yaml
 import click
 import keyring
-from colorama import Fore, init
 from scripts.client import run_client
 
 # initialize colored printing
@@ -47,8 +46,6 @@ def update(hub_id, security_key):
 @click.argument('db', type=click.Path(exists=True))
 @click.option('--output', type=click.Choice(['yaml', 'json']), prompt=True, default="yaml", help="The file format to use")
 def convert(db, output):
-    if not db.endswith(".db"):
-        raise ValueError(Fore.RED + "Invalid db file {db}. Must be a .db file.")
     db = os.path.splitext(db)[0]
     with shelve.open(db) as db:
         if output == "json":
