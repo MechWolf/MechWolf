@@ -4,7 +4,11 @@ import json
 import yaml
 import click
 import keyring
+from colorama import Fore, init
 from scripts.client import run_client
+
+# initialize colored printing
+init(autoreset=True)
 
 @click.group()
 def cli():
