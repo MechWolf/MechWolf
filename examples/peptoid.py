@@ -8,9 +8,8 @@ solvent = mw.Vessel("solvent", name="solvent")
 output = mw.Vessel("waste", name="output")
 
 # define pumps
-coupling_pump = mw.VarianPump(name="coupling_pump")
-base_pump = mw.VarianPump(name="base_pump")
-amine_pump = mw.VarianPump(name="amine_pump")
+coupling_pump = mw.VarianPump(name="pump_3")
+amine_pump = mw.VarianPump(name="pump_2")
 mixer = mw.TMixer()
 
 # define amines
@@ -45,7 +44,7 @@ thin_tube = mw.Tube(length="2 foot", ID="0.04 in", OD="1/16 in", material="PFA")
 
 A = mw.Apparatus("Automated Fast Flow Peptoid Synthesizer")
 
-A.add(coupling_agent, coupling_pump, fat_tube)
+A.add(coupling_agent, coupling_pump, mw.Tube(length="130 cm", ID="1/16 in", OD="1/8 in", material="PFA"))
 A.add(coupling_pump, mixer, thin_tube)
 A.add([amine_1, amine_2, amine_3, amine_4, amine_5, amine_6, amine_7, amine_8, solvent, acid], valve, fat_tube)
 A.add(valve, amine_pump, fat_tube)
@@ -69,7 +68,7 @@ def add_rinse():
     P.add(amine_pump, start=start+switching_time, duration=rinse_duration - 2*switching_time, rate="5 mL/min")
     start += rinse_duration
 
-peptoid = ["amine_1", "amine_5", "amine_3"]
+peptoid = ["amine_2", "amine_2", "amine_1", "amine_2"]
 
 for amine in peptoid:
     add_rinse()
@@ -91,5 +90,6 @@ for amine in peptoid:
 add_rinse()
 add_rinse()
 
-print(P.yaml())
-print(P.visualize())
+#print(P.yaml())
+#print(P.visualize())
+P.execute()
