@@ -45,7 +45,7 @@ setup(
     extras_require={
         'vis': ['plotly', "graphviz"],
         'client': ["pyserial",],
-        'hub': ["schedule", "flask", "aiohttp", "OpenSSL"]
+        'hub': ["schedule", "flask", "aiohttp", "OpenSSL", "gevent"]
     },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )

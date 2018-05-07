@@ -1,7 +1,6 @@
 import click
 import keyring
 from scripts.client import run_client
-from gevent.pywsgi import WSGIServer
 
 @click.group()
 def cli():
@@ -13,6 +12,7 @@ def setup():
 
 @cli.command(help="Run a MechWolf hub")
 def hub():
+    from gevent.pywsgi import WSGIServer
     from scripts.hub import app
     http_server = WSGIServer(('0.0.0.0', 443), app, keyfile='ssl.key', certfile='ssl.cert')
     http_server.serve_forever()
@@ -34,6 +34,9 @@ def client(v, config):
 def update(hub_id, security_key):
     keyring.set_password("mechwolf", "hub_id", hub_id)
     keyring.set_password("mechwolf", "security_key", security_key)
+
+@cli.command(help="Convert a .db file into a JSON file")
+def db2json()
 
 
 if __name__ == '__main__':
