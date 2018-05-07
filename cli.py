@@ -6,9 +6,6 @@ import click
 import keyring
 from scripts.client import run_client
 
-# initialize colored printing
-init(autoreset=True)
-
 @click.group()
 def cli():
     pass
