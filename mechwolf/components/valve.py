@@ -9,10 +9,10 @@ class Valve(ActiveComponent):
 
     Attributes:
         name (str, optional): The name of the Valve.
-        mapping (dict): The mapping from components to their integer port numbers.
+        mapping (dict, optional): The mapping from components to their integer port numbers.
         setting (int): The position of the valve.
     """
-    def __init__(self, name, mapping):
+    def __init__(self, name, mapping={}):
         super().__init__(name=name)
         self.mapping = mapping
         self.setting = 1
