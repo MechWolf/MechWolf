@@ -165,7 +165,7 @@ def protocol():
             try:
                 device_id = timestamp_signer.unsign(request.args["device_id"], max_age=5).decode()
             except itsdangerous.BadSignature:
-                return timestamp_signer("Bad device id signature")
+                return timestamp_sign("Bad device id signature")
 
             # only give the protocol once
             try:
