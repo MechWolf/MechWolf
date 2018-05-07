@@ -30,6 +30,7 @@ async def execute_procedure(protocol_id, procedure, session, me):
     me.update()
     await log(session, dumps(dict(
         protocol_id=protocol_id,
+        device_id=me.name,
         timestamp=time.time(),
         success=True,
         procedure=procedure)))

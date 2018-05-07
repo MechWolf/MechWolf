@@ -1,4 +1,5 @@
 from OpenSSL import crypto, SSL
+from socket import gethostname
 
 # modified from https://stackoverflow.com/questions/27164354/create-a-self-signed-x509-certificate-in-python
 

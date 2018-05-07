@@ -179,6 +179,7 @@ CLI Reference
    cli/mechwolf
    cli/client
    cli/hub
+   cli/convert
 
 
 Indices and tables

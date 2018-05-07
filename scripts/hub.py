@@ -246,9 +246,9 @@ def log():
             except KeyError:
                 return "no log"
         try:
-            db["log"] = db["log"] + [request.json]
+            db["log"] = db["log"] + [json.loads(request.json)]
         except KeyError:
-            db["log"] = [request.json]
+            db["log"] = [json.loads(request.json)]
     return timestamp_sign("logged")
 
 schedule.every(5).seconds.do(update_ip)

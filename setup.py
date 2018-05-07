@@ -41,7 +41,8 @@ setup(
         "click",
         "rsa",
         "yamlordereddictloader",
-        "keyring"],
+        "keyring",
+        "urllib3"],
     extras_require={
         'vis': ['plotly', "graphviz"],
         'client': ["pyserial",],
