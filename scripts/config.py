@@ -54,7 +54,10 @@ def get_key():
 
 # Get the security_key
 if has_key:
-    security_key = keyring.get_password("mechwolf", "security_key")
+    try:
+        security_key = keyring.get_password("mechwolf", "security_key")
+    except RuntimeError:
+        security_key = None
     if security_key is None:
         security_key = get_key()
     else:
