@@ -174,15 +174,19 @@ async def main(loop, me):
 def resolve_server():
     server = ""
     while not server:
-        response = requests.get(
-            mw.RESOLVER_URL +
-            "get_hub",
-            params={
-                "hub_id": HUB_ID})
         try:
+            response = requests.get(
+                mw.RESOLVER_URL + "get_hub",
+                params={"hub_id": HUB_ID})
             server = signer.unsign(response.json()["hub_address"]).decode()
         except JSONDecodeError:
             raise RuntimeError(Fore.RED + "Invalid hub_id. Unable to resolve.")
+        except itsdangerous.BadSignature:
+            raise RuntimeError(Fore.RED + "Invalid signature for hub_address.")
+        except requests.exceptions.ConnectionError:
+            logging.warning("No internet connection. Retrying in 10 seconds...")
+            time.sleep(10)
+            pass
         with shelve.open('client') as db:
             db["server"] = f"https://{server}"
 
@@ -213,6 +217,8 @@ def run_client(verbosity=0, config="client_config.yml"):
         2: logging.INFO,
         3: logging.DEBUG}
     logging.basicConfig(level=verbosity_dict[verbosity])
+    logging.getLogger("aiohttp").setLevel(logging.INFO)
+
 
     # find the server
     with shelve.open('client') as db:
