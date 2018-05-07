@@ -140,6 +140,11 @@ def submit_protocol():
 
         # store the time when the protocol came in
         db["protocol_submit_time"] = time()
+
+        with shelve.open(db["protocol_id"]) as protocol_db:
+            protocol_db["protocol"] = protocol
+            protocol_db["protocol_submit_time"] = db["protocol_submit_time"]
+
         return timestamp_sign(db["protocol_id"])
 
 

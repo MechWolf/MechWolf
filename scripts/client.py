@@ -52,7 +52,7 @@ async def get_protocol(session):
                     response["protocol"]))[DEVICE_NAME]
             return response["protocol_id"], protocol
 
-    except (aiohttp.client_exceptions.ClientConnectorError, asyncio.TimeoutError):
+    except (aiohttp.client_exceptions.ClientError, asyncio.TimeoutError):
         logging.error(Fore.YELLOW + f"Unable to connect to {server}")
         resolve_server()
         return "", False
