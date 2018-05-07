@@ -66,8 +66,12 @@ else:
         security_key = mw.generate_security_key()
         print(f"\nYour security key is {security_key}.")
         print(Fore.RED + "It is CRITICAL that this key be kept secret to prevent someone else from being able to control your synthesizer.")
-        print("It is stored in your secure keyring.\n")
-keyring.set_password("mechwolf", "security_key", security_key)
+        try:
+            keyring.set_password("mechwolf", "security_key", security_key)
+            print("It is stored in your secure keyring.\n")
+        except RuntimeError:
+            config_data["device_info"]["security_key"] = security_key
+            print(Fore.RED + "It is store in your config file. Do not share this file!")
 
 # Get the device type
 device_type, _ = pick(["hub", "client"], "What kind of device is this?", indicator="->")

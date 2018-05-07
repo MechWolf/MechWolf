@@ -198,7 +198,10 @@ def run_client(verbosity=0, config="client_config.yml"):
 
     # set up global variables
     global SECURITY_KEY
-    SECURITY_KEY = keyring.get_password("mechwolf", "security_key")
+    try:
+        SECURITY_KEY = keyring.get_password("mechwolf", "security_key")
+    except RuntimeError:
+        SECURITY_KEY = config["device_info"]["security_key"]
     global HUB_ID
     HUB_ID = config['resolver_info']['hub_id']
     global DEVICE_NAME
