@@ -70,8 +70,8 @@ switching_time = timedelta(seconds=1)
 def add_rinse():
     global start
     rinse_duration = timedelta(minutes=2)
-    P.add(valve, start=start, duration=rinse_duration, setting="solvent")
-    P.add(amine_pump, start=start+switching_time, duration=rinse_duration - 2*switching_time, rate="5 mL/min")
+    P.add([valve, coupling_valve], start=start, duration=rinse_duration, setting="solvent")
+    P.add([amine_pump, coupling_pump], start=start+switching_time, duration=rinse_duration - 2*switching_time, rate="5 mL/min")
     start += rinse_duration
 
 peptoid = ["amine_2", "amine_2", "amine_1", "amine_2"]
@@ -81,8 +81,10 @@ for amine in peptoid:
 
     # acid coupling
     coupling_duration = timedelta(minutes=1, seconds=30)
-    P.add([amine_pump, coupling_pump], start=start+switching_time, duration=coupling_duration - 2*switching_time, rate="5 mL/min")
     P.add(valve, start=start, duration=coupling_duration, setting="acid")
+    P.add(coupling_valve, start=start, duration=coupling_duration, setting="coupling_agent")
+    
+    P.add([amine_pump, coupling_pump], start=start+switching_time, duration=coupling_duration - 2*switching_time, rate="5 mL/min")
     start += coupling_duration
 
     add_rinse()
@@ -97,5 +99,5 @@ add_rinse()
 add_rinse()
 
 #print(P.yaml())
-#print(P.visualize())
+print(P.visualize())
 #P.execute()
