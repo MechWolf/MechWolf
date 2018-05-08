@@ -26,25 +26,31 @@ amine_8 = mw.Vessel("amine_8", name="amine_8")
 # heater = mw.Component("heater")
 
 # define valve
-mapping = dict(amine_1=1,
-               amine_2=2,
-               amine_3=3,
-               amine_4=4,
-               amine_5=5,
-               amine_6=6,
-               amine_7=7,
-               amine_8=8,
-               acid=9,
-               solvent=10)
-valve = mw.ViciValve(name="valve", mapping=mapping)
+amine_mapping = dict(amine_1 = 1,
+                     amine_2 = 2,
+                     amine_3 = 3,
+                     amine_4 = 4,
+                     amine_5 = 5,
+                     amine_6 = 6,
+                     amine_7 = 7,
+                     amine_8 = 8,
+                     acid    = 9,
+                     solvent = 10)
+valve = mw.ViciValve(name = "valve", mapping = amine_mapping)
 
+act_mapping = dict(coupling_agent = 1,
+                   solvent        = 2)
+
+coupling_valve = mw.ViciValve(name = "coupling_valve", mapping = act_mapping)
 
 fat_tube = mw.Tube(length="2 foot", ID="1/16 in", OD="1/8 in", material="PFA")
 thin_tube = mw.Tube(length="2 foot", ID="0.04 in", OD="1/16 in", material="PFA")
 
 A = mw.Apparatus("Automated Fast Flow Peptoid Synthesizer")
 
-A.add(coupling_agent, coupling_pump, mw.Tube(length="130 cm", ID="1/16 in", OD="1/8 in", material="PFA"))
+A.add(coupling_agent, coupling_valve, mw.Tube(length="130 cm", ID="1/16 in", OD="1/8 in", material="PFA"))
+A.add(solvent, coupling_valve, fat_tube)
+A.add(coupling_valve, coupling_pump, fat_tube)
 A.add(coupling_pump, mixer, thin_tube)
 A.add([amine_1, amine_2, amine_3, amine_4, amine_5, amine_6, amine_7, amine_8, solvent, acid], valve, fat_tube)
 A.add(valve, amine_pump, fat_tube)
@@ -53,7 +59,7 @@ A.add(amine_pump, mixer, thin_tube)
 # A.add(heater, output, thin_tube)
 
 # A.describe()
-# A.visualize(graph_attr=dict(splines="ortho", nodesep="0.75"), label_tubes=False)
+A.visualize(graph_attr=dict(splines="ortho", nodesep="0.75"), label_tubes=False)
 
 P = mw.Protocol(A, duration="auto")
 start = timedelta(seconds=0)
@@ -92,4 +98,4 @@ add_rinse()
 
 #print(P.yaml())
 #print(P.visualize())
-P.execute()
+#P.execute()
