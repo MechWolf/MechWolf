@@ -124,7 +124,7 @@ if device_type == "client":
     config = {}
     for i in device_obj(name="setup").config().items():
         if i[0] == 'serial_port':
-            config[i[0]]  = pick([[port[0],port[1],port[2]] for port in list_ports.comports()][0], "Select the serial port your device is connected to:", indicator = '->')[0]
+            config[i[0]]  = pick([port[0] for port in list_ports.comports()], "Select the serial port your device is connected to:", indicator = '->')[0]
         else:
             config[i[0]] = click.prompt(i[0], type=i[1][0], default=i[1][1])
     config_data["device_info"]["device_settings"] = config
