@@ -39,7 +39,7 @@ amine_mapping = dict(amine_1 = 1,
 valve = mw.ViciValve(name = "valve", mapping = amine_mapping)
 
 act_mapping = dict(coupling_agent = 1,
-                   solvent        = 2)
+                   solvent        = 10)
 
 coupling_valve = mw.ViciValve(name = "coupling_valve", mapping = act_mapping)
 
