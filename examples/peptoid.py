@@ -74,7 +74,8 @@ def add_rinse():
     P.add([amine_pump, coupling_pump], start=start+switching_time, duration=rinse_duration - 2*switching_time, rate="5 mL/min")
     start += rinse_duration
 
-peptoid = ["amine_2", "amine_2", "amine_1", "amine_2"]
+peptoid_old = ["amine_2", "amine_2", "amine_1", "amine_2"]
+peptoid = ["amine_2", "amine_2", "amine_1", "amine_2","amine_1","amine_3","amine_2","amine_1","amine_3","amine_3"]
 
 for amine in peptoid:
     add_rinse()
@@ -93,6 +94,14 @@ for amine in peptoid:
     amine_addition_duration = timedelta(minutes=1, seconds=30)
     P.add(amine_pump, start=start+switching_time, duration=amine_addition_duration - 2*switching_time, rate="5 mL/min")
     P.add(valve, start=start, duration=amine_addition_duration, setting=amine)
+    P.add(coupling_valve, start=start, duration=amine_addition_duration, setting="solvent")
+    start += amine_addition_duration
+
+    # after amine addition, wash out with just the amine pump
+    
+    P.add(valve, start=start, duration=amine_addition_duration, setting="solvent")
+    P.add(coupling_valve, start=start, duration=amine_addition_duration, setting="solvent")
+    P.add(amine_pump, start=start+switching_time, duration=amine_addition_duration - 2*switching_time, rate="5 mL/min")
     start += amine_addition_duration
 
 add_rinse()
