@@ -169,6 +169,7 @@ async def main(loop, me):
                 # TODO: Remind users about this in the docs
                 except KeyboardInterrupt:
                     db["log"] = failed_submissions
+                    logging.critical("Shutting down")
                     sys.exit()
 
 
@@ -190,6 +191,7 @@ def resolve_server():
             pass
         with shelve.open('client') as db:
             db["server"] = f"https://{server}"
+        logging.info(f"New server resolved: {server}")
 
 
 def run_client(verbosity=0, config="client_config.yml"):
@@ -223,12 +225,13 @@ def run_client(verbosity=0, config="client_config.yml"):
     logging.basicConfig(level=verbosity_dict[verbosity])
     logging.getLogger("aiohttp").setLevel(logging.INFO)
 
-
     # find the server
     with shelve.open('client') as db:
         try:
             db["server"]
+            logging.info(f"Cached server location found: {db['server']}")
         except KeyError:
+            logging.info(f"No server location found")
             resolve_server()
 
     # create the client object
