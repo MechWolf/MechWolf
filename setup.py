@@ -46,8 +46,8 @@ setup(
         "itsdangerous"],
     extras_require={
         'vis': ['plotly', "graphviz"],
-        'client': ["pyserial",],
-        'hub': ["schedule", "flask", "aiohttp", "pyopenssl", "gevent"]
+        'client': ["pyserial", "aiohttp"],
+        'hub': ["schedule", "flask", "pyopenssl", "gevent"]
     },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )
