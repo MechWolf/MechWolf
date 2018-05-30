@@ -4,7 +4,7 @@ import mechwolf as mw
 a = mw.Component(name="a")
 b = mw.Component(name="b")
 c = mw.Component(name="c")
-test = mw.ViciValve(name="test_1", mapping=dict(a=1, b=2, c=3))
+test = mw.ViciValve(name="valve", mapping=dict(a=1, b=2, c=3))
 
 # create apparatus
 A = mw.Apparatus()
