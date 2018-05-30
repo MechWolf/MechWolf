@@ -21,4 +21,4 @@ pytest
 rsa
 yamlordereddictloader
 pyopenssl
-sphinx
+sphinxcontrib-programoutput

@@ -154,3 +154,9 @@ been looking at in the previous examples into a new file called ``data.yml``,
 run this command::
 
     $ sudo mechwolf convert --output=yaml a75c0c70-522a-11e8-b1ce-acbc32c766d9.db > data.yml
+
+Troubleshooting 'Permission Denied' Error
+-----------------------------------------
+
+If you get an error such as ``[Errno 13] Permission denied``, make sure that you
+are running the command with ``sudo``.
