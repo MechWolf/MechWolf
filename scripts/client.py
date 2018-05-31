@@ -157,23 +157,25 @@ async def main(loop, me):
             logging.info(Fore.GREEN + "Protocol executed successfully.")
 
             # keep attempting to submit the failed logs
-            with shelve.open('client') as db:
-                try:
-                    while len(db["log"]):
-                        logging.info("Submitting failed logs")
-                        resolve_server()
-                        failed_submissions = db["log"]
+            try:
+                with shelve.open('client') as db:
+                    failed_submissions = db["log"]
+                while len(failed_submissions):
+                    logging.info("Submitting failed logs")
+                    resolve_server()
+                    with shelve.open('client') as db:
                         db["log"] = []
-                        for i in failed_submissions:
-                            await log(session, failed_submissions[i])
-                except KeyError:
-                    pass
-                # don't lose data if the user exits
-                # TODO: Remind users about this in the docs
-                except KeyboardInterrupt:
+                    for i in failed_submissions:
+                        await log(session, i)
+            except KeyError:
+                pass
+            # don't lose data if the user exits
+            # TODO: Remind users about this in the docs
+            except KeyboardInterrupt:
+                with shelve.open('client') as db:
                     db["log"] = failed_submissions
-                    logging.critical("Shutting down")
-                    sys.exit()
+                logging.critical("Shutting down")
+                sys.exit()
 
 
 def resolve_server():
@@ -229,13 +231,13 @@ def run_client(verbosity=0, config="client_config.yml"):
     logging.getLogger("aiohttp").setLevel(logging.INFO)
 
     # find the server
-    with shelve.open('client') as db:
-        try:
+    try:
+        with shelve.open('client') as db:
             db["server"]
             logging.info(f"Cached server location found: {db['server']}")
-        except KeyError:
-            logging.info(f"No server location found")
-            resolve_server()
+    except KeyError:
+        logging.info(f"No server location found")
+        resolve_server()
 
     # create the client object
     try:
