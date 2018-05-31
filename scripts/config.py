@@ -124,7 +124,9 @@ if device_type == "client":
     config = {}
     for i in device_obj(name="setup").config().items():
         if i[0] == 'serial_port':
-            config[i[0]]  = pick([port[0] for port in list_ports.comports()], "Select the serial port your device is connected to:", indicator = '->')[0]
+            ports = [port[0] for port in list_ports.comports()]
+            ports.insert(0,'/dev/ttyUSB0')
+            config[i[0]]  = pick(ports, "If you are using a Raspberry Pi, we recommend you use /dev/ttyUSB0 as the serial port. Otherwise, select the serial port your device is connected to:", indicator = '->')[0]
         else:
             config[i[0]] = click.prompt(i[0], type=i[1][0], default=i[1][1])
     config_data["device_info"]["device_settings"] = config
