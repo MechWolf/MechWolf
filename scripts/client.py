@@ -56,8 +56,11 @@ async def get_protocol(session):
     except (aiohttp.client_exceptions.ClientError, asyncio.TimeoutError):
         logging.error(Fore.YELLOW + f"Unable to connect to {server}")
         resolve_server()
-        return "", False
 
+    except KeyError:
+        logging.debug("New protocol issued to hub; no procedures for client.")
+
+    return "", False
 
 async def get_start_time(session):
     with shelve.open('client') as db:
