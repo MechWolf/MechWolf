@@ -76,6 +76,9 @@ else:
             config_data["device_info"]["security_key"] = security_key
             print(Fore.RED + "It is stored in your config file. Do not share this file!")
 
+if click.confirm("Would you like to save the security key to the config file?", default=False):
+    config_data["device_info"]["security_key"] = security_key
+
 # Get the device type
 device_type, _ = pick(["hub", "client"], "What kind of device is this?", indicator="->")
 
