@@ -13,7 +13,10 @@ def generate_security_key():
     '''
     wordfile = xp.locate_wordfile()
     word_list = xp.generate_wordlist(wordfile=wordfile, min_length=0, max_length=10)
-    return xp.generate_xkcdpassword(word_list, delimiter="-")
+    while True:
+        key = xp.generate_xkcdpassword(word_list, delimiter="-")
+        if validate_security_key(key): # ensure key is valid
+            return key
 
 def validate_security_key(security_key):
     '''Checks that a MechWolf security key is valid.
