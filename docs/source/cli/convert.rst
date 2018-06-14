@@ -1,7 +1,7 @@
 Database Serialization CLI
 ==========================
 
-.. command-output: mechwolf convert --help
+.. command-output:: mechwolf convert --help
 
 Converting a .db file into JSON
 -------------------------------
