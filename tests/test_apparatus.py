@@ -33,3 +33,8 @@ def test_validate():
         A.validate() # not fully connected
     A.add(b, d, t) # fully connected
     assert A.validate()
+
+def test_describe():
+    C = mw.Apparatus()
+    C.add(mw.Vessel("water"), b, t)
+    assert C.describe() == "A vessel containing water was connected to Component Component_1 using PVC tubing (length 1 foot, ID 1 inch, OD 2 inch). "
