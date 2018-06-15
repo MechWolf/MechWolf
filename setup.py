@@ -45,7 +45,7 @@ setup(
         "urllib3",
         "itsdangerous"],
     extras_require={
-        'vis': ['plotly', "graphviz"],
+        'vis': ["plotly", "graphviz", "numpy"],
         'client': ["pyserial", "aiohttp"],
         'hub': ["schedule", "flask", "pyopenssl", "gevent"]
     },
