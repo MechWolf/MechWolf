@@ -23,6 +23,11 @@ class Tube(object):
         self.ID = ureg.parse_expression(ID)
         self.OD = ureg.parse_expression(OD)
 
+        # check to make sure units are valid
+        for measurement in [self.length, self.ID, self.OD]:
+            if measurement.dimensionality != ureg.mm.dimensionality:
+                raise ValueError(Fore.RED + f"{measurement.dimensionality} is an invalid unit of measurement for {measurement}. Must be a {ureg.mm.dimensionality}.")
+
         # ensure diameters are valid
         if self.OD <= self.ID:
             raise ValueError(Fore.RED + f"Outer diameter {OD} must be greater than inner diameter {ID}")
@@ -32,10 +37,5 @@ class Tube(object):
         self.material = material
         self.volume = (pi * ((self.ID / 2)**2) * self.length)
 
-        # check to make sure units are valid
-        for measurement in [self.length, self.ID, self.OD]:
-            if measurement.dimensionality != ureg.mm.dimensionality:
-                raise ValueError(Fore.RED + f"{measurement.dimensionality} is an invalid unit of measurement for {measurement}. Must be a {ureg.mm.dimensionality}.")
-
     def __repr__(self):
-        return f"Tube of length {self.length}, ID {self.OD}, OD {self.OD}"
+        return f"Tube of length {self.length}, ID {self.ID}, OD {self.OD}"
