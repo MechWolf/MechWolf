@@ -35,14 +35,14 @@ def validate_component(component, warnings=True):
         if warnings: print(Fore.RED + f"{component} does not have a base_state method")
         return False
 
-    # base_state method must return a dict
-    elif type(component.base_state()) != dict:
-        if warnings: print(Fore.RED + "base_state method does not return a dict")
-        return False
-
     # the base_state dict must not be empty
     elif not component.base_state():
         if warnings: print(Fore.RED + "base_state method dict must not be empty")
+        return False
+
+    # base_state method must return a dict
+    elif type(component.base_state()) != dict:
+        if warnings: print(Fore.RED + "base_state method does not return a dict")
         return False
 
     # validate the base_state dict

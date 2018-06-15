@@ -137,10 +137,40 @@ def test_validate_component():
             return {"serial_port": (None, int)}
     assert mw.validate_component(Test()) == False
 
-    # config dict is invalid due to being out of order
+    # passing the class, not an instance
+    assert mw.validate_component(Test) == False
+
+    # not right base_state value type
     class Test(mw.ActiveComponent):
         def __init__(self, serial_port=None):
             super().__init__(name="test11")
+            self.active = False
+            self.serial_port = serial_port
+        def update(self):
+            pass
+        def base_state(self):
+            return dict(active="10 mL")
+        def config(self):
+            return {"serial_port": (int, None)}
+    assert mw.validate_component(Test()) == False
+
+    # not right base_state value type
+    class Test(mw.ActiveComponent):
+        def __init__(self, serial_port=None):
+            super().__init__(name="test12")
+            self.active = False
+            self.serial_port = serial_port
+        def update(self):
+            pass
+        def base_state(self):
+            return "not a dict"
+        def config(self):
+            return {"serial_port": (int, None)}
+    assert mw.validate_component(Test()) == False
+
+    class Test(mw.ActiveComponent):
+        def __init__(self, serial_port=None):
+            super().__init__(name="test13")
             self.active = False
             self.serial_port = serial_port
         def update(self):

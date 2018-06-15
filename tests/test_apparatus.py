@@ -6,18 +6,20 @@ t = mw.Tube(length="1 foot", ID="1 in", OD="2 in", material="PVC")
 
 A = mw.Apparatus()
 
-def test_add():
+def test_add_basic():
     A.add(a, b, t)
     assert A.network == [(a, b, t)]
     assert A.components == {a, b}
 
+def test_add_errors():
     with pytest.raises(ValueError):
         A.add(a, b, a) # not using a tube
 
     with pytest.raises(ValueError):
         A.add(a, t, t) # using a tube instead of a component
 
-    # multiple components connected to same one in one line
+def test_add_multiple():
+    # multiple components connected to same component in one line
     B = mw.Apparatus()
     B.add([a, b, c], d, t)
     assert B.network == [(a, d, t), (b, d, t), (c, d, t)]
