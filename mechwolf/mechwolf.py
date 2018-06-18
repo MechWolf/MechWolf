@@ -291,7 +291,7 @@ class Protocol(object):
 
         # make sure that the component being added to the protocol is part of the apparatus
         if component not in self.apparatus.components:
-            raise RuntimeError(Fore.RED + f"{component} is not a component of {self.apparatus.name}.")
+            raise ValueError(Fore.RED + f"{component} is not a component of {self.apparatus.name}.")
 
         # perform the mapping for valves
         if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
@@ -308,11 +308,6 @@ class Protocol(object):
 
         # make sure the component and keywords are valid
         for kwarg, value in kwargs.items():
-            if isinstance(component, type):
-                raise TypeError(Fore.RED + f"Must add an instance of {component}, not the class itself.")
-
-            if not issubclass(component.__class__, Component):
-                raise TypeError(Fore.RED + "Must add a Component object.")
 
             if not hasattr(component, kwarg):
                 raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}.")
@@ -457,7 +452,7 @@ class Protocol(object):
                     elif component_procedures[i + 1]["start"] is not None and procedure["stop"] is None:
                         if warnings:
                             warn(
-                                Fore.YELLOW + f"Automatically inferring start time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False.")
+                                Fore.YELLOW + f"Automatically inferring stop time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False.")
                         procedure["stop"] = component_procedures[i + 1]["start"]
                 except IndexError:
                     if procedure["stop"] is None:
