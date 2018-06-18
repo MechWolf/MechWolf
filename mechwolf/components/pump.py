@@ -12,6 +12,7 @@ class Pump(ActiveComponent):
         name (str, optional): The name of the pump.
         rate (str): The flow rate of the pump. Must be of the dimensionality of volume/time. Converted to a Quantity.
     '''
+
     def __init__(self, name):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")

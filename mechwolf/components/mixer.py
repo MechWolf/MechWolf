@@ -8,6 +8,7 @@ class TMixer(Component):
     Attributes:
         name (str, optional): The name of the mixer.
     """
+
     def __init__(self, name=None):
         super().__init__(name=name)
 
@@ -31,5 +32,6 @@ class CrossMixer(Component):
     Attributes:
         name (str, optional): The name of the mixer.
     """
+
     def __init__(self, name=None):
         super().__init__(name=name)

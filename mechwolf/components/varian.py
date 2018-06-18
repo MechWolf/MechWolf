@@ -9,6 +9,7 @@ except ImportError:
 class VarianPump(Pump):
     '''A Varian pump.
     '''
+
     def __init__(self, name, serial_port=None, max_rate=0):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
@@ -33,11 +34,11 @@ class VarianPump(Pump):
         self.ser.close()
 
     def lock(self):
-        lock_command = [0xFF,self.pump_id,0x0A,0x4C,0x0D]
+        lock_command = [0xFF, self.pump_id, 0x0A, 0x4C, 0x0D]
         self.ser.write(lock_command)
         print(self.ser.read_all())
 
-    def set_flow(self,flow_rate):
+    def set_flow(self, flow_rate):
         print(flow_rate)
         #Flow rate must be supplied as an string from 000000 to 100000, where 100000 = 100% of the maximum pump flow rate.
         percentage = 100000 * flow_rate / self.max_rate
@@ -52,7 +53,6 @@ class VarianPump(Pump):
     def update(self):
         new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
-
 
     def config(self):
         #TODO Make max_rate a ureg?
