@@ -18,6 +18,9 @@ def test_add_errors():
     with pytest.raises(ValueError):
         A.add(a, t, t) # using a tube instead of a component
 
+    with pytest.raises(ValueError):
+        A.add(mw.Component, b, t) # adding a class, not an instance of one
+
 def test_add_multiple():
     # multiple components connected to same component in one line
     B = mw.Apparatus()
