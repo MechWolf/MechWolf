@@ -126,7 +126,6 @@ class Apparatus(object):
         if "graphviz" not in sys.modules:
             raise ImportError(Fore.RED + "Visualization package not installed. Install mechwolf with the [vis] extra enabled.")
 
-
         self.validate() # ensure apparatus is valid
         f = Digraph(name=self.name,
                     node_attr=node_attr,
@@ -319,7 +318,8 @@ class Protocol(object):
                 raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}.")
 
             if type(component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
-                raise ValueError(Fore.RED + f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
+                raise ValueError(
+                    Fore.RED + f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
 
             elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
                 raise ValueError(Fore.RED + f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}")
@@ -340,8 +340,8 @@ class Protocol(object):
 
         # determine stop time
         if stop is None and self.duration is None and duration is None:
-            raise RuntimeError(Fore.RED + "Must specify protocol duration during instantiation in order to omit stop and duration. " \
-                f"To automatically set duration of protocol as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
+            raise RuntimeError(Fore.RED + "Must specify protocol duration during instantiation in order to omit stop and duration. "
+                               f"To automatically set duration of protocol as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
         elif stop is not None:
             if isinstance(stop, timedelta):
                 stop = str(stop.total_seconds()) + " seconds"
@@ -421,7 +421,8 @@ class Protocol(object):
         for component in [x for x in self.apparatus.components if issubclass(x.__class__, ActiveComponent)]:
             # make sure all active components are activated, raising warning if not
             if component not in [x["component"] for x in self.procedures]:
-                if warnings: warn(Fore.YELLOW + f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning. To suppress this warning, use warnings=False.")
+                if warnings:
+                    warn(Fore.YELLOW + f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning. To suppress this warning, use warnings=False.")
 
             # determine the procedures for each component
             component_procedures = sorted([x for x in self.procedures if x["component"] == component], key=lambda x: x["start"])
@@ -433,8 +434,8 @@ class Protocol(object):
             # check for conflicting continuous procedures
             if len([x for x in component_procedures if x["start"] is None and x["stop"] is None]) > 1:
                 raise RuntimeError(Fore.RED + (f"{component} cannot have two procedures for the entire duration of the protocol. "
-                    "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "
-                    "Otherwise, reduce ambiguity by defining start and stop times for each procedure."))
+                                               "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "
+                                               "Otherwise, reduce ambiguity by defining start and stop times for each procedure."))
 
             for i, procedure in enumerate(component_procedures):
                 # ensure that the start time is before the stop time if given
@@ -451,16 +452,19 @@ class Protocol(object):
 
                 # automatically infer start and stop times
                 try:
-                    if component_procedures[i+1]["start"] == ureg.parse_expression("0 seconds"):
+                    if component_procedures[i + 1]["start"] == ureg.parse_expression("0 seconds"):
                         raise RuntimeError(Fore.RED + f"Ambiguous start time for {procedure['component']}.")
-                    elif component_procedures[i+1]["start"] is not None and procedure["stop"] is None:
-                        if warnings: warn(Fore.YELLOW + f"Automatically inferring start time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False.")
-                        procedure["stop"] = component_procedures[i+1]["start"]
+                    elif component_procedures[i + 1]["start"] is not None and procedure["stop"] is None:
+                        if warnings:
+                            warn(
+                                Fore.YELLOW + f"Automatically inferring start time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False.")
+                        procedure["stop"] = component_procedures[i + 1]["start"]
                 except IndexError:
                     if procedure["stop"] is None:
-                        if warnings: warn(Fore.YELLOW + f"Automatically inferring stop for {procedure['component']} as the end of the protocol. To override, provide stop in your call to add(). To suppress this warning, use warnings=False.")
+                        if warnings:
+                            warn(
+                                Fore.YELLOW + f"Automatically inferring stop for {procedure['component']} as the end of the protocol. To override, provide stop in your call to add(). To suppress this warning, use warnings=False.")
                         procedure["stop"] = self.duration
-
 
             # give the component instructions at all times
             compiled = []
@@ -472,7 +476,7 @@ class Protocol(object):
 
                     # if the procedure is over at the same time as the next procedure begins, don't go back to the base state
                     try:
-                        if component_procedures[i+1]["start"] == procedure["stop"]:
+                        if component_procedures[i + 1]["start"] == procedure["stop"]:
                             continue
                     except IndexError:
                         pass
@@ -609,20 +613,20 @@ class Protocol(object):
         # get hub_id
         if hub_id is None:
             if keyring.get_password("mechwolf", "hub_id") is None:
-                    hub_id = prompt("Please enter your hub_id", type=str)
-                    if confirm("Save hub_id?", default=True):
-                        keyring.set_password("mechwolf", "hub_id", hub_id)
-                        print("Storing hub_id! To change, run the command: $ mechwolf update")
+                hub_id = prompt("Please enter your hub_id", type=str)
+                if confirm("Save hub_id?", default=True):
+                    keyring.set_password("mechwolf", "hub_id", hub_id)
+                    print("Storing hub_id! To change, run the command: $ mechwolf update")
             else:
                 hub_id = keyring.get_password("mechwolf", "hub_id")
 
         # get security_key
         if security_key is None:
             if keyring.get_password("mechwolf", "security_key") is None:
-                    security_key = prompt("Please enter your security_key", type=str)
-                    if confirm("Save security_key?", default=True):
-                        keyring.set_password("mechwolf", "security_key", security_key)
-                        print("Storing security_key! To change, run the command: $ mechwolf update")
+                security_key = prompt("Please enter your security_key", type=str)
+                if confirm("Save security_key?", default=True):
+                    keyring.set_password("mechwolf", "security_key", security_key)
+                    print("Storing security_key! To change, run the command: $ mechwolf update")
             else:
                 security_key = keyring.get_password("mechwolf", "security_key")
         else:
