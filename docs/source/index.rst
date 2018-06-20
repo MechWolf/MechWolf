@@ -111,7 +111,7 @@ flow rate and duration for which to run the pumps:
 It's really that simple to create protocols. We can visualize it equally simply
 with :meth:`~mechwolf.Protocol.visualize()`:
 
-.. image:: /_static/example_gantt.png
+.. image:: /_static/example_timeline.png
     :align: center
 
 Since we have a good idea of what our protocol is going to do, let's go ahead

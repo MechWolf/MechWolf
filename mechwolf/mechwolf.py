@@ -6,6 +6,8 @@ import yaml
 from warnings import warn
 import sys
 import urllib3
+import tempfile
+import webbrowser
 
 import networkx as nx
 from terminaltables import SingleTable
@@ -18,9 +20,7 @@ import keyring
 # If visualization extras are available, import them
 try:
     from graphviz import Digraph
-    import plotly as py
-    import plotly.figure_factory as ff
-    from plotly.colors import DEFAULT_PLOTLY_COLORS as colors
+    from jinja2 import Environment, PackageLoader, select_autoescape
 except ImportError:
     pass
 
@@ -520,50 +520,42 @@ class Protocol(object):
         '''
         return yaml.safe_dump(json.loads(self.json(warnings=warnings)))
 
-    def visualize(self, warnings=True):
+    def visualize(self, browser=True):
         '''Generates a Gantt plot visualization of the protocol.
 
         Note:
             Each value of a parameter will have a consistent color, but some colors may be reused.
 
         Args:
-            warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
+            browser (bool, optional): Whether to open in the browser. Defaults to true.
+
+        Returns:
+            str: The html of the visualization.
 
         Raises:
             ImportError: When the visualization package is not installed.
-            Otherwise, same as :meth:`Protocol.compile`.
         '''
 
-        if "plotly" not in sys.modules:
-            raise ImportError(Fore.RED + "Visualization package not installed. Install mechwolf with the [vis] extra enabled.")
+        # set up the temporary file
+        tmp = tempfile.NamedTemporaryFile(delete=False)
+        path = tmp.name + '.html'
+        f = open(path, 'w')
 
-        df = []
-        for component, procedures in self.compile(warnings=warnings, _visualization=True).items():
-            for procedure in procedures:
-                df.append(dict(
-                    Task=component.name,
-                    Start=str(datetime(1970, 1, 1) + procedure["start"].to_timedelta()),
-                    Finish=str(datetime(1970, 1, 1) + procedure["stop"].to_timedelta()),
-                    Resource=str(procedure["params"])))
-        df.sort(key=lambda x: x["Task"])
+        # render the html
+        env = Environment(autoescape=select_autoescape(['html', 'xml']),
+                          loader=PackageLoader("mechwolf", "templates"))
+        template = env.get_template('visualizer.html')
+        visualization = template.render(title=self.name, procedures=self.procedures)
 
-        # ensure that color coding keeps color consistent for params
-        colors_dict = {}
-        color_idx = 0
-        for params in list(set([str(x["params"]) for x in self.procedures])):
-            colors_dict[params] = colors[color_idx % len(colors)]
-            color_idx += 1
+        # write to the temp file
+        f.write(visualization)
+        f.close()
 
-        # create the graph
-        fig = ff.create_gantt(df, group_tasks=True, colors=colors_dict, index_col='Resource', showgrid_x=True, title=self.name)
+        # open it up in the default webbrowser
+        if browser:
+            webbrowser.open("file://" + f.name)
 
-        # add the hovertext
-        for i in range(len(fig["data"])):
-            fig["data"][i].update(text=df[i]["Resource"], hoverinfo="text")
-        fig['layout'].update(margin=dict(l=110))
-
-        # plot it
-        py.offline.plot(fig, filename=f'{self.name}.html')
+        return visualization
 
     def execute(self, address=None, hub_id=None, security_key=None, confirmation=True):
         '''Executes the procedure.
