@@ -1,7 +1,6 @@
 graphviz
 terminaltables
 pint
-plotly
 networkx
 CIRpy
 colorama

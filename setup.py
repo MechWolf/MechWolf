@@ -45,9 +45,10 @@ setup(
         "urllib3",
         "itsdangerous"],
     extras_require={
-        'vis': ["plotly", "graphviz", "numpy"],
+        'vis': ["graphviz", "numpy"],
         'client': ["pyserial", "aiohttp"],
-        'hub': ["schedule", "flask", "pyopenssl", "gevent"]
+        'hub': ["schedule", "flask", "pyopenssl", "gevent"],
+        'doc': ["sphinxcontrib-programoutput", "sphinx"]
     },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )
