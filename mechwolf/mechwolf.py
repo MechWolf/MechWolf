@@ -150,9 +150,14 @@ class Apparatus(object):
 
     def summarize(self):
         '''Prints a summary table of the apparatus.'''
+        # create a components table
         summary = [["Name", "Type"]] # header rows of components table
         for component in list(self.components):
-            summary.append([component.name, component.__class__.__name__])
+            if not isinstance(component, Vessel):
+                summary.append([component.name, component.__class__.__name__])
+            else:
+                # we want to know what's actually in the vessel
+                summary.append([component.description, component.__class__.__name__])
 
         # generate the components table
         table = SingleTable(summary)
@@ -369,7 +374,7 @@ class Protocol(object):
                 beginning of the protocol.
             stop (str, optional): The stop time of the procedure relative to the start of the protocol, such as
                 ``"30 seconds"``. May also be a :class:`datetime.timedelta`. May not be given if ``duration`` is
-                 used. Defaults to None.
+                used. Defaults to None.
             duration (str, optional): The duration of the procedure, such as "1 hour". May also be a
                 :class:`datetime.timedelta`. May not be used if ``stop`` is used. Defaults to None.
             **kwargs: The state of the component for the procedure.
