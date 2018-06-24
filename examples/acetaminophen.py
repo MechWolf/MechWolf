@@ -1,8 +1,8 @@
 import mechwolf as mw
 
 # define the vessels
-vessel_1 = mw.Vessel("10 mL `4-aminophenol`")
-vessel_2 = mw.Vessel("10 mL `acetic anhydride`")
+vessel_1 = mw.Vessel("15 mL `4-aminophenol`")
+vessel_2 = mw.Vessel("15 mL `acetic anhydride`")
 vessel_3 = mw.Vessel("`acetaminophen`")
 
 # define the pumps
@@ -35,7 +35,7 @@ A.visualize(title=False)
 
 # create the Protocol object
 P = mw.Protocol(A, name="acetaminophen synthesis")
-P.add([pump_1, pump_2], duration="10 mins", rate="1 mL/min")
+P.add([pump_1, pump_2], duration="15 mins", rate="1 mL/min")
 
 # inspect the protocol
 P.visualize()
