@@ -4,7 +4,6 @@ import json
 import yaml
 import click
 import keyring
-from scripts.client import run_client
 
 @click.group()
 def cli():
@@ -30,6 +29,7 @@ def hub():
     default="client_config.yml",
     help="The configuration file for the client")
 def client(v, config):
+    from scripts.client import run_client
     run_client(verbosity=v, config=config)
 
 @cli.command(help="Update the stored hub_id and security_key")
@@ -49,6 +49,7 @@ def convert(db, output):
             print(json.dumps(dict(db), indent=4))
         elif output == "yaml":
             print(yaml.dump(dict(db), default_flow_style=False))
+
 
 if __name__ == '__main__':
     cli()
