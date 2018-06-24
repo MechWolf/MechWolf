@@ -4,6 +4,16 @@ import json
 import yaml
 import click
 import keyring
+import logging
+
+def set_verbosity(v):
+    # set up logging
+    verbosity_dict = {
+        0: logging.ERROR,
+        1: logging.WARNING,
+        2: logging.INFO,
+        3: logging.DEBUG}
+    logging.basicConfig(level=verbosity_dict[v])
 
 @click.group()
 def cli():
@@ -14,10 +24,19 @@ def setup():
     from scripts import config
 
 @cli.command(help="Run a MechWolf hub")
-def hub():
+@click.option('-v', count=True, help="Verbose mode. Multiple -v options increase the verbosity. The maximum is 3.")
+def hub(v):
+    # set up the server
     from gevent.pywsgi import WSGIServer
     from scripts.hub import app
     http_server = WSGIServer(('0.0.0.0', 443), app, keyfile='ssl.key', certfile='ssl.cert')
+
+    # alert the user, even when not in verbose mode
+    if not v:
+        print("Hub started! For more information, use the -v flag.")
+    set_verbosity(v)
+
+    # start the server
     http_server.serve_forever()
 
 @cli.command(help="Run a MechWolf client")
@@ -29,8 +48,9 @@ def hub():
     default="client_config.yml",
     help="The configuration file for the client")
 def client(v, config):
+    set_verbosity(v)
     from scripts.client import run_client
-    run_client(verbosity=v, config=config)
+    run_client(config=config)
 
 @cli.command(help="Update the stored hub_id and security_key")
 @click.option('-h', '--hub_id', prompt=True, default=lambda: keyring.get_password("mechwolf", "hub_id"))

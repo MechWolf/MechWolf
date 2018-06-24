@@ -199,7 +199,7 @@ def resolve_server():
         logging.info(f"New server resolved: {server}")
 
 
-def run_client(verbosity=0, config="client_config.yml"):
+def run_client(config="client_config.yml"):
     # get the config data
     with open(config, "r") as f:
         config = yaml.load(f)
@@ -220,15 +220,6 @@ def run_client(verbosity=0, config="client_config.yml"):
     timestamp_signer = itsdangerous.TimestampSigner(SECURITY_KEY)
     global serializer
     serializer = itsdangerous.URLSafeTimedSerializer(SECURITY_KEY)
-
-    # set up logging
-    verbosity_dict = {
-        0: logging.ERROR,
-        1: logging.WARNING,
-        2: logging.INFO,
-        3: logging.DEBUG}
-    logging.basicConfig(level=verbosity_dict[verbosity])
-    logging.getLogger("aiohttp").setLevel(logging.INFO)
 
     # find the server
     try:

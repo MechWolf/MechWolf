@@ -17,7 +17,6 @@ import keyring
 
 import mechwolf as mw
 
-logging.basicConfig(level=logging.INFO)
 logging.getLogger("schedule").setLevel(logging.WARNING)
 logging.getLogger("werkzeug").setLevel(logging.INFO)
 
@@ -250,6 +249,7 @@ def log():
         except KeyError:
             db["log"] = [json.loads(request.json)]
     return timestamp_sign("logged")
+
 
 schedule.every(5).seconds.do(update_ip)
 t = Thread(target=run_schedule)
