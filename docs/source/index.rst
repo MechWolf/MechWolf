@@ -66,8 +66,29 @@ With the :class:`~mechwolf.Apparatus` object, we can do *so* much. If we call
 :meth:`~mechwolf.Apparatus.summarize()`, we'll get a clean tabular describe of
 our apparatus like this with summary values automatically computed:
 
-.. image:: /_static/example_table.png
-    :align: center
+.. code-block:: text
+
+    ┌Components────────────────────────────────────┬────────┐
+    │ Name                                         │ Type   │
+    ├──────────────────────────────────────────────┼────────┤
+    │ 15 mL 4-aminophenol                          │ Vessel │
+    │ acetaminophen (N-(4-Hydroxyphenyl)acetamide) │ Vessel │
+    │ pump_1                                       │ Pump   │
+    │ TMixer_0                                     │ TMixer │
+    │ pump_2                                       │ Pump   │
+    │ 15 mL acetic anhydride (Acetyl acetate)      │ Vessel │
+    └──────────────────────────────────────────────┴────────┘
+    ┌Tubing────┬──────────┬───────────────────┬────────────────┬────────────────┬───────────────────┬──────────┐
+    │ From     │ To       │ Length            │ Inner Diameter │ Outer Diameter │ Volume            │ Material │
+    ├──────────┼──────────┼───────────────────┼────────────────┼────────────────┼───────────────────┼──────────┤
+    │ Vessel_0 │ pump_1   │ 1 meter           │ 0.0625 inch    │ 0.125 inch     │ 1.9793 milliliter │ PVC      │
+    │ Vessel_1 │ pump_2   │ 1 meter           │ 0.0625 inch    │ 0.125 inch     │ 1.9793 milliliter │ PVC      │
+    │ pump_1   │ TMixer_0 │ 1 meter           │ 0.0625 inch    │ 0.125 inch     │ 1.9793 milliliter │ PVC      │
+    │ pump_2   │ TMixer_0 │ 1 meter           │ 0.0625 inch    │ 0.125 inch     │ 1.9793 milliliter │ PVC      │
+    │ TMixer_0 │ Vessel_2 │ 1 meter           │ 0.0625 inch    │ 0.125 inch     │ 1.9793 milliliter │ PVC      │
+    ├──────────┼──────────┼───────────────────┼────────────────┼────────────────┼───────────────────┼──────────┤
+    │          │ Total    │ 5000.0 millimeter │ n/a            │ n/a            │ 9.8966 milliliter │ n/a      │
+    └──────────┴──────────┴───────────────────┴────────────────┴────────────────┴───────────────────┴──────────┘
 
 But wait, there's more! :meth:`~mechwolf.Apparatus.visualize()` will create a
 diagram of the network:
@@ -82,9 +103,9 @@ the apparatus:
 
 .. code-block:: text
 
-    A vessel containing 10 mL 4-aminophenol was connected to Pump pump_1 using
+    A vessel containing 15 mL 4-aminophenol was connected to Pump pump_1 using
     PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch). A vessel
-    containing 10 mL acetic anhydride (Acetyl acetate) was connected to Pump
+    containing 15 mL acetic anhydride (Acetyl acetate) was connected to Pump
     pump_2 using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch).
     Pump pump_1 was connected to TMixer TMixer_0 using PVC tubing (length 1
     meter, ID 0.0625 inch, OD 0.125 inch). Pump pump_2 was connected to TMixer
