@@ -141,7 +141,7 @@ class Apparatus(object):
 
         # show the title of the graph
         if title:
-            title = title if title != True else self.name
+            title = title if not title else self.name
             f.attr(label=title)
 
         f.view(cleanup=True)
