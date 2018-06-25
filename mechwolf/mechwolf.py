@@ -122,7 +122,7 @@ class Apparatus(object):
         '''
 
         if "graphviz" not in sys.modules:
-            raise ImportError(Fore.RED + "Visualization package not installed. Install mechwolf with the [vis] extra enabled.")
+            raise ImportError(Fore.RED + "Visualization package not installed. Install mechwolf with the [vis] extra enabled. Try this command: pip install mechwolf[vis]")
 
         self.validate() # ensure apparatus is valid
         f = Digraph(name=self.name,
