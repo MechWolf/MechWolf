@@ -27,7 +27,6 @@ class ViciValve(Valve):
     def __exit__(self, exc_type, exc_value, traceback):
         # close the serial connection
         self.ser.close()
-        return self
 
     def get_position(self):
         '''Returns the position of the valve.
