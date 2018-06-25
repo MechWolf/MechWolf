@@ -168,6 +168,7 @@ About
    about/why
    about/faq
    about/security
+   about/data_integrity
    about/glossary
    about/license
 
