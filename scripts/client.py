@@ -170,7 +170,6 @@ async def main(loop, me):
             except KeyError:
                 pass
             # don't lose data if the user exits
-            # TODO: Remind users about this in the docs
             except KeyboardInterrupt:
                 with shelve.open('client') as db:
                     db["log"] = failed_submissions

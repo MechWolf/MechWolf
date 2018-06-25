@@ -526,9 +526,6 @@ class Protocol(object):
     def visualize(self, browser=True):
         '''Generates a Gantt plot visualization of the protocol.
 
-        Note:
-            Each value of a parameter will have a consistent color, but some colors may be reused.
-
         Args:
             browser (bool, optional): Whether to open in the browser. Defaults to true.
 
