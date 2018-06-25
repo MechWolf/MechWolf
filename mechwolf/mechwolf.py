@@ -121,8 +121,6 @@ class Apparatus(object):
             ImportError: When the visualization package is not installed.
         '''
 
-        # legend = False
-
         if "graphviz" not in sys.modules:
             raise ImportError(Fore.RED + "Visualization package not installed. Install mechwolf with the [vis] extra enabled.")
 
