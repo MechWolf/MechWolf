@@ -30,4 +30,4 @@ You will then be able to retrieve your data.
 
 .. rubric:: Footnotes
 
-.. [#f1] ☹️
+.. [#f1] :(
