@@ -8,6 +8,7 @@ import sys
 import urllib3
 import tempfile
 import webbrowser
+from math import isclose
 
 import networkx as nx
 from terminaltables import SingleTable
@@ -474,7 +475,7 @@ class Protocol(object):
 
                     # if the procedure is over at the same time as the next procedure begins, don't go back to the base state
                     try:
-                        if component_procedures[i + 1]["start"] == procedure["stop"]:
+                        if isclose(component_procedures[i + 1]["start"].to_base_units().magnitude, procedure["stop"].to_base_units().magnitude):
                             continue
                     except IndexError:
                         pass
