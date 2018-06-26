@@ -5,8 +5,8 @@ from datetime import timedelta
 hatu = mw.Vessel("HATU", name="hatu")
 dmf = mw.Vessel("DMF", name="dmf")
 output = mw.Vessel("waste", name="output")
-diea = mw.Vessel("DIEA", name = "diea")
-pip = mw.Vessel("40% Piperidine in DMF", name = "pip")
+diea = mw.Vessel("DIEA", name="diea")
+pip = mw.Vessel("40% Piperidine in DMF", name="pip")
 
 # define pumps
 coupling_pump = mw.VarianPump(name="activator_pump")
@@ -29,24 +29,24 @@ phe = mw.Vessel("phe", name="phe")
 # heater = mw.Component("heater")
 
 # define valve
-amino_mapping = dict(fmoc_pna_a = 1,
-                     fmoc_pna_t = 2,
-                     fmoc_pna_c = 3,
-                     fmoc_pna_g = 4,
-                     fmoc_lys_oh = 5,
-                     syringe_6 = 6,
-                     ala = 7,
-                     leu = 8,
-                     phe = 9,
-                     dmf = 10)
+amino_mapping = dict(fmoc_pna_a=1,
+                     fmoc_pna_t=2,
+                     fmoc_pna_c=3,
+                     fmoc_pna_g=4,
+                     fmoc_lys_oh=5,
+                     syringe_6=6,
+                     ala=7,
+                     leu=8,
+                     phe=9,
+                     dmf=10)
 
-amino_valve = mw.ViciValve(name = "amino_valve", mapping = amino_mapping)
+amino_valve = mw.ViciValve(name="amino_valve", mapping=amino_mapping)
 
-act_mapping = dict(hatu = 1,
-                   pip = 9,
-                   dmf  = 10)
+act_mapping = dict(hatu=1,
+                   pip=9,
+                   dmf=10)
 
-coupling_valve = mw.ViciValve(name = "coupling_valve", mapping = act_mapping)
+coupling_valve = mw.ViciValve(name="coupling_valve", mapping=act_mapping)
 
 def fat_tube(len):
     return mw.Tube(length=len, ID="1/16 in", OD="1/8 in", material="PFA")
@@ -56,6 +56,7 @@ def thin_tube(len):
 
 def thinner_tube(len):
     return mw.Tube(length=len, ID="0.020 in", OD="1/16 in", material="PFA")
+
 
 valve_tube = thinner_tube("12 cm")
 
@@ -90,7 +91,7 @@ start = timedelta(seconds=0)
 # how much time to leave the pumps off before and after switching the valve
 switching_time = timedelta(seconds=1)
 
-peptide = ["ala","leu","phe"]
+peptide = ["ala", "leu", "phe"]
 
 
 def pump_time(number_strokes, flow_rate=5):
@@ -98,36 +99,36 @@ def pump_time(number_strokes, flow_rate=5):
     # to get the desired number of pump delivery cycles (pump strokes). The volume of each
     # pump stroke is 0.039239 mL.
     # Returns time in minutes.
-    time_seconds = 60*((number_strokes * 0.039239)/flow_rate)
+    time_seconds = 60 * ((number_strokes * 0.039239) / flow_rate)
     return time_seconds
 
 
 def add_rinse(time_seconds):
     global start
-    rinse_duration = timedelta(seconds=time_seconds) + 2*switching_time
+    rinse_duration = timedelta(seconds=time_seconds) + 2 * switching_time
     P.add([amino_valve, coupling_valve], start=start, duration=rinse_duration, setting="dmf")
-    P.add([amino_pump, coupling_pump], start=start+switching_time, duration=rinse_duration - 2*switching_time, rate="5 mL/min")
+    P.add([amino_pump, coupling_pump], start=start + switching_time, duration=rinse_duration - 2 * switching_time, rate="5 mL/min")
     start += rinse_duration
 
 
 def add_diea_rinse(time_seconds):
     # Washes with all three pumps while coupling agent and amino acid flushes out
     global start
-    rinse_duration = timedelta(seconds=time_seconds) + 2*switching_time
+    rinse_duration = timedelta(seconds=time_seconds) + 2 * switching_time
     P.add([amino_valve, coupling_valve], start=start, duration=rinse_duration, setting="dmf")
-    P.add([amino_pump, coupling_pump, diea_pump], start=start+switching_time, duration=rinse_duration - 2*switching_time, rate="5 mL/min")
+    P.add([amino_pump, coupling_pump, diea_pump], start=start + switching_time, duration=rinse_duration - 2 * switching_time, rate="5 mL/min")
     start += rinse_duration
 
 
 add_rinse(10)
 for amino in reversed(peptide):
 
-    # Turn on amino acid, coupling agent, and diea. does not implement about a priming period 
-    coupling_duration = timedelta(seconds=(pump_time(number_strokes=10))) + 2*switching_time
+    # Turn on amino acid, coupling agent, and diea. does not implement about a priming period
+    coupling_duration = timedelta(seconds=(pump_time(number_strokes=10))) + 2 * switching_time
 
     P.add(amino_valve, start=start, duration=coupling_duration, setting=amino)
     P.add(coupling_valve, start=start, duration=coupling_duration, setting="hatu")
-    P.add([amino_pump, coupling_pump, diea_pump], start=start+switching_time, duration=coupling_duration - 2*switching_time, rate="5 mL/min")
+    P.add([amino_pump, coupling_pump, diea_pump], start=start + switching_time, duration=coupling_duration - 2 * switching_time, rate="5 mL/min")
 
     start += coupling_duration
 
@@ -135,9 +136,9 @@ for amino in reversed(peptide):
     add_rinse(30)
 
     # Fmoc removal
-    pip_addition_duration = timedelta(seconds=10) + 2*switching_time
+    pip_addition_duration = timedelta(seconds=10) + 2 * switching_time
 
-    P.add([amino_pump,coupling_pump], start=start+switching_time, duration=pip_addition_duration - 2*switching_time, rate="5 mL/min")
+    P.add([amino_pump, coupling_pump], start=start + switching_time, duration=pip_addition_duration - 2 * switching_time, rate="5 mL/min")
     P.add(amino_valve, start=start, duration=pip_addition_duration, setting="dmf")
     P.add(coupling_valve, start=start, duration=pip_addition_duration, setting="pip")
 
@@ -148,6 +149,6 @@ for amino in reversed(peptide):
 add_rinse(10)
 add_rinse(10)
 
-#print(P.yaml())
-print(P.visualize())
+print(P.yaml())
+# print(P.visualize())
 #P.execute()
