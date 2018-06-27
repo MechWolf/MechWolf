@@ -67,7 +67,7 @@ class ActiveComponent(Component):
         for key, value in params.items():
             setattr(self, key, value)
 
-    def base_state():
+    def base_state(self):
         '''A placeholder method for the base state of the component.
 
         All subclasses of ActiveComponent must implement a function that returns
@@ -85,7 +85,7 @@ class ActiveComponent(Component):
         '''
         pass
 
-    def config():
+    def config(self):
         '''A placeholder method containing the information needed to configure the component.
 
         When an ActiveComponent is used in the real world, there is likely
@@ -101,4 +101,4 @@ class ActiveComponent(Component):
             {"serial_port": (str, None)}
 
         '''
-        pass
+        return {}

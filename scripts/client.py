@@ -29,9 +29,9 @@ async def execute_procedure(protocol_id, procedure, session, me):
     me.update_from_params(procedure["params"])
     async for result in me.update():
         await log(session, dumps(dict(
-            result=result,
-            device_id = me.name,
-            timestamp=time.time(),
+            result=result[0],
+            device_id=me.name,
+            timestamp=result[1],
             procedure=procedure)))
     await log(session, dumps(dict(
         protocol_id=protocol_id,

@@ -1,5 +1,7 @@
 from .component import ActiveComponent
+from . import ureg
 import asyncio
+import time
 
 class Sensor(ActiveComponent):
     """A generic sensor.
@@ -10,33 +12,26 @@ class Sensor(ActiveComponent):
 
     Attributes:
         name (str, optional): The name of the Sensor.
-        active (bool): Whether the sensor is active.
-        interval (int): Data collection interval, in seconds. Default is 1 sec. 
+        rate (Quantity): Data collection rate in Hz. A rate of 0 Hz corresponds to the sensor being off.
     """
 
-    def __init__(self, name, interval=1):
+    def __init__(self, name):
         super().__init__(name=name)
-        self.active = False
-        self.interval = interval
+        self.rate = ureg.parse_expression("0 Hz")
 
     def base_state(self):
         '''Default to being inactive.'''
-        return dict(active=False)
+        return dict(rate="0 Hz")
 
-    def read_sensor(self):
+    def read(self):
         '''Return data to be sent back to the hub.'''
         #Do data collection task here
         data = 2
-        return data
-
-    def config(self):
-        '''Default to one second interval'''
-        return {"interval": (int, 1)}
+        return (data, time.time())
 
     async def update(self):
         '''If data collection is off and needs to be turned on, turn it on.
            If data collection is on and needs to be turned off, turn off and return data.'''
-        while self.active:
-            yield self.read_sensor()
-            await asyncio.sleep(self.interval)
-        
+        while self.rate.magnitude != 0:
+            yield self.read()
+            await asyncio.sleep(1 / self.rate.to_base_units().magnitude)
