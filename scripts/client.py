@@ -27,7 +27,12 @@ async def execute_procedure(protocol_id, procedure, session, me):
     await asyncio.sleep(procedure["time"])
     logging.info(Fore.GREEN + f"executing: {procedure} at {time.time()}")
     me.update_from_params(procedure["params"])
-    me.update()
+    async for result in me.update():
+        await log(session, dumps(dict(
+            result=result,
+            device_id = me.name,
+            timestamp=time.time(),
+            procedure=procedure)))
     await log(session, dumps(dict(
         protocol_id=protocol_id,
         device_id=me.name,
