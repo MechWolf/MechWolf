@@ -25,7 +25,7 @@ init(autoreset=True)
 
 async def execute_procedure(protocol_id, procedure, session, me):
     await asyncio.sleep(procedure["time"])
-    logging.info(Fore.GREEN + f"executing: {procedure} at {time.time()}")
+    logging.info(Fore.GREEN + f"executing: {procedure} at {time.time()}" + Style.RESET_ALL)
     me.update_from_params(procedure["params"])
     async for result in me.update():
         await log(session, dumps(dict(data=result[0],
@@ -57,7 +57,7 @@ async def get_protocol(session):
             return response["protocol_id"], protocol
 
     except (aiohttp.client_exceptions.ClientError, asyncio.TimeoutError):
-        logging.error(Fore.YELLOW + f"Unable to connect to {server}")
+        logging.error(Fore.YELLOW + f"Unable to connect to {server}" + Style.RESET_ALL)
         resolve_server()
 
     except KeyError:
@@ -83,7 +83,7 @@ async def get_start_time(session):
     except aiohttp.client_exceptions.ClientConnectorError:
         logging.error(
             Fore.YELLOW +
-            f"Unable to connect to {server}. Trying again...")
+            f"Unable to connect to {server}. Trying again..." + Style.RESET_ALL)
         resolve_server()
         return False
 
@@ -102,7 +102,7 @@ async def log(session, data):
                 db["log"] = [data]
         logging.error(
             Fore.YELLOW +
-            f"Failed to log {data}. Saved to database.")
+            f"Failed to log {data}. Saved to database." + Style.RESET_ALL)
     return
 
 
@@ -118,7 +118,7 @@ async def main(loop, me):
             if not protocol:
                 time.sleep(5)
                 continue
-            logging.info(Fore.GREEN + f"Protocol received: {protocol}")
+            logging.info(Fore.GREEN + f"Protocol received: {protocol}" + Style.RESET_ALL)
 
             # once a protocol is received, try to get a start time
             start_time = await get_start_time(session)
@@ -126,7 +126,7 @@ async def main(loop, me):
                 start_time = await get_start_time(session)
                 logging.warning(
                     Fore.YELLOW +
-                    "No start time received yet. Trying again in 5 seconds.")
+                    "No start time received yet. Trying again in 5 seconds." + Style.RESET_ALL)
                 time.sleep(5)
             # if the server doesn't get hear from all active components, it
             # will abort execution
@@ -157,7 +157,7 @@ async def main(loop, me):
             await asyncio.gather(*coros)
 
             # upon completion, alert the user and begin the loop again
-            logging.info(Fore.GREEN + "Protocol executed successfully.")
+            logging.info(Fore.GREEN + "Protocol executed successfully." + Style.RESET_ALL)
 
             # keep attempting to submit the failed logs
             try:
@@ -189,11 +189,11 @@ def resolve_server():
                 params={"hub_id": HUB_ID})
             server = signer.unsign(response.json()["hub_address"]).decode()
         except JSONDecodeError:
-            raise RuntimeError(Fore.RED + "Invalid hub_id. Unable to resolve.")
+            raise RuntimeError(Fore.RED + "Invalid hub_id. Unable to resolve." + Style.RESET_ALL)
         except itsdangerous.BadSignature:
-            raise RuntimeError(Fore.RED + "Invalid signature for hub_address.")
+            raise RuntimeError(Fore.RED + "Invalid signature for hub_address." + Style.RESET_ALL)
         except requests.exceptions.ConnectionError:
-            logging.warning("No internet connection. Retrying in 10 seconds...")
+            logging.warning(Fore.YELLOW + "No internet connection. Retrying in 10 seconds..." + Style.RESET_ALL)
             time.sleep(10)
             pass
         with shelve.open('client') as db:
@@ -240,7 +240,7 @@ def run_client(config="client_config.yml"):
         try:
             absolute_path = config["device_info"]["device_class_filepath"]
         except KeyError as e:
-            raise e(Fore.RED + "No component filepath given. If you are using a custom component, make sure to run mechwolf setup.")
+            raise e(Fore.RED + "No component filepath given. If you are using a custom component, make sure to run mechwolf setup." + Style.RESET_ALL)
 
         module_name, _ = os.path.splitext(os.path.split(absolute_path)[-1])
         module = imp.load_source(module_name, absolute_path)
