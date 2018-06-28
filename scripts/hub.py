@@ -244,10 +244,12 @@ def log():
                 return str(db["log"])
             except KeyError:
                 return "no log"
+        submission = json.loads(request.json)
+        mode = "data" if submission.get("data") else "log"
         try:
-            db["log"] = db["log"] + [json.loads(request.json)]
+            db[mode] = db[mode] + [submission]
         except KeyError:
-            db["log"] = [json.loads(request.json)]
+            db[mode] = []
     return timestamp_sign("logged")
 
 

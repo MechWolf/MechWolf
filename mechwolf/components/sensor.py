@@ -32,6 +32,6 @@ class Sensor(ActiveComponent):
     async def update(self):
         '''If data collection is off and needs to be turned on, turn it on.
            If data collection is on and needs to be turned off, turn off and return data.'''
-        while self.rate.magnitude != 0:
+        while ureg.parse_expression(self.rate).to_base_units().magnitude != 0:
             yield self.read()
-            await asyncio.sleep(1 / self.rate.to_base_units().magnitude)
+            await asyncio.sleep(1 / ureg.parse_expression(self.rate).to_base_units().magnitude)
