@@ -48,7 +48,7 @@ setup(
         'vis': ["graphviz", "numpy"],
         'client': ["pyserial", "aiohttp"],
         'hub': ["schedule", "flask", "pyopenssl", "gevent"],
-        'doc': ["sphinxcontrib-programoutput", "sphinx"]
+        'doc': ["sphinxcontrib-programoutput", "sphinx", "sphinxcontrib-httpdomain"]
     },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )
