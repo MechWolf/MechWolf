@@ -2,7 +2,7 @@ import mechwolf as mw
 from datetime import timedelta
 
 # define vessels
-coupling_agent = mw.Vessel("HATU", name="coupling_agent")
+coupling_agent = mw.Vessel("DCC", name="coupling_agent")
 acid = mw.Vessel("bromoacetic acid", name="acid")
 solvent = mw.Vessel("solvent", name="solvent")
 output = mw.Vessel("waste", name="output")
