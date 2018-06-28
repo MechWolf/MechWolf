@@ -181,12 +181,14 @@ async def main(loop, me):
 
 
 def resolve_server():
+    logging.info("Attempting to resolve server...")
     server = ""
     while not server:
         try:
             response = requests.get(
                 mw.RESOLVER_URL + "get_hub",
                 params={"hub_id": HUB_ID})
+            logging.debug(f"Signed hub address from resolver: {response.json()['hub_address']}")
             server = signer.unsign(response.json()["hub_address"]).decode()
         except JSONDecodeError:
             raise RuntimeError(Fore.RED + "Invalid hub_id. Unable to resolve." + Style.RESET_ALL)
