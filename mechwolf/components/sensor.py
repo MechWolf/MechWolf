@@ -45,7 +45,11 @@ class DummySensor(Sensor):
         rate (Quantity): Data collection rate in Hz. A rate of 0 Hz corresponds to the sensor being off.
     """
 
+    def __init__(self, name):
+        super().__init__(name=name)
+        self.counter = 0
+
     def read(self):
         '''Collect the data.'''
-        counter += 1
+        self.counter += 1
         return self.counter
