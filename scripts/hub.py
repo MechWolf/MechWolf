@@ -235,7 +235,7 @@ def start_time():
 
 @app.route("/log", methods=["POST", "GET"])
 def log():
-    logging.info(f"Logging {request.json}")
+    logging.info(f"Logging {serializer.loads(request.json['data'])}")
     with shelve.open('hub') as db:
         protocol_id = db["protocol_id"]
     with shelve.open(protocol_id) as db:
@@ -244,7 +244,7 @@ def log():
                 return str(db["log"])
             except KeyError:
                 return "no log"
-        submission = json.loads(request.json)
+        submission = json.loads(serializer.loads(request.json["data"]))
         mode = "data" if submission.get("data") else "log"
         try:
             db[mode] = db[mode] + [submission]

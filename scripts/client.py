@@ -92,7 +92,7 @@ async def log(session, data):
     with shelve.open('client') as db:
         server = db["server"]
     try:
-        async with session.post(f"{server}/log", json=data) as resp:
+        async with session.post(f"{server}/log", json={"data": serializer.dumps(data)}) as resp:
             await resp.text()
     except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
         with shelve.open('client') as db:
