@@ -340,7 +340,7 @@ class Protocol(object):
             stop = start + ureg.parse_expression(duration)
 
         # determine stop time
-        if stop is None and self.duration is None and duration is None:
+        if not any([stop, self.duration, duration]):
             raise RuntimeError(Fore.RED + "Must specify protocol duration during instantiation in order to omit stop and duration. "
                                f"To automatically set duration of protocol as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
         elif stop is not None:
