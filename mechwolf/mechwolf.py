@@ -11,7 +11,7 @@ import webbrowser
 from math import isclose
 
 import networkx as nx
-from terminaltables import SingleTable
+from terminaltables import AsciiTable
 from colorama import Fore, init
 import requests
 from click import prompt, confirm
@@ -159,7 +159,7 @@ class Apparatus(object):
                 summary.append([component.description, component.__class__.__name__])
 
         # generate the components table
-        table = SingleTable(summary)
+        table = AsciiTable(summary)
         table.title = "Components"
         print(table.table)
 
@@ -183,7 +183,7 @@ class Apparatus(object):
         summary.append(["", "Total", round(total_length, 4), "n/a", "n/a", round(total_volume.to("ml"), 4), "n/a"]) # footer row
 
         # generate the tubing table
-        table = SingleTable(summary)
+        table = AsciiTable(summary)
         table.title = "Tubing"
         table.inner_footing_row_border = "True"
         print(table.table)
