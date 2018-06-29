@@ -23,10 +23,10 @@ tube = mw.Tube(
 A = mw.Apparatus()
 
 # add the connections
-A.add(vessel_1, pump_1, tube)
-A.add(vessel_2, pump_2, tube)
-A.add([pump_1, pump_2], mixer, tube)
-A.add(mixer, vessel_3, tube)
+A.add(vessel_1, pump_1, tube) # connect vessel_1 to pump_1
+A.add(vessel_2, pump_2, tube) # connect vessel_2 to pump_2
+A.add([pump_1, pump_2], mixer, tube) # connect pump_1 and pump_2 to mixer
+A.add(mixer, vessel_3, tube) # connect mixer to vessel_3
 
 # visualize
 A.summarize()
