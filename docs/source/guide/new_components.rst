@@ -80,6 +80,15 @@ what you need. In that case, you'll have to create your own component. Here's ho
     your script. The object that is being run on your client *would* need to
     know that though, so the object has to be able to support both uses.
 
+    Note: this step doesn't apply to :class:`~mechwolf.components.sensor.Sensor`
+    s, which already have a built-in update method.
+
+#. **For sensors, give it a read method.**
+
+    This is where the actual data collection goes. It should return the data
+    read in from the sensor. MechWolf will automatically timestamp it, so don't
+    worry about that. 
+
 #. **Test thoroughly with** :func:`~mechwolf.validate_component`.
     For your convenience, the :func:`~mechwolf.validate_component` function will
     take an instance of your class (not the class itself) and verify that it
