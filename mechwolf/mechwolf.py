@@ -138,7 +138,9 @@ class Apparatus(object):
         f.attr('node', shape='box')
         for x in self.network:
             tube_label = f"Length {x[2].length}\nID {x[2].ID}\nOD {x[2].OD}" if label_tubes else ""
-            f.edge(x[0].name, x[1].name, label=tube_label)
+            f.edge(x[0].description if isinstance(x[0], Vessel) else x[0].name,
+                   x[1].description if isinstance(x[1], Vessel) else x[1].name,
+                   label=tube_label)
 
         # show the title of the graph
         if title:
