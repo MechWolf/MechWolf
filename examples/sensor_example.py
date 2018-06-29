@@ -5,7 +5,7 @@ import mechwolf as mw
 a = mw.Component(name="a")
 b = mw.Component(name="b")
 c = mw.Component(name="c")
-test = mw.Sensor(name="test")
+test = mw.DummySensor(name="test")
 
 # create apparatus
 A = mw.Apparatus()
