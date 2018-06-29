@@ -25,7 +25,7 @@ init(autoreset=True)
 
 async def execute_procedure(protocol_id, procedure, session, me):
     await asyncio.sleep(procedure["time"])
-    logging.info(Fore.GREEN + f"executing: {procedure} at {time.time()}" + Style.RESET_ALL)
+    logging.info(Fore.GREEN + f"Executing: {procedure} at {time.time()}" + Style.RESET_ALL)
     me.update_from_params(procedure["params"])
     async for result in me.update():
         await log(session, dumps(dict(data=result[0],
@@ -40,11 +40,11 @@ async def execute_procedure(protocol_id, procedure, session, me):
 
 
 async def get_protocol(session):
-    logging.debug("attempting to get protocol")
+    logging.debug("Attempting to get protocol")
     with shelve.open('client') as db:
         server = db["server"]
     try:
-        logging.debug(f"connecting to {server}")
+        logging.debug(f"Connecting to {server}")
         async with session.get(f"{server}/protocol", params=dict(device_id=timestamp_signer.sign(DEVICE_NAME).decode()), timeout=10) as resp:
             response = await resp.text()
             if response.startswith("no protocol"):
