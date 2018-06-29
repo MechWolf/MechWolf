@@ -24,14 +24,12 @@ class Sensor(ActiveComponent):
         return dict(rate="0 Hz")
 
     def read(self):
-        '''Return data to be sent back to the hub.'''
-        #Do data collection task here
-        data = 2
-        return (data, time.time())
+        '''Collect the data.'''
+        raise NotImplementedError
 
     async def update(self):
         '''If data collection is off and needs to be turned on, turn it on.
            If data collection is on and needs to be turned off, turn off and return data.'''
         while ureg.parse_expression(self.rate).to_base_units().magnitude != 0:
-            yield self.read()
+            yield (self.read(), time.time())
             await asyncio.sleep(1 / ureg.parse_expression(self.rate).to_base_units().magnitude)
