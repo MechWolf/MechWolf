@@ -148,15 +148,15 @@ calling :meth:`~mechwolf.Protocol.yaml()`:
     - params: {rate: 1 mL/min}
       time: 0.0
     - params: {rate: 0 ml/min}
-      time: 600.0
+      time: 900.0
     pump_2:
     - params: {rate: 1 mL/min}
       time: 0.0
     - params: {rate: 0 ml/min}
-      time: 600.0
+      time: 900.0
 
 Just as we expect, the pumps will both turn on to 1 mL/min at time 0 and turn
-off 600 seconds (10 minutes) later. When we're ready to actually execute the
+off 900 seconds (15 minutes) later. When we're ready to actually execute the
 protocol, we just call :meth:`~mechwolf.Protocol.execute()` and MechWolf will do
 the rest, ensuring that both pumps have their protocols and start in sync.
 
