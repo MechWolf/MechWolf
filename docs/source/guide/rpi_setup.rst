@@ -1,24 +1,23 @@
-    :Author: Alex Mijalis
+Raspberry Pi Setup Guide
+========================
 
-.. contents::
+On the Raspberry Pi
+-------------------
 
-Mechwolf Raspberry Pi Setup Guide
-
-1 Raspberry Pi
---------------
-
-MechWolf can be installed on the Raspberry Pi using a piece of
-software called `PiBakery <http://www.pibakery.org>`_. Download PiBakery and install it using the
-"Raspbian Lite" option.
+MechWolf can be installed on the Raspberry Pi using a piece of software called
+`PiBakery <http://www.pibakery.org>`_. Download PiBakery and install it using
+the "Raspbian Lite" option.
 
 - Insert the SD card (preferably class 10 or better) into your computer
 
 - Launch PiBakery and load the PiBakery.xml configuration file from the MechWolf repository
 
-- Configure your Raspberry Pi's username, password and WiFi details where indicated
-  !!! Caution !!! Choose strong passwords. The username and password you
-  choose can be used to remotely log in and control the Raspberry
-  Pi.
+- Configure your Raspberry Pi's username, password and WiFi details where indicated.
+
+  .. warning::
+
+     Choose strong passwords. The username and password you choose can be used
+     to remotely log in and control the Raspberry Pi.
 
 - Click "Write" to put the customized copy of Raspbian Lite onto the SD card.
 
@@ -35,11 +34,11 @@ software called `PiBakery <http://www.pibakery.org>`_. Download PiBakery and ins
 
 - Start the raspberry pi. The MechWolf software suite should copy from the boot partition and launch automatically.
 
-2 Serial Devices
-----------------
+Serial Devices
+--------------
 
-2.1 Varian Pump RS422 Cables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Varian Pump RS422 Cables
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 `FTDI RS422-USB Product Page <http://www.ftdichip.com/Products/Cables/USBRS422.htm>`_
 
@@ -47,8 +46,8 @@ software called `PiBakery <http://www.pibakery.org>`_. Download PiBakery and ins
 
 Part number: FTDI USB-RS422-WE-1800-BT CABLE, USB TO RS422 SERIAL, 1.8M, WIRE END
 
-2.1.1 Wiring guide
-^^^^^^^^^^^^^^^^^^
+Wiring guide
+^^^^^^^^^^^^
 
 This table describes how to connect the USB-RS422-WE to a DB9 connector. The wires can be soldered or inserted into a DB9 breakout board with screw terminals.
 
@@ -68,12 +67,13 @@ This table describes how to connect the USB-RS422-WE to a DB9 connector. The wir
     |         8 | RXD-              | White      |                 2 |
     +-----------+-------------------+------------+-------------------+
 
-2.2 VICI Valve Cables
-~~~~~~~~~~~~~~~~~~~~~
+VICI Valve Cables
+~~~~~~~~~~~~~~~~~
 
-VICI valves configured with USB should work natively with the Raspberry Pi. VICI valves configured with RS232 communication require a USB to RS232 conversion cable:
-Part number: TERA grand USB2.0 to RS232 cable (USB2-RS232TS-03)
+VICI valves configured with USB should work natively with the Raspberry Pi. VICI
+valves configured with RS232 communication require a USB to RS232 conversion
+cable: Part number: TERA grand USB2.0 to RS232 cable (USB2-RS232TS-03)
 
-For MechWolf, use  a cable with an FTDI chipset (not PL2303). PL2303 chips
-do not have unique identifiers, making it difficult to run multiple
-components on one raspberry pi.
+For MechWolf, use  a cable with an FTDI chipset (not PL2303). PL2303 chips do
+not have unique identifiers, making it difficult to run multiple components on
+one Raspberry Pi.
