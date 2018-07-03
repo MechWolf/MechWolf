@@ -10,7 +10,7 @@ the "Raspbian Lite" option.
 
 - Insert the SD card (preferably class 10 or better) into your computer
 
-- Launch PiBakery and load the PiBakery.xml configuration file from the MechWolf repository
+- Launch PiBakery and load the ``PiBakery.xml`` configuration file from the MechWolf repository
 
 - Configure your Raspberry Pi's username, password and WiFi details where indicated.
 
@@ -23,16 +23,19 @@ the "Raspbian Lite" option.
 
 - Once the writing is complete, move the MechWolf folder onto the boot drive
 
-- Place your client\_config.yml file onto the boot drive.
+- Place your ``client_config.yml`` file onto the boot drive.
 
-  - When configuring a component that connects via usb, the serial port \`/dev/ttyUSB0\` should work if there is only one USB device connected.
-    *Note:* If you are using a Raspberry Pi with multiple serial devices, we recommend using serial
-    cables manufactured by FTDI. Because FTDI gives each device a unique
-    serial number, mechwolf components can be referenced uniquely in the
-    client\_config.yml file. On the raspberry pi, this will be something like:
-    /dev/serial/by-id/usb-FTDI\_FT232R\_USB\_UART\_AH06396Q-if00-port0
+  When configuring a component that connects via usb, the serial port ``/dev/ttyUSB0/`` should work if there is only one USB device connected.
 
-- Start the raspberry pi. The MechWolf software suite should copy from the boot partition and launch automatically.
+    .. note::
+
+        If you are using a Raspberry Pi with multiple serial devices, we recommend using serial
+        cables manufactured by FTDI. Because FTDI gives each device a unique
+        serial number, mechwolf components can be referenced uniquely in the
+        ``client_config.yml`` file. On the Raspberry Pi, this will be something like:
+        ``/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AH06396Q-if00-port0``
+
+- Start the Raspberry Pi. The MechWolf software suite should copy from the boot partition and launch automatically.
 
 Serial Devices
 --------------
