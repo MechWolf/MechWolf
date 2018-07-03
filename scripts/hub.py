@@ -127,7 +127,8 @@ def submit_protocol():
 
         db["protocol_devices"] = list(protocol.keys())
         db["protocol"] = request.form.get("protocol")
-        db["protocol_id"] = str(uuid1())
+        protocol_id = str(uuid1())
+        db["protocol_id"] = protocol_id
 
         # clear the stored values when a new protocol comes in
         db["protocol_acks"] = set()
@@ -142,6 +143,7 @@ def submit_protocol():
 
         with shelve.open(db["protocol_id"]) as protocol_db:
             protocol_db["protocol"] = protocol
+            protocol_db["protocol_id"] = protocol_id
             protocol_db["protocol_submit_time"] = db["protocol_submit_time"]
 
         return timestamp_sign(db["protocol_id"])
@@ -235,7 +237,7 @@ def start_time():
 
 @app.route("/log", methods=["POST", "GET"])
 def log():
-    logging.info(f"Logging {request.json}")
+    logging.info(f"Logging {serializer.loads(request.json['data'])}")
     with shelve.open('hub') as db:
         protocol_id = db["protocol_id"]
     with shelve.open(protocol_id) as db:
@@ -244,7 +246,7 @@ def log():
                 return str(db["log"])
             except KeyError:
                 return "no log"
-        submission = json.loads(request.json)
+        submission = json.loads(serializer.loads(request.json["data"]))
         mode = "data" if submission.get("data") else "log"
         try:
             db[mode] = db[mode] + [submission]

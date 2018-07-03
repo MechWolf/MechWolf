@@ -36,6 +36,22 @@ we'll be using to refer to it. Consider the ``name`` to be like a unique
 identifier. In most if not all cases it should match the variable name. However,
 note that the name of the vessel does not need to match what's inside it.
 
+Now, we'll define the pumps that will drive the system:
+
+.. literalinclude:: ../../../examples/peptoid.py
+   :language: python
+   :lines: 21-22
+
+Note that the names of the objects don't match the variables! Why? Each physical
+device has a unique name that is associated with it. In one apparatus, the pump
+named ``pump_3`` might be the coupling pump, but in a completely different
+apparatus might be something entirely different. However, we need a way uniquely
+identify it so that we can send it commands during execution. It would be
+annoying to have to remember the name of the phyiscal device **and** the
+device's variable name, so you only need to associate them once (at definition)
+and MechWolf will take care of making sure that commands get to the right place
+during execution.
+
 .. rubric:: Footnotes
 
 .. [#f1] Which you should be. If you don't get this joke, go back and read the :doc:`gentle introduction <gentle_intro>` before proceeding.

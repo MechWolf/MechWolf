@@ -1,5 +1,5 @@
 from colorama import Fore, init
-from .components import ActiveComponent
+from .components import ActiveComponent, Sensor
 from . import ureg
 
 init(autoreset=True)
@@ -85,5 +85,20 @@ def validate_component(component, warnings=True):
             if warnings:
                 print(Fore.RED + f"Invalid configuration for {k} in {component}. Should be (type, default).")
             return False
+
+    if isinstance(component, Sensor):
+        if not callable(getattr(component, "read", None)):
+            if warnings:
+                print(Fore.RED + "Sensors must have a read method that returns the sensor's data")
+            return False
+
+        try:
+            component.read()
+        except NotImplementedError:
+            if warnings:
+                print(Fore.RED + "Sensors must have a read method that returns the sensor's data")
+            return False
+        except:
+            pass
 
     return True

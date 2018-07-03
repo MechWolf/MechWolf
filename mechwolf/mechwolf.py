@@ -11,7 +11,7 @@ import webbrowser
 from math import isclose
 
 import networkx as nx
-from terminaltables import SingleTable
+from terminaltables import AsciiTable
 from colorama import Fore, init
 import requests
 from click import prompt, confirm
@@ -138,7 +138,9 @@ class Apparatus(object):
         f.attr('node', shape='box')
         for x in self.network:
             tube_label = f"Length {x[2].length}\nID {x[2].ID}\nOD {x[2].OD}" if label_tubes else ""
-            f.edge(x[0].name, x[1].name, label=tube_label)
+            f.edge(x[0].description if isinstance(x[0], Vessel) else x[0].name,
+                   x[1].description if isinstance(x[1], Vessel) else x[1].name,
+                   label=tube_label)
 
         # show the title of the graph
         if title:
@@ -159,7 +161,7 @@ class Apparatus(object):
                 summary.append([component.description, component.__class__.__name__])
 
         # generate the components table
-        table = SingleTable(summary)
+        table = AsciiTable(summary)
         table.title = "Components"
         print(table.table)
 
@@ -183,7 +185,7 @@ class Apparatus(object):
         summary.append(["", "Total", round(total_length, 4), "n/a", "n/a", round(total_volume.to("ml"), 4), "n/a"]) # footer row
 
         # generate the tubing table
-        table = SingleTable(summary)
+        table = AsciiTable(summary)
         table.title = "Tubing"
         table.inner_footing_row_border = "True"
         print(table.table)
@@ -338,7 +340,7 @@ class Protocol(object):
             stop = start + ureg.parse_expression(duration)
 
         # determine stop time
-        if stop is None and self.duration is None and duration is None:
+        if not any([stop, self.duration, duration]):
             raise RuntimeError(Fore.RED + "Must specify protocol duration during instantiation in order to omit stop and duration. "
                                f"To automatically set duration of protocol as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}.")
         elif stop is not None:
