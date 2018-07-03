@@ -185,6 +185,7 @@ User Guide
    guide/gentle_intro
    guide/installation
    guide/getting_started
+   guide/rpi_setup
    guide/new_components
 
 API Reference
