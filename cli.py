@@ -3,6 +3,7 @@ import shelve
 import json
 import yaml
 import click
+from click_didyoumean import DYMGroup
 import keyring
 import logging
 import mechwolf
@@ -16,7 +17,7 @@ def set_verbosity(v):
         3: logging.DEBUG}
     logging.basicConfig(level=verbosity_dict[v])
 
-@click.group()
+@click.group(cls=DYMGroup)
 def cli():
     pass
 

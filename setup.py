@@ -40,6 +40,7 @@ setup(
         "xkcdpass",
         "pick",
         "click",
+        "click_didyoumean",
         "rsa",
         "yamlordereddictloader",
         "keyring",

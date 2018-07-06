@@ -15,6 +15,7 @@ numpy
 pandas
 xkcdpass
 click
+click_didyoumean
 pick
 pytest
 rsa
