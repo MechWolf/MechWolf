@@ -5,6 +5,7 @@ import yaml
 import click
 import keyring
 import logging
+import mechwolf
 
 def set_verbosity(v):
     # set up logging
@@ -69,6 +70,10 @@ def convert(db, output):
             print(json.dumps(dict(db), indent=4))
         elif output == "yaml":
             print(yaml.dump(dict(db), default_flow_style=False))
+
+@cli.command(help="Print the MechWolf version")
+def version():
+    print(mechwolf.__version__)
 
 
 if __name__ == '__main__':
