@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 from os import path
+from mechwolf import __version__
 
 here = path.abspath(path.dirname(__file__))
 
@@ -9,7 +10,7 @@ with open(path.join(here, 'readme.md')) as f:
 
 setup(
     name='mechwolf',
-    version='0.0.1',
+    version=__version__,
     description='Continuous flow process description, analysis, and automation',
     long_description=long_description,
     url='https://github.com/benjamin-lee/MechWolf',
