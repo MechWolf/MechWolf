@@ -34,7 +34,7 @@ config_data["device_info"] = OrderedDict()
 
 # Get the hub_id
 hub_id = click.prompt("Welcome to MechWolf! What is your hub_id? If you don't have one, please choose one. (case sensitive)", type=str)
-while requests.request("GET", mw.RESOLVER_URL + "get_hub", params={"hub_id":hub_id}).text != "failure: unable to locate":
+while requests.request("GET", mw.RESOLVER_URL + "get_hub", params={"hub_id": hub_id}).text != "failure: unable to locate":
     if click.confirm("This hub_id already exists. If you have previously set up a hub_id, please proceed. Proceed?", default=True):
         has_key = True
         break
@@ -43,8 +43,8 @@ while requests.request("GET", mw.RESOLVER_URL + "get_hub", params={"hub_id":hub_
 config_data["resolver_info"]["hub_id"] = hub_id
 
 def get_key():
-    security_key = click.prompt("You stated that you already have a hub_id. "\
-                                "If so, you should already have a security_key. "\
+    security_key = click.prompt("You stated that you already have a hub_id. "
+                                "If so, you should already have a security_key. "
                                 "What is your key?",
                                 type=str)
     if not mw.validate_security_key(security_key):
@@ -76,8 +76,8 @@ else:
             config_data["device_info"]["security_key"] = security_key
             print(Fore.RED + "It is stored in your config file. Do not share this file!")
 
-if click.confirm("Would you like to save the security key to the config file?", default=False):
-    config_data["device_info"]["security_key"] = security_key
+# if click.confirm("Would you like to save the security key to the config file?", default=False):
+#     config_data["device_info"]["security_key"] = security_key
 
 # Get the device type
 device_type, _ = pick(["hub", "client"], "What kind of device is this?", indicator="->")
@@ -128,8 +128,8 @@ if device_type == "client":
     for i in device_obj(name="setup").config().items():
         if i[0] == 'serial_port':
             ports = [port[0] for port in list_ports.comports()]
-            ports.insert(0,'/dev/ttyUSB0')
-            config[i[0]]  = pick(ports, "If you are using a Raspberry Pi, we recommend you use /dev/ttyUSB0 as the serial port. Otherwise, select the serial port your device is connected to:", indicator = '->')[0]
+            ports.insert(0, '/dev/ttyUSB0')
+            config[i[0]] = pick(ports, "If you are using a Raspberry Pi, we recommend you use /dev/ttyUSB0 as the serial port. Otherwise, select the serial port your device is connected to:", indicator='->')[0]
         else:
             config[i[0]] = click.prompt(i[0], type=i[1][0], default=i[1][1])
     config_data["device_info"]["device_settings"] = config

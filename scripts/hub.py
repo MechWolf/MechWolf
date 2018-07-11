@@ -28,7 +28,10 @@ TIMEOUT = 60
 # get the config data
 with open("hub_config.yml", "r") as f:
     config = yaml.load(f)
-SECURITY_KEY = keyring.get_password("mechwolf", "security_key")
+try:
+    SECURITY_KEY = keyring.get_password("mechwolf", "security_key")
+except:
+    SECURITY_KEY = config["device_info"]["security_key"]
 HUB_ID = config['resolver_info']['hub_id']
 signer = itsdangerous.Signer(SECURITY_KEY)
 timestamp_signer = itsdangerous.TimestampSigner(SECURITY_KEY)
