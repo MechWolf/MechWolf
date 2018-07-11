@@ -212,7 +212,7 @@ def run_client(config="client_config.yml"):
     global SECURITY_KEY
     try:
         SECURITY_KEY = keyring.get_password("mechwolf", "security_key")
-    except RuntimeError:
+    except (RuntimeError, keyring.backends._OS_X_API.Error):
         SECURITY_KEY = config["device_info"]["security_key"]
     global HUB_ID
     HUB_ID = config['resolver_info']['hub_id']
