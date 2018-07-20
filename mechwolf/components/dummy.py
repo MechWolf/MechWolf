@@ -8,12 +8,12 @@ class Dummy(ActiveComponent):
     def base_state(self):
         return dict(active=False)
 
-    def update(self):
+    async def update(self):
         if self.active:
-            print("Active!")
+            print("Active and async!")
         else:
-            print("Inactive.")
-        return self.__dict__
+            print("Inactive and async.")
+        yield self.__dict__
 
     def config(self):
         return {}

@@ -48,7 +48,8 @@ class ViciValve(Valve):
     def config(self):
         return {"serial_port": (str, None)}
 
-    def update(self):
+    async def update(self):
         message = f'GO{self.setting}\r'
         self.ser.write(message.encode()) # send the message to the valve
         print(self.setting) # for introspection
+        yield self.__dict__

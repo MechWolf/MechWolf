@@ -4,7 +4,7 @@ import mechwolf as mw
 a = mw.Component(name="a")
 b = mw.Component(name="b")
 c = mw.Component(name="c")
-test = mw.Dummy(name="test_1")
+test = mw.Dummy(name="test")
 
 # create apparatus
 A = mw.Apparatus()
@@ -19,4 +19,4 @@ P.add(test, active=True, start="5 secs", stop="6 secs")
 # P.visualize()
 # P.execute("http://127.0.0.1:5000/submit_protocol")
 # print(P.yaml())
-# P.execute()
+P.execute()

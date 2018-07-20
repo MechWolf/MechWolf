@@ -87,7 +87,7 @@ what you need. In that case, you'll have to create your own component. Here's ho
 
     This is where the actual data collection goes. It should return the data
     read in from the sensor. MechWolf will automatically timestamp it, so don't
-    worry about that. 
+    worry about that.
 
 #. **Test thoroughly with** :func:`~mechwolf.validate_component`.
     For your convenience, the :func:`~mechwolf.validate_component` function will
@@ -176,9 +176,9 @@ And finally, a way to update it. Here, we'll have to rely on our imagination::
         def config(self):
             return dict(serial_port=(int, None))
 
-        def update(self):
+        async def update(self):
             # magic goes here
-            pass
+            yield
 
 Saving it as ``philosophersstone.py``, we can then use
 :func:`~mechwolf.validate_component` to test if instances of the class are
@@ -258,7 +258,9 @@ do need to tell MechWolf about what to ask for during configuration using the
 
 Now for the important parts: we need to make the object be able to make its
 real-world state match the object's state. We do that with the ``update``
-method. This is the driver, the heart of the component that allows for execution:
+method. It needs to be an `async` function that yields data to be reported back
+to the hub. This is the driver, the heart of the component that allows for
+execution:
 
 .. literalinclude:: ../../../mechwolf/components/vici.py
     :pyobject: ViciValve.update

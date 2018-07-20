@@ -50,9 +50,10 @@ class VarianPump(Pump):
         self.ser.write(flow_command)
         print(self.ser.read_all())
 
-    def update(self):
+    async def update(self):
         new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
+        yield self.__dict__
 
     def config(self):
         #TODO Make max_rate a ureg?

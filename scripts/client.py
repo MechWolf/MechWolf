@@ -28,6 +28,8 @@ async def execute_procedure(protocol_id, procedure, session, me):
     logging.info(Fore.GREEN + f"Executing: {procedure} at {time.time()}" + Style.RESET_ALL)
     me.update_from_params(procedure["params"])
     async for result in me.update():
+        if not isinstance(result, tuple):
+            result = (result, time.time())
         await log(session, dumps(dict(data=result[0],
                                       protocol_id=protocol_id,
                                       device_id=me.name,
