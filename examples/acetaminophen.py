@@ -13,11 +13,10 @@ pump_2 = mw.Pump(name="pump_2")
 mixer = mw.TMixer()
 
 # same tube specs for all tubes
-tube = mw.Tube(
-    length="1 m",
-    ID="1/16 in",
-    OD="2/16 in",
-    material="PVC")
+tube = mw.Tube(length="1 m",
+               ID="1/16 in",
+               OD="2/16 in",
+               material="PVC")
 
 # create the Apparatus object
 A = mw.Apparatus()

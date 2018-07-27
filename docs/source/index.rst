@@ -60,7 +60,7 @@ but it is actually easy in practice:
 
 .. literalinclude:: ../../examples/acetaminophen.py
    :language: python
-   :lines: 15-29
+   :lines: 15-28
 
 With the :class:`~mechwolf.Apparatus` object, we can do *so* much. If we call
 :meth:`~mechwolf.Apparatus.summarize()`, we'll get a clean tabular describe of
@@ -127,7 +127,7 @@ flow rate and duration for which to run the pumps:
 
 .. literalinclude:: ../../examples/acetaminophen.py
    :language: python
-   :lines: 36-38
+   :lines: 35-37
 
 It's really that simple to create protocols. We can visualize it equally simply
 with :meth:`~mechwolf.Protocol.visualize()`:
