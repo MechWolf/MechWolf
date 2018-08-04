@@ -18,8 +18,15 @@ the "Raspbian Lite" option.
 
   .. warning::
 
-     Choose strong passwords. The username and password you choose can be used
-     to remotely log in and control the Raspberry Pi.
+      Choose strong passwords. The username and password you choose can be used
+      to remotely log in and control the Raspberry Pi.
+
+  .. note::
+
+      If you have network setup problems, contact your local IT department. It
+      is likely that your institution's security protocols are preventing
+      MechWolf from connecting. If you are still having problems connecting,
+      contact :ref:`support <help>`.
 
 - Click "Write" to put the customized copy of Raspbian Lite onto the SD card.
 
