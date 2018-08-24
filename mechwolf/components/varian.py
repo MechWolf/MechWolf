@@ -53,7 +53,7 @@ class VarianPump(Pump):
     async def update(self):
         new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
-        yield self.__dict__
+        yield str(new_rate)
 
     def config(self):
         #TODO Make max_rate a ureg?
