@@ -30,8 +30,10 @@ class GsiocComponent :
         self.ser.write([0xFF])
         # give slaves time to disconnect
         sleep(0.02)
+        self.ser.reset_input_buffer()
 
     def connect(self) :
+
         self.disconnect()
         # connect slave with this ID
         max_try = 3
