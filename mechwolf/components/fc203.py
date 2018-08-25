@@ -18,6 +18,8 @@ class GilsonFC203(ActiveComponent):
         self.gsioc = GsiocComponent(serial_port=self.serial_port, unit_id=1)
 
         self.lock()
+        self.gsioc.buffered_command('W1        MechWolf')
+        self.gsioc.buffered_command('W2        ')
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -34,11 +36,13 @@ class GilsonFC203(ActiveComponent):
         goto_command = 'T'+str(int(position)).zfill(3)
         print(goto_command)
         self.gsioc.buffered_command(goto_command)
+        self.gsioc.buffered_command('W2       Collect '+str(position))
 
     def drain(self) :
         drain_command='Y0000'
         print(drain_command)
         self.gsioc.buffered_command(drain_command)
+        self.gsioc.buffered_command('W2         Drain')
 
     def config(self):
         return {"serial_port": (str, None)}
@@ -56,5 +60,4 @@ class GilsonFC203(ActiveComponent):
     def base_state(self):
         '''We assume that the collector starts at the drain position.
         '''
-
         return dict(position=0)
