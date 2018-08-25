@@ -29,16 +29,34 @@ class VarianPump(Pump):
         self.gsioc.buffered_command('L')
 
     def unlock(self) :
-        self.gsioc.buffered_command('U')
+        self.gsioc.buffered_command('U') # unlock keypad
+        self.gsioc.buffered_command('W') # release display
 
     def set_flow(self, flow_rate):
-        print(flow_rate)
-        #Flow rate must be supplied as an string from 000000 to 100000, where 100000 = 100% of the maximum pump flow rate.
+
+        # Varian pumps will not accept commands unless keypad is locked
+        # If operator power cycles the pump between protocols, the lock is lost
+        # So we lock the device before each command just to make sure
+        self.lock()
+
+        #Flow rate must be supplied as a string from 000000 to 100000, where 100000 = 100% of the maximum pump flow rate.
         percentage = 100000 * flow_rate / self.max_rate
-        #print(percentage)
+
         flow_command = 'X'+str(int(percentage)).zfill(6)
-        print(flow_command)
+
+        print('Setting flow rate to {} using command {}'.format(flow_rate, flow_command))
+
         self.gsioc.buffered_command(flow_command)
+
+        if flow_rate > 0  :
+            # If we are flowing, we print mechwolf parameters on the display
+            self.gsioc.buffered_command('W0=        MechWolf')
+            self.gsioc.buffered_command('W1=       {} ml/min'.format(flow_rate))
+        else :
+            # If we are not flowing, we unlock the keypad and release the display
+            # so the operator can intervene (e.g prime)
+            self.unlock()
+
 
     async def update(self):
         new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
