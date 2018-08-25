@@ -9,7 +9,8 @@ except ImportError:
 class ViciPump(Pump):
     '''A Vici M50 pump.
     This pump is characterized by the volume of fluid dispensed per revolution
-    which can be found on the certificate of confirmance
+    which can be found on the certificate of conformance
+    This is specified in ml now, we can perhaps make it a ureg later
     '''
 
     def __init__(self, name, serial_port=None, volume_per_rev=0):
