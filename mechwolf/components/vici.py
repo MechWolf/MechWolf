@@ -17,7 +17,7 @@ class ViciValve(Valve):
     def __enter__(self):
         # create the serial connection
         self.ser = serial.Serial(self.serial_port,
-                                 115200,
+                                 9600,
                                  parity=serial.PARITY_NONE,
                                  stopbits=1,
                                  timeout=0.1,
