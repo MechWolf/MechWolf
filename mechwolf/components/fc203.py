@@ -10,7 +10,7 @@ class GilsonFC203(ActiveComponent):
         super().__init__(name=name)
 
         self.serial_port = serial_port
-        self.unit_id=1
+        self.unit_id=unit_id
         self.position=1
 
     def __enter__(self):
@@ -23,22 +23,21 @@ class GilsonFC203(ActiveComponent):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-
         self.unlock()
 
     def lock(self):
         self.gsioc.buffered_command('L0')
 
-    def unlock(self) :
+    def unlock(self):
         self.gsioc.buffered_command('L1')
 
-    def goto(self, position) :
+    def goto(self, position):
         goto_command = 'T'+str(int(position)).zfill(3)
         print(goto_command)
         self.gsioc.buffered_command(goto_command)
         self.gsioc.buffered_command('W2       Collect '+str(position))
 
-    def drain(self) :
+    def drain(self):
         drain_command='Y0000'
         print(drain_command)
         self.gsioc.buffered_command(drain_command)
