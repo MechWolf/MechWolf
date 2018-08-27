@@ -13,10 +13,9 @@ class VarianPump(Pump):
         self.rate = ureg.parse_expression("0 ml/min")
         self.max_rate = max_rate
         self.serial_port = serial_port
-        self.unit_id=unit_id
+        self.unit_id = unit_id
 
     def __enter__(self):
-
         self.gsioc = GsiocComponent(serial_port=self.serial_port, unit_id=self.unit_id)
 
         self.lock()
@@ -39,10 +38,10 @@ class VarianPump(Pump):
         # So we lock the device before each command just to make sure
         self.lock()
 
-        #Flow rate must be supplied as a string from 000000 to 100000, where 100000 = 100% of the maximum pump flow rate.
+        # Flow rate must be supplied as a string from 000000 to 100000, where 100000 = 100% of the maximum pump flow rate.
         percentage = 100000 * flow_rate / self.max_rate
 
-        flow_command = 'X'+str(int(percentage)).zfill(6)
+        flow_command = 'X' + str(int(percentage)).zfill(6)
 
         print('Setting flow rate to {} using command {}'.format(flow_rate, flow_command))
 
@@ -57,7 +56,6 @@ class VarianPump(Pump):
             # so the operator can intervene (e.g prime)
             self.unlock()
 
-
     async def update(self):
         new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
@@ -65,4 +63,4 @@ class VarianPump(Pump):
 
     def config(self):
         #TODO Make max_rate a ureg?
-        return dict(serial_port=(str, None), max_rate=(int, None))
+        return dict(serial_port=(str, None), max_rate=(int, None), unit_id=(int, 0))
