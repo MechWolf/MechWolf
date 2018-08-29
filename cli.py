@@ -63,7 +63,7 @@ def update(hub_id, security_key):
 
 @cli.command(help="Convert a .db file into JSON or YAML")
 @click.argument('db', type=click.Path(exists=True))
-@click.option('--output', type=click.Choice(['yaml', 'json']), prompt=True, default="yaml", help="The file format to use")
+@click.option('--output', type=click.Choice(['yaml', 'json']), default="yaml", help="The file format to use")
 def convert(db, output):
     db = os.path.splitext(db)[0]
     with shelve.open(db) as db:
