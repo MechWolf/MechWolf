@@ -13,7 +13,7 @@ class Dummy(ActiveComponent):
             print("Active and async!")
         else:
             print("Inactive and async.")
-        yield self.__dict__
+        yield dict(active=self.active, good=True)
 
     def config(self):
         return {}

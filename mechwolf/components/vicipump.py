@@ -58,7 +58,7 @@ class ViciPump(Pump):
         new_rate = ureg.parse_expression(self.rate)
 
         self.set_flow(new_rate)
-        yield str(new_rate)
+        yield {"rate": str(new_rate)}
 
     def config(self):
         return dict(serial_port=(str, None), volume_per_rev=(float, None))

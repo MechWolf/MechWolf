@@ -52,4 +52,4 @@ class ViciValve(Valve):
         message = f'GO{self.setting}\r'
         self.ser.write(message.encode()) # send the message to the valve
         print(self.setting) # for introspection
-        yield self.setting
+        yield {"setting": self.setting}

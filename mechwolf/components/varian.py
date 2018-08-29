@@ -27,7 +27,7 @@ class VarianPump(Pump):
     def lock(self):
         self.gsioc.buffered_command('L')
 
-    def unlock(self) :
+    def unlock(self):
         self.gsioc.buffered_command('U') # unlock keypad
         self.gsioc.buffered_command('W') # release display
 
@@ -47,11 +47,11 @@ class VarianPump(Pump):
 
         self.gsioc.buffered_command(flow_command)
 
-        if flow_rate > 0  :
+        if flow_rate > 0:
             # If we are flowing, we print mechwolf parameters on the display
             self.gsioc.buffered_command('W0=        MechWolf')
             self.gsioc.buffered_command('W1=       {} ml/min'.format(flow_rate))
-        else :
+        else:
             # If we are not flowing, we unlock the keypad and release the display
             # so the operator can intervene (e.g prime)
             self.unlock()
@@ -59,7 +59,7 @@ class VarianPump(Pump):
     async def update(self):
         new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
-        yield str(new_rate)
+        yield {"rate": str(new_rate)}
 
     def config(self):
         #TODO Make max_rate a ureg?

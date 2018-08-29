@@ -30,16 +30,14 @@ async def execute_procedure(protocol_id, procedure, session, me):
     async for result in me.update():
         if not isinstance(result, tuple):
             result = (result, time.time())
-        await log(session, dumps(dict(data=result[0],
-                                      protocol_id=protocol_id,
-                                      device_id=me.name,
-                                      timestamp=result[1])))
-    await log(session, dumps(dict(protocol_id=protocol_id,
-                                  device_id=me.name,
-                                  timestamp=time.time(),
-                                  success=True,
-                                  procedure=procedure)))
-
+        results = dict(data=result[0],
+                       protocol_id=protocol_id,
+                       device_id=me.name,
+                       timestamp=result[1],
+                       procedure=procedure,
+                       success=True)
+        logging.debug(f"Logging {results} to hub")
+        await log(session, dumps(results))
 
 async def get_protocol(session):
     logging.debug("Attempting to get protocol")
@@ -243,8 +241,9 @@ def run_client(config="client_config.yml"):
         logging.info("Unable to find component class in standard MechWolf library. Attempting to use user-provided component...")
         try:
             absolute_path = config["device_info"]["device_class_filepath"]
-        except KeyError as e:
-            raise e(Fore.RED + "No component filepath given. If you are using a custom component, make sure to run mechwolf setup." + Style.RESET_ALL)
+        except KeyError:
+            logging.error(Fore.RED + "No component filepath given. If you are using a custom component, make sure to run mechwolf setup. If not using a custom component, ensure that device_class in client_config.yml is a valid MechWolf component." + Style.RESET_ALL)
+            sys.exit()
 
         module_name, _ = os.path.splitext(os.path.split(absolute_path)[-1])
         module = imp.load_source(module_name, absolute_path)

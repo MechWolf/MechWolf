@@ -250,11 +250,10 @@ def log():
             except KeyError:
                 return "no log"
         submission = json.loads(serializer.loads(request.json["data"]))
-        mode = "data" if submission.get("data") else "log"
         try:
-            db[mode] = db[mode] + [submission]
+            db["data"] = db["data"] + [submission]
         except KeyError:
-            db[mode] = []
+            db["data"] = []
     return timestamp_sign("logged")
 
 
