@@ -15,7 +15,7 @@ class GilsonFC203(ActiveComponent):
 
     def __enter__(self):
         # create the serial connection
-        self.gsioc = GsiocComponent(serial_port=self.serial_port, unit_id=1)
+        self.gsioc = GsiocComponent(serial_port=self.serial_port, unit_id=self.unit_id)
 
         self.lock()
         self.gsioc.buffered_command('W1        MechWolf')
@@ -44,7 +44,7 @@ class GilsonFC203(ActiveComponent):
         self.gsioc.buffered_command('W2         Drain')
 
     def config(self):
-        return {"serial_port": (str, None)}
+        return {"serial_port": (str, None), "unit_id": (int, 1)}
 
     async def update(self):
 
