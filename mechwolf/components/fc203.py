@@ -10,8 +10,8 @@ class GilsonFC203(ActiveComponent):
         super().__init__(name=name)
 
         self.serial_port = serial_port
-        self.unit_id=unit_id
-        self.position=1
+        self.unit_id = unit_id
+        self.position = 1
 
     def __enter__(self):
         # create the serial connection
@@ -32,13 +32,13 @@ class GilsonFC203(ActiveComponent):
         self.gsioc.buffered_command('L1')
 
     def goto(self, position):
-        goto_command = 'T'+str(int(position)).zfill(3)
+        goto_command = 'T' + str(int(position)).zfill(3)
         print(goto_command)
         self.gsioc.buffered_command(goto_command)
-        self.gsioc.buffered_command('W2       Collect '+str(position))
+        self.gsioc.buffered_command('W2       Collect ' + str(position))
 
     def drain(self):
-        drain_command='Y0000'
+        drain_command = 'Y0000'
         print(drain_command)
         self.gsioc.buffered_command(drain_command)
         self.gsioc.buffered_command('W2         Drain')
@@ -47,10 +47,9 @@ class GilsonFC203(ActiveComponent):
         return {"serial_port": (str, None), "unit_id": (int, 1)}
 
     async def update(self):
-
-        if self.position == 0 :
+        if self.position == 0:
             self.drain()
-        else :
+        else:
             self.goto(self.position)
 
         print(self.position)
