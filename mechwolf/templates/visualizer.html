@@ -21,6 +21,11 @@
 				var container = document.getElementById('timeline');
 				var chart = new google.visualization.Timeline(container);
 				var dataTable = new google.visualization.DataTable();
+				var options = { timeline: {
+                    barLabelStyle: {opacity: 0}},
+					avoidOverlappingGridLines: false
+				 };
+
 
 				dataTable.addColumn({ type: 'string', id: 'Component' });
 				dataTable.addColumn({ type: 'string', id: 'Setting' });
@@ -31,7 +36,7 @@
 					[ "{{procedure['component'].name}}", "{{procedure['params'] | safe}}", new Date(0, 0, 0, 0, 0, {{procedure["start"].to_base_units().magnitude}}), new Date(0, 0, 0, 0, 0, {{procedure["stop"].to_base_units().magnitude}}) ],
 					{% endfor %}
 					]);
-				chart.draw(dataTable, {avoidOverlappingGridLines: false});
+				chart.draw(dataTable, options);
 			}
 		</script>
 	</body>
