@@ -1,6 +1,19 @@
 from .component import Component
 
-class TMixer(Component):
+class Mixer(Component):
+    """A generic mixer.
+
+    This is an alias of :class:`~mechwolf.Component`.
+
+    Attributes:
+        name (str, optional): The name of the mixer.
+    """
+
+    def __init__(self, name=None):
+        super().__init__(name=name)
+        self._visualization_shape = "cds"
+
+class TMixer(Mixer):
     """A T mixer.
 
     This is an alias of :class:`~mechwolf.Component`.
@@ -12,7 +25,7 @@ class TMixer(Component):
     def __init__(self, name=None):
         super().__init__(name=name)
 
-class YMixer(Component):
+class YMixer(Mixer):
     """A Y mixer.
 
     This is an alias of :class:`~mechwolf.Component`.
@@ -24,7 +37,7 @@ class YMixer(Component):
     def __init__(self, name=None):
         super().__init__(name=name)
 
-class CrossMixer(Component):
+class CrossMixer(Mixer):
     """A cross mixer.
 
     This is an alias of :class:`~mechwolf.Component`.

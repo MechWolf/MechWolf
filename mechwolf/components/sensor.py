@@ -18,6 +18,7 @@ class Sensor(ActiveComponent):
     def __init__(self, name):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 Hz")
+        self._visualization_shape = "ellipse"
 
     def base_state(self):
         '''Default to being inactive.'''

@@ -16,6 +16,7 @@ class Pump(ActiveComponent):
     def __init__(self, name):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
+        self._visualization_shape = "box3d"
 
     def base_state(self):
         '''Default to 0 mL/min.'''

@@ -28,6 +28,8 @@ class Component(object):
             raise ValueError(Fore.RED + f"Cannot have two components with the name {name}.")
         self.__class__._used_names.add(self.name)
 
+        self._visualization_shape = "box"
+
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}>"
 

@@ -44,3 +44,4 @@ class Vessel(Component):
                     print(table.table)
         super().__init__(name=name)
         self.description = description
+        self._visualization_shape = "cylinder"

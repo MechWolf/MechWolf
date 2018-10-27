@@ -97,7 +97,7 @@ class Apparatus(object):
         for component in from_component:
             self._add_single(component, to_component, tube)
 
-    def visualize(self, title=True, label_tubes=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho", nodesep="1"), file_format="pdf", filename=None):
+    def visualize(self, title=True, label_tubes=False, describe_vessels=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho"), file_format="pdf", filename=None):
         '''Generates a visualization of the graph of an apparatus.
 
         For full list of acceptable Graphviz attributes for see `the
@@ -109,6 +109,7 @@ class Apparatus(object):
             title (bool, optional): Whether to show the title in the output. Defaults to True.
             label_tubes (bool, optional): Whether to label the tubes between components with the length, inner diameter,
                 and outer diameter.
+            describe_vessels (bool, optional): Whether to display the names or content descriptions of :class:`~mechwolf.components.vessel.Vessel` components.
             node_attr (dict, optional): Controls the appearance of the nodes of the graph. Must be of the form
                 {"attribute": "value"}.
             edge_attr (dict, optional): Controls the appearance of the edges of the graph. Must be of the form
@@ -135,11 +136,15 @@ class Apparatus(object):
 
         # go from left to right adding components and their tubing connections
         f.attr(rankdir='LR')
-        f.attr('node', shape='box')
+
+        for component in list(self.components):
+            f.attr('node', shape=component._visualization_shape)
+            f.node(component.description if isinstance(component, Vessel) and describe_vessels else component.name)
+
         for x in self.network:
             tube_label = f"Length {x[2].length}\nID {x[2].ID}\nOD {x[2].OD}" if label_tubes else ""
-            f.edge(x[0].description if isinstance(x[0], Vessel) else x[0].name,
-                   x[1].description if isinstance(x[1], Vessel) else x[1].name,
+            f.edge(x[0].description if isinstance(x[0], Vessel) and describe_vessels else x[0].name,
+                   x[1].description if isinstance(x[1], Vessel) and describe_vessels else x[1].name,
                    label=tube_label)
 
         # show the title of the graph

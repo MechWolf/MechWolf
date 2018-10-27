@@ -17,6 +17,7 @@ class Valve(ActiveComponent):
         super().__init__(name=name)
         self.mapping = mapping
         self.setting = 1
+        self._visualization_shape = "parallelogram"
 
     def base_state(self):
         '''Default to the first setting.
