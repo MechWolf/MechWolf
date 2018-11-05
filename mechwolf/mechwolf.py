@@ -23,7 +23,7 @@ try:
 except ImportError:
     pass
 
-from . import ureg, RESOLVER_URL
+from . import ureg
 from .components import *
 from .validate_component import validate_component
 
