@@ -12,4 +12,3 @@ __version__ = '0.0.1'
 from .mechwolf import Apparatus, Protocol
 from .components import *
 from .validate_component import validate_component
-from .security_key_tools import generate_security_key, validate_security_key
