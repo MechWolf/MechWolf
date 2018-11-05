@@ -22,6 +22,7 @@ import mechwolf as mw
 # initialize colored printing
 init(autoreset=True)
 
+global server = "localhost:8080"
 
 async def execute_procedure(protocol_id, procedure, session, me):
     await asyncio.sleep(procedure["time"])
@@ -41,8 +42,7 @@ async def execute_procedure(protocol_id, procedure, session, me):
 
 async def get_protocol(session):
     logging.debug("Attempting to get protocol")
-    with shelve.open('client') as db:
-        server = db["server"]
+
     try:
         logging.debug(f"Connecting to {server}")
         async with session.get(f"{server}/protocol", params=dict(device_id=timestamp_signer.sign(DEVICE_NAME).decode()), timeout=10) as resp:
@@ -66,8 +66,7 @@ async def get_protocol(session):
     return "", False
 
 async def get_start_time(session):
-    with shelve.open('client') as db:
-        server = db["server"]
+
     try:
         logging.debug("Getting start time")
         async with session.get(f"{server}/start_time", params=dict(device_id=timestamp_signer.sign(DEVICE_NAME).decode())) as resp:
@@ -89,8 +88,6 @@ async def get_start_time(session):
 
 
 async def log(session, data):
-    with shelve.open('client') as db:
-        server = db["server"]
     try:
         async with session.post(f"{server}/log", json={"data": serializer.dumps(data)}) as resp:
             await resp.text()
@@ -110,6 +107,7 @@ async def main(loop, me):
     async with aiohttp.ClientSession(loop=loop, connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         while True:
             # try to get a protocol
+            # TODO protocol = None
             protocol = "no protocol"
             while protocol == "no protocol":
                 protocol_id, protocol = await get_protocol(session)
@@ -180,59 +178,10 @@ async def main(loop, me):
                 sys.exit()
 
 
-def resolve_server():
-    logging.info("Attempting to resolve server...")
-    server = ""
-    while not server:
-        try:
-            response = requests.get(
-                mw.RESOLVER_URL + "get_hub",
-                params={"hub_id": HUB_ID})
-            logging.debug(f"Signed hub address from resolver: {response.json()['hub_address']}")
-            server = signer.unsign(response.json()["hub_address"]).decode()
-        except JSONDecodeError:
-            raise RuntimeError(Fore.RED + "Invalid hub_id. Unable to resolve." + Style.RESET_ALL)
-        except itsdangerous.BadSignature:
-            raise RuntimeError(Fore.RED + "Invalid signature for hub_address." + Style.RESET_ALL)
-        except requests.exceptions.ConnectionError:
-            logging.warning(Fore.YELLOW + "No internet connection. Retrying in 10 seconds..." + Style.RESET_ALL)
-            time.sleep(10)
-            pass
-        with shelve.open('client') as db:
-            db["server"] = f"https://{server}"
-        logging.info(f"New server resolved: {server}")
-
-
 def run_client(config="client_config.yml"):
     # get the config data
     with open(config, "r") as f:
         config = yaml.load(f)
-
-    # set up global variables
-    global SECURITY_KEY
-    try:
-        SECURITY_KEY = keyring.get_password("mechwolf", "security_key")
-    except:
-        SECURITY_KEY = config["device_info"]["security_key"]
-    global HUB_ID
-    HUB_ID = config['resolver_info']['hub_id']
-    global DEVICE_NAME
-    DEVICE_NAME = config["device_info"]["device_name"]
-    global signer
-    signer = itsdangerous.Signer(SECURITY_KEY)
-    global timestamp_signer
-    timestamp_signer = itsdangerous.TimestampSigner(SECURITY_KEY)
-    global serializer
-    serializer = itsdangerous.URLSafeTimedSerializer(SECURITY_KEY)
-
-    # find the server
-    try:
-        with shelve.open('client') as db:
-            db["server"]
-            logging.info(f"Cached server location found: {db['server']}")
-    except KeyError:
-        logging.info(f"No server location found")
-        resolve_server()
 
     # create the client object
     try:
