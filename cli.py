@@ -36,7 +36,7 @@ def hub(v, port):
     http_server = WSGIServer(('', port), app)
 
     # alert the user, even when not in verbose mode
-    print(f"Hub started on 127.0.0.1:{port}!"
+    click.secho(f"Hub started on 127.0.0.1:{port}!", fg="green")
 
     if not v:
         print("For more information, use the -v flag.")
@@ -62,7 +62,7 @@ def client(v, config):
 @click.argument('db', type=click.Path(exists=True))
 @click.option('--output', type=click.Choice(['yaml', 'json']), default="yaml", help="The file format to use")
 def convert(db, output):
-    db=os.path.splitext(db)[0]
+    db = os.path.splitext(db)[0]
     with shelve.open(db) as db:
         if output == "json":
             print(json.dumps(dict(db), indent=4))
