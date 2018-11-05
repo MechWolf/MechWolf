@@ -22,7 +22,7 @@ import mechwolf as mw
 # initialize colored printing
 init(autoreset=True)
 
-global server = "localhost:8080"
+server = "http://localhost:5000"
 
 async def execute_procedure(protocol_id, procedure, session, me):
     await asyncio.sleep(procedure["time"])
@@ -42,23 +42,18 @@ async def execute_procedure(protocol_id, procedure, session, me):
 
 async def get_protocol(session):
     logging.debug("Attempting to get protocol")
-
     try:
         logging.debug(f"Connecting to {server}")
-        async with session.get(f"{server}/protocol", params=dict(device_id=timestamp_signer.sign(DEVICE_NAME).decode()), timeout=10) as resp:
+        async with session.get(f"{server}/protocol", params=dict(device_id=DEVICE_NAME), timeout=10) as resp:
             response = await resp.text()
             if response.startswith("no protocol"):
-                return "", timestamp_signer.unsign(response, max_age=5).decode()
+                return "", response
             response = loads(response)
-            global serializer
-            protocol = loads(
-                serializer.loads(
-                    response["protocol"]))[DEVICE_NAME]
+            protocol = loads(response["protocol"])[DEVICE_NAME]
             return response["protocol_id"], protocol
 
     except (aiohttp.client_exceptions.ClientError, asyncio.TimeoutError):
         logging.error(Fore.YELLOW + f"Unable to connect to {server}" + Style.RESET_ALL)
-        resolve_server()
 
     except KeyError:
         logging.debug("New protocol issued to hub; no procedures for client.")
@@ -69,9 +64,8 @@ async def get_start_time(session):
 
     try:
         logging.debug("Getting start time")
-        async with session.get(f"{server}/start_time", params=dict(device_id=timestamp_signer.sign(DEVICE_NAME).decode())) as resp:
+        async with session.get(f"{server}/start_time", params=dict(device_id=DEVICE_NAME)) as resp:
             response = await resp.text()
-            response = timestamp_signer.unsign(response, max_age=5).decode()
             logging.debug(f"Got {response} as response to start time request")
             try:
                 return float(response)
@@ -83,13 +77,12 @@ async def get_start_time(session):
         logging.error(
             Fore.YELLOW +
             f"Unable to connect to {server}. Trying again..." + Style.RESET_ALL)
-        resolve_server()
         return False
 
 
 async def log(session, data):
     try:
-        async with session.post(f"{server}/log", json={"data": serializer.dumps(data)}) as resp:
+        async with session.post(f"{server}/log", json={"data": data}) as resp:
             await resp.text()
     except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
         with shelve.open('client') as db:
@@ -104,7 +97,7 @@ async def log(session, data):
 
 
 async def main(loop, me):
-    async with aiohttp.ClientSession(loop=loop, connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+    async with aiohttp.ClientSession(loop=loop, connector=aiohttp.TCPConnector(ssl=None)) as session:
         while True:
             # try to get a protocol
             # TODO protocol = None
@@ -163,7 +156,6 @@ async def main(loop, me):
                     failed_submissions = db["log"]
                 while len(failed_submissions):
                     logging.info("Submitting failed logs")
-                    resolve_server()
                     with shelve.open('client') as db:
                         db["log"] = []
                     for i in failed_submissions:
@@ -183,6 +175,8 @@ def run_client(config="client_config.yml"):
     with open(config, "r") as f:
         config = yaml.load(f)
 
+    global DEVICE_NAME
+    DEVICE_NAME = config["device_info"]["device_name"]
     # create the client object
     try:
         class_type = globals()[config["device_info"]["device_class"]]
