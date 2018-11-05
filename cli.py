@@ -4,7 +4,6 @@ import json
 import yaml
 import click
 from click_didyoumean import DYMGroup
-import keyring
 import logging
 import mechwolf
 
@@ -31,7 +30,7 @@ def hub(v):
     # set up the server
     from gevent.pywsgi import WSGIServer
     from scripts.hub import app
-    http_server = WSGIServer(('0.0.0.0', 443), app, keyfile='ssl.key', certfile='ssl.cert')
+    http_server = WSGIServer(('', 5000), app)
 
     # alert the user, even when not in verbose mode
     if not v:
