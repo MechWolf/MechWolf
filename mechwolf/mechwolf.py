@@ -15,8 +15,6 @@ from terminaltables import AsciiTable
 from colorama import Fore, init
 import requests
 from click import prompt, confirm
-import itsdangerous
-import keyring
 
 # If visualization extras are available, import them
 try:
@@ -565,32 +563,11 @@ class Protocol(object):
 
         return visualization
 
-    def execute(self, address=None, hub_id=None, security_key=None, confirmation=True):
+    def execute(self, address = "http://localhost:5000", confirmation=True):
         '''Executes the procedure.
-
-        When a ``hub_id`` and ``security_key`` are not provided, there will be a
-        command line prompt with the  option to save them to the keychain.
-        Subsequent invocations of this function will not prompt the user  for
-        the ``hub_id`` and ``security_key``.
-
-        To change the stored values of ``hub_id`` and ``security_key``, run this command::
-
-            $ mechwolf update
-
-        For more information, run::
-
-            $ mechwolf update --help
-
-        Providing ``hub_id`` and ``security_key`` as keyword arguments will
-        override stored values and will not save the new values to the keychain.
-
-        Warning:
-            If providing ``security_key`` as a keyword argument, do not share your source code.
 
         Args:
             address (str, optional): The address of the hub to connect to. If None, the MechWolf resolver is used.
-            hub_id (str, optional): The hub id to which the protocol should be sent. If None, it is requested via command line.
-            security_key (str, optional): The security key of the hub to which the protocol is being sent. If None, it is requested via command line.
             confirmation (bool, optional): Whether to ask for confirmation. Defaults to True.
 
         Note:
@@ -605,54 +582,15 @@ class Protocol(object):
         if not all([validate_component(x["component"]) for x in self.procedures]):
             raise RuntimeError(Fore.RED + f"Attempting to execute protocol on invalid component {component}. Aborted.")
 
-        # get hub_id
-        if hub_id is None:
-            if keyring.get_password("mechwolf", "hub_id") is None:
-                hub_id = prompt("Please enter your hub_id", type=str)
-                if confirm("Save hub_id?", default=True):
-                    keyring.set_password("mechwolf", "hub_id", hub_id)
-                    print("Storing hub_id! To change, run the command: $ mechwolf update")
-            else:
-                hub_id = keyring.get_password("mechwolf", "hub_id")
-
-        # get security_key
-        if security_key is None:
-            if keyring.get_password("mechwolf", "security_key") is None:
-                security_key = prompt("Please enter your security_key", type=str)
-                if confirm("Save security_key?", default=True):
-                    keyring.set_password("mechwolf", "security_key", security_key)
-                    print("Storing security_key! To change, run the command: $ mechwolf update")
-            else:
-                security_key = keyring.get_password("mechwolf", "security_key")
-        else:
-            print(Fore.YELLOW + "Remember never to share source code containing your security key!")
-
-        signer = itsdangerous.Signer(security_key)
-        serializer = itsdangerous.URLSafeTimedSerializer(security_key)
-        timestamp_signer = itsdangerous.TimestampSigner(security_key)
-
         if confirmation:
             confirm("Are you sure you want to execute this procedure?", abort=True, default=True)
 
-        # get the address
-        if address is None:
-            response = requests.request("GET", RESOLVER_URL + "get_hub", params={"hub_id": hub_id})
-            try:
-                address = signer.unsign(response.json()["hub_address"]).decode()
-            except json.decoder.JSONDecodeError:
-                raise RuntimeError(Fore.RED + "Invalid hub_id. Ensure that you have the correct hub_id. "
-                                              "To update the hub_id stored on this device, run 'mechwolf update'. "
-                                              "To update your client or hub, update their config file.")
-
         # subit the protocol to the hub
         try:
-            response = requests.post(f"https://{address}/submit_protocol", data=dict(protocol=serializer.dumps(self.json())), verify=False).text
-            response = timestamp_signer.unsign(response).decode()
+            response = requests.post(f"{address}/submit_protocol", data=dict(protocol=self.json()), verify=False).text
             if response == "protocol rejected: different protocol being executed":
                 raise RuntimeError(Fore.RED + "Protocol rejected because hub is currently executing a different protocol.")
             elif response != "protocol rejected: invalid signature":
                 print(f"Protocol id: {response}")
-                return
-        except itsdangerous.BadSignature:
+        except:
             pass
-        raise RuntimeError(Fore.RED + "Bad signature! Make sure that your security key is correct in both places.")
