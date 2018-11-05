@@ -176,11 +176,10 @@ def experiments():
     return json.dumps(expts)
 # app.run(debug=False, host="0.0.0.0", use_reloader=True, threaded=True, port=80, ssl_context=('cert.pem', 'key.pem'))
 
-@app.route("/data", methods=["GET"])
-def data():
-    expt = request.args.get('experiment')
+@app.route("/experiments/<uuid:expt_id>", methods=["GET"])
+def data(expt_id):
     expts_folder = Path.cwd()/'experiments'
-    expt_path = expts_folder/expt
+    expt_path = expts_folder/str(expt_id)
     expts = [file for file in expts_folder.iterdir()]
     if expt_path in expts:
         with shelve.open(str(expt_path)) as db:
