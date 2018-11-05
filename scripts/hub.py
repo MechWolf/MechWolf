@@ -7,6 +7,7 @@ import logging
 from flask import Flask, render_template, jsonify, request, abort
 import schedule
 import yaml
+from pathlib import Path
 
 import mechwolf as mw
 
@@ -66,7 +67,7 @@ def submit_protocol():
         # store the time when the protocol came in
         db["protocol_submit_time"] = time()
 
-        with shelve.open(db["protocol_id"]) as protocol_db:
+        with shelve.open(f'experiments/{ db["protocol_id"] }') as protocol_db:
             protocol_db["protocol"] = protocol
             protocol_db["protocol_id"] = protocol_id
             protocol_db["protocol_submit_time"] = db["protocol_submit_time"]
@@ -155,7 +156,7 @@ def log():
     logging.info(f"Logging {request.json['data']}")
     with shelve.open('hub') as db:
         protocol_id = db["protocol_id"]
-    with shelve.open(protocol_id) as db:
+    with shelve.open(f'experiments/{protocol_id}') as db:
         if request.method == "GET":
             try:
                 return str(db["log"])
@@ -168,4 +169,21 @@ def log():
             db["data"] = []
     return "logged"
 
+@app.route("/experiments", methods=["GET"])
+def experiments():
+    expts_folder = Path.cwd()/'experiments'
+    expts = [file.name for file in expts_folder.iterdir()]
+    return json.dumps(expts)
 # app.run(debug=False, host="0.0.0.0", use_reloader=True, threaded=True, port=80, ssl_context=('cert.pem', 'key.pem'))
+
+@app.route("/data", methods=["GET"])
+def data():
+    expt = request.args.get('experiment')
+    expts_folder = Path.cwd()/'experiments'
+    expt_path = expts_folder/expt
+    expts = [file for file in expts_folder.iterdir()]
+    if expt_path in expts:
+        with shelve.open(str(expt_path)) as db:
+            return(json.dumps(dict(db)))
+    else:
+        return(f"Experiment {expt} not found")
