@@ -14,7 +14,10 @@ import mechwolf as mw
 logging.getLogger("schedule").setLevel(logging.WARNING)
 logging.getLogger("werkzeug").setLevel(logging.INFO)
 
-app = Flask(__name__) # create flask app
+app = Flask(__name__, static_folder="vis/",
+                      template_folder="vis/",
+                      static_url_path="")
+ # create flask app
 
 # how long to wait for check ins before aborting a protcol
 TIMEOUT = 60
@@ -23,6 +26,9 @@ TIMEOUT = 60
 with open("hub_config.yml", "r") as f:
     config = yaml.load(f)
 
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 @app.route("/submit_protocol", methods=["POST"])
 def submit_protocol():
@@ -173,7 +179,7 @@ def log():
 def experiments():
     expts_folder = Path.cwd()/'experiments'
     expts = [file.name for file in expts_folder.iterdir()]
-    return json.dumps(expts)
+    return jsonify(expts)
 # app.run(debug=False, host="0.0.0.0", use_reloader=True, threaded=True, port=80, ssl_context=('cert.pem', 'key.pem'))
 
 @app.route("/experiments/<uuid:expt_id>", methods=["GET"])
@@ -183,6 +189,6 @@ def data(expt_id):
     expts = [file for file in expts_folder.iterdir()]
     if expt_path in expts:
         with shelve.open(str(expt_path)) as db:
-            return(json.dumps(dict(db)))
+            return(jsonify(dict(db)))
     else:
         return(f"Experiment {expt} not found")
