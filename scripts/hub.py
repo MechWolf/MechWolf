@@ -187,4 +187,4 @@ def data(expt_id):
         with shelve.open(str(expt_path)) as db:
             return(jsonify(dict(db)))
     else:
-        return(f"Experiment {expt} not found")
+        return(f"Experiment {expt_id} not found")
