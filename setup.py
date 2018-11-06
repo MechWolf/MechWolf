@@ -9,7 +9,7 @@ with open(path.join(here, 'readme.md')) as f:
 
 setup(
     name='mechwolf',
-    version='0.0.1',
+    version='0.0.2',
     description='Continuous flow process description, analysis, and automation',
     long_description=long_description,
     url='https://github.com/benjamin-lee/MechWolf',
@@ -36,19 +36,15 @@ setup(
         "colorama",
         "pyyaml",
         "requests",
-        "xkcdpass",
         "pick",
         "click",
         "click_didyoumean",
-        "rsa",
         "yamlordereddictloader",
-        "keyring",
-        "urllib3",
-        "itsdangerous"],
+        "urllib3"],
     extras_require={
         'vis': ["graphviz", "numpy"],
         'client': ["pyserial", "aiohttp"],
-        'hub': ["schedule", "flask", "pyopenssl", "gevent"],
+        'hub': ["flask", "gevent"],
         'doc': ["sphinxcontrib-programoutput", "sphinx", "sphinxcontrib-httpdomain"]
     },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},

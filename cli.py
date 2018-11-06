@@ -24,17 +24,22 @@ def cli():
 def setup():
     from scripts import config
 
+
+default_port = 5000
 @cli.command(help="Run a MechWolf hub")
 @click.option('-v', count=True, help="Verbose mode. Multiple -v options increase the verbosity. The maximum is 3.")
-def hub(v):
+@click.option("-p", "--port", type=int, default=default_port, help=f"The port to serve the hub on. Defaults to {default_port}")
+def hub(v, port):
     # set up the server
     from gevent.pywsgi import WSGIServer
     from scripts.hub import app
-    http_server = WSGIServer(('', 5000), app)
+    http_server = WSGIServer(('', port), app)
 
     # alert the user, even when not in verbose mode
+    click.secho(f"Hub started on 127.0.0.1:{port}!", fg="green")
+
     if not v:
-        print("Hub started! For more information, use the -v flag.")
+        print("For more information, use the -v flag.")
     set_verbosity(v)
 
     # start the server
@@ -52,13 +57,6 @@ def client(v, config):
     set_verbosity(v)
     from scripts.client import run_client
     run_client(config=config)
-
-@cli.command(help="Update the stored hub_id and security_key")
-@click.option('-h', '--hub_id', prompt=True, default=lambda: keyring.get_password("mechwolf", "hub_id"))
-@click.option('-s', "--security_key", prompt=True, default=lambda: keyring.get_password("mechwolf", "security_key"))
-def update(hub_id, security_key):
-    keyring.set_password("mechwolf", "hub_id", hub_id)
-    keyring.set_password("mechwolf", "security_key", security_key)
 
 @cli.command(help="Convert a .db file into JSON or YAML")
 @click.argument('db', type=click.Path(exists=True))

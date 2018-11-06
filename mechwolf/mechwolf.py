@@ -23,7 +23,7 @@ try:
 except ImportError:
     pass
 
-from . import ureg, RESOLVER_URL
+from . import ureg
 from .components import *
 from .validate_component import validate_component
 
@@ -563,11 +563,11 @@ class Protocol(object):
 
         return visualization
 
-    def execute(self, address = "http://localhost:5000", confirmation=True):
+    def execute(self, address="http://localhost:5000", confirmation=True):
         '''Executes the procedure.
 
         Args:
-            address (str, optional): The address of the hub to connect to. If None, the MechWolf resolver is used.
+            address (str, optional): The address of the hub to connect to.
             confirmation (bool, optional): Whether to ask for confirmation. Defaults to True.
 
         Note:
