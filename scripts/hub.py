@@ -15,16 +15,12 @@ logging.getLogger("schedule").setLevel(logging.WARNING)
 logging.getLogger("werkzeug").setLevel(logging.INFO)
 
 app = Flask(__name__, static_folder="vis/",
-                      template_folder="vis/",
-                      static_url_path="")
- # create flask app
+            template_folder="vis/",
+            static_url_path="")
+# create flask app
 
 # how long to wait for check ins before aborting a protcol
 TIMEOUT = 60
-
-# get the config data
-with open("hub_config.yml", "r") as f:
-    config = yaml.load(f)
 
 @app.route("/")
 def index():
@@ -177,15 +173,15 @@ def log():
 
 @app.route("/experiments", methods=["GET"])
 def experiments():
-    expts_folder = Path.cwd()/'experiments'
+    expts_folder = Path.cwd() / 'experiments'
     expts = [file.name for file in expts_folder.iterdir()]
     return jsonify(expts)
 # app.run(debug=False, host="0.0.0.0", use_reloader=True, threaded=True, port=80, ssl_context=('cert.pem', 'key.pem'))
 
 @app.route("/experiments/<uuid:expt_id>", methods=["GET"])
 def data(expt_id):
-    expts_folder = Path.cwd()/'experiments'
-    expt_path = expts_folder/str(expt_id)
+    expts_folder = Path.cwd() / 'experiments'
+    expt_path = expts_folder / str(expt_id)
     expts = [file for file in expts_folder.iterdir()]
     if expt_path in expts:
         with shelve.open(str(expt_path)) as db:
