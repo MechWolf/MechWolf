@@ -8,7 +8,8 @@ from flask import Flask, render_template, jsonify, request, abort
 import schedule
 import yaml
 from pathlib import Path
-
+from flask_socketio import SocketIO, emit
+import webbrowser
 import mechwolf as mw
 
 logging.getLogger("schedule").setLevel(logging.WARNING)
@@ -18,6 +19,7 @@ app = Flask(__name__, static_folder="vis/",
                       template_folder="vis/",
                       static_url_path="")
  # create flask app
+socketio = SocketIO(app)
 
 # how long to wait for check ins before aborting a protcol
 TIMEOUT = 60
@@ -26,7 +28,11 @@ TIMEOUT = 60
 with open("hub_config.yml", "r") as f:
     config = yaml.load(f)
 
-@app.route("/")
+@app.route('/vis/<path:path>')
+def any_root_path(path):
+    return render_template('index.html')
+
+@app.route("/vis/")
 def index():
     return render_template("index.html")
 
@@ -78,6 +84,7 @@ def submit_protocol():
             protocol_db["protocol_id"] = protocol_id
             protocol_db["protocol_submit_time"] = db["protocol_submit_time"]
 
+        webbrowser.get('open -a /Applications/Google\ Chrome.app %s').open(f'http://localhost:5000/vis/experiments/{protocol_id}')
         return db["protocol_id"]
 
 
@@ -159,7 +166,9 @@ def start_time():
 
 @app.route("/log", methods=["POST", "GET"])
 def log():
-    logging.info(f"Logging {request.json['data']}")
+    logging.info(f"Logging procedure {request.json['data']}")
+    submission = json.loads(request.json["data"])
+
     with shelve.open('hub') as db:
         protocol_id = db["protocol_id"]
     with shelve.open(f'experiments/{protocol_id}') as db:
@@ -168,12 +177,24 @@ def log():
                 return str(db["log"])
             except KeyError:
                 return "no log"
-        submission = json.loads(request.json["data"])
-        try:
-            db["data"] = db["data"] + [submission]
-        except KeyError:
-            db["data"] = []
-    return "logged"
+        if submission["type"] == 'log':
+            if "logs" in db:
+                logs = db["logs"]
+                logs.append(submission)
+                db["logs"] = logs
+            else:
+                db["logs"] = [submission]
+            socketio.emit('log',submission)
+            return "logged"
+        elif submission["type"] == 'sensor_data':
+            if "data" in db:
+                logs = db["data"]
+                logs.append(submission)
+                db["data"] = logs
+            else:
+                db["data"] = [submission]
+            socketio.emit('data',submission)
+            return "logged"
 
 @app.route("/experiments", methods=["GET"])
 def experiments():
@@ -191,4 +212,9 @@ def data(expt_id):
         with shelve.open(str(expt_path)) as db:
             return(jsonify(dict(db)))
     else:
-        return(f"Experiment {expt} not found")
+        return(jsonify({'protocol_id':None}))
+
+@app.route("/test/<msg>")
+def test(msg):
+    socketio.emit('test',msg)
+    return msg
