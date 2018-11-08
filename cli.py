@@ -31,10 +31,10 @@ default_port = 5000
 @click.option("-p", "--port", type=int, default=default_port, help=f"The port to serve the hub on. Defaults to {default_port}")
 def hub(v, port):
     # set up the server
-    from gevent.pywsgi import WSGIServer
-    from scripts.hub import app
-    http_server = WSGIServer(('', port), app)
-
+    #from gevent.pywsgi import WSGIServer
+    from scripts.hub import app, socketio
+    #http_server = WSGIServer(('', port), app)
+    socketio.run(app)
     # alert the user, even when not in verbose mode
     click.secho(f"Hub started on 127.0.0.1:{port}!", fg="green")
 
@@ -43,7 +43,7 @@ def hub(v, port):
     set_verbosity(v)
 
     # start the server
-    http_server.serve_forever()
+    #http_server.serve_forever()
 
 @cli.command(help="Run a MechWolf client")
 @click.option('-v', count=True, help="Verbose mode. Multiple -v options increase the verbosity. The maximum is 3.")
