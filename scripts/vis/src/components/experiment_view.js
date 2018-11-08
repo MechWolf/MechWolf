@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { fetchExperiment, logReceived, dataReceived } from '../actions'
 import _ from 'lodash';
-import LineGraphView from './line_graph_view'
+import LineGraphView from './line_graph_view';
+import ChartJSView from './js_chart_view';
 import openSocket from 'socket.io-client';
 
 const socket = openSocket('http://localhost:5000');
@@ -42,7 +43,6 @@ class ExperimentView extends Component {
     if (!experiment) {
       return(<div>Loading</div>);
     }
-    console.log(experiment)
     //Renders a table and graphs of all data in the protocol.
     return (
       <div>
@@ -55,7 +55,7 @@ class ExperimentView extends Component {
         {_.map(experiment.data, (data,key) => { return(
           <div key={key}>
             <h3>{key}</h3>
-            <LineGraphView data={data.map(a => a.payload).map(a => a.data)}
+            <ChartJSView data={data.map(a => a.payload).map(a => a.data)}
                            times={data.map(a =>a.timestamp)}
                            time_zero={experiment.protocol_submit_time} />
           </div> )})}
