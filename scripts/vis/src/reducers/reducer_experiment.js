@@ -28,7 +28,6 @@ export default function (state = {}, action) {
   case DATA_RECEIVED:
       protocol_id = action.payload.protocol_id
       device_id = action.payload.device_id
-      console.log(state[protocol_id].data)
       var data = {}
       //Trying to add data into an undefined array will cause an error
       //Need to initialize the array before the creation of the first datapoint.
@@ -40,7 +39,6 @@ export default function (state = {}, action) {
         data = {...state[protocol_id].data, [device_id]:
           [...state[protocol_id].data[device_id], action.payload]}
       }
-      console.log(data)
       return {...state, [protocol_id]:
                 {...state[protocol_id], data}
               };
