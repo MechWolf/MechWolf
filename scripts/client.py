@@ -29,14 +29,13 @@ async def execute_procedure(protocol_id, procedure, session, me):
     logging.info(Fore.GREEN + f"Executing: {procedure} at {time.time()}" + Style.RESET_ALL)
     me.update_from_params(procedure["params"])
     async for result in me.update():
-        if not isinstance(result, tuple):
-            result = (result, time.time())
-        results = dict(data=result[0],
+        results = dict(payload=result['payload'],
                        protocol_id=protocol_id,
                        device_id=me.name,
-                       timestamp=result[1],
+                       timestamp=result['time'],
                        procedure=procedure,
-                       success=True)
+                       success=True,
+                       type=result['type'])
         logging.debug(f"Logging {results} to hub")
         await log(session, dumps(results))
 

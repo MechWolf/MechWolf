@@ -31,9 +31,20 @@ class Sensor(ActiveComponent):
     async def update(self):
         '''If data collection is off and needs to be turned on, turn it on.
            If data collection is on and needs to be turned off, turn off and return data.'''
+        yield { 'payload': {'rate': str(ureg.parse_expression(self.rate).to_base_units())},
+                'time': time.time(),
+                'type': 'log'}
         while ureg.parse_expression(self.rate).to_base_units().magnitude != 0:
-            yield (self.read(), time.time())
-            await asyncio.sleep(1 / ureg.parse_expression(self.rate).to_base_units().magnitude)
+            try:
+                frequency = 1 / ureg.parse_expression(self.rate).to_base_units().magnitude
+            except ZeroDivisionError:
+                return
+            #TODO Update this return value to be a dict instead of a tuple
+            yield { 'payload':
+                     {'data': self.read()},
+                    'time': time.time(),
+                    'type': "sensor_data" }
+            await asyncio.sleep(frequency)
 
 class DummySensor(Sensor):
     """A dummy sensor returning the number of times it has been read.
