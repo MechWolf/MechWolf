@@ -16,21 +16,14 @@ logging.getLogger("schedule").setLevel(logging.WARNING)
 logging.getLogger("werkzeug").setLevel(logging.INFO)
 
 app = Flask(__name__, static_folder="vis/",
-<<<<<<< HEAD
                       template_folder="vis/",
                       static_url_path="")
  # create flask app
 socketio = SocketIO(app)
-=======
-            template_folder="vis/",
-            static_url_path="")
-# create flask app
->>>>>>> 5724943c3e5bb75d888b21f127892dee7bae3c97
 
 # how long to wait for check ins before aborting a protcol
 TIMEOUT = 60
 
-<<<<<<< HEAD
 # get the config data
 with open("hub_config.yml", "r") as f:
     config = yaml.load(f)
@@ -40,9 +33,6 @@ def any_root_path(path):
     return render_template('index.html')
 
 @app.route("/vis/")
-=======
-@app.route("/")
->>>>>>> 5724943c3e5bb75d888b21f127892dee7bae3c97
 def index():
     return render_template("index.html")
 
@@ -222,13 +212,9 @@ def data(expt_id):
         with shelve.open(str(expt_path)) as db:
             return(jsonify(dict(db)))
     else:
-<<<<<<< HEAD
         return(jsonify({'protocol_id':None}))
 
 @app.route("/test/<msg>")
 def test(msg):
     socketio.emit('test',msg)
     return msg
-=======
-        return(f"Experiment {expt_id} not found")
->>>>>>> 5724943c3e5bb75d888b21f127892dee7bae3c97
