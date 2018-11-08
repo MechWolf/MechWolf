@@ -196,6 +196,8 @@ def log():
                 db["data"] = logs
             else:
                 db["data"] = [data_point]
+            #Fix this ugly mess
+            data_point["protocol_id"] = protocol_id
             socketio.emit('data', data_point)
             return "logged"
 
