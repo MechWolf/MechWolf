@@ -40,8 +40,7 @@ class Sensor(ActiveComponent):
             except ZeroDivisionError:
                 return
             #TODO Update this return value to be a dict instead of a tuple
-            yield { 'payload':
-                     {'data': self.read()},
+            yield { 'data': self.read(),
                     'time': time.time(),
                     'type': "sensor_data" }
             await asyncio.sleep(frequency)

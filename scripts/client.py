@@ -29,13 +29,19 @@ async def execute_procedure(protocol_id, procedure, session, me):
     logging.info(Fore.GREEN + f"Executing: {procedure} at {time.time()}" + Style.RESET_ALL)
     me.update_from_params(procedure["params"])
     async for result in me.update():
-        results = dict(payload=result['payload'],
-                       protocol_id=protocol_id,
-                       device_id=me.name,
-                       timestamp=result['time'],
-                       procedure=procedure,
-                       success=True,
-                       type=result['type'])
+        if result["type"] == "sensor_data":
+            results = dict(data=result['data'],
+                           device_id=me.name,
+                           timestamp=result['time'],
+                           type=result['type'])
+        elif result["type"] == 'log':
+            results = dict(payload=result['payload'],
+                           protocol_id=protocol_id,
+                           device_id=me.name,
+                           timestamp=result['time'],
+                           procedure=procedure,
+                           success=True,
+                           type=result['type'])
         logging.debug(f"Logging {results} to hub")
         await log(session, dumps(results))
 
@@ -190,7 +196,7 @@ def run_client(config):
 
     # get and execute protocols forever
     with class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"]) as me:
-
+        
         loop = asyncio.get_event_loop()
         loop.run_until_complete(main(loop, me))
 

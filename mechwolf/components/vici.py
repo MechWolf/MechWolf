@@ -52,4 +52,6 @@ class ViciValve(Valve):
         message = f'GO{self.setting}\r'
         self.ser.write(message.encode()) # send the message to the valve
         print(self.setting) # for introspection
-        yield {"setting": self.setting}
+        yield { "timestamp": time.time(),
+                "payload": {"setting": self.setting},
+                "type": 'log'}

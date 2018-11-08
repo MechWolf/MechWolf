@@ -1,5 +1,6 @@
 from .pump import Pump
 from . import ureg
+import time
 
 from .gsioc import GsiocComponent
 
@@ -59,7 +60,9 @@ class VarianPump(Pump):
     async def update(self):
         new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
-        yield {"rate": str(new_rate)}
+        yield { "timestamp": time.time(),
+                "payload": {"rate": str(new_rate)},
+                "type": 'log'}
 
     def config(self):
         #TODO Make max_rate a ureg?

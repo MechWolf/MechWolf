@@ -187,13 +187,16 @@ def log():
             socketio.emit('log',submission)
             return "logged"
         elif submission["type"] == 'sensor_data':
+            data_point = {"data": submission["data"],
+                          "timestamp": submission["timestamp"],
+                          "device_id": submission["device_id"]}
             if "data" in db:
                 logs = db["data"]
-                logs.append(submission)
+                logs.append(data_point)
                 db["data"] = logs
             else:
-                db["data"] = [submission]
-            socketio.emit('data',submission)
+                db["data"] = [data_point]
+            socketio.emit('data', data_point)
             return "logged"
 
 @app.route("/experiments", methods=["GET"])
