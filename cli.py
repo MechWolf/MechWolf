@@ -53,9 +53,12 @@ def hub(v, port):
     type=click.Path(resolve_path=True, exists=True, dir_okay=False),
     default="client_config.yml",
     help="The configuration file for the client")
-def client(v, config):
+def client(v, config="client_config.yml"):
     set_verbosity(v)
     from scripts.client import run_client
+    # get the config data
+    with open(config, "r") as f:
+        config = yaml.load(f)
     run_client(config=config)
 
 @cli.command(help="Convert a .db file into JSON or YAML")

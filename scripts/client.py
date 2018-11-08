@@ -169,10 +169,7 @@ async def main(loop, me):
                 sys.exit()
 
 
-def run_client(config="client_config.yml"):
-    # get the config data
-    with open(config, "r") as f:
-        config = yaml.load(f)
+def run_client(config):
 
     global DEVICE_NAME
     DEVICE_NAME = config["device_info"]["device_name"]
