@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 
-import ProtocolView from './protocol_view';
-import NetworkView from './network_view';
+import ExperimentView from './experiment_view';
+import ExperimentListView from './experiment_list_view';
 
 export default class MainView extends Component {
   render() {
     return (
       <div>
-        <ProtocolView />
+        <ExperimentListView />
+        <ExperimentView />
       </div>
     );
   }

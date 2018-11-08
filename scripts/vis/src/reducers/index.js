@@ -1,12 +1,12 @@
 import { combineReducers } from 'redux';
 import ProtocolReducer from './reducer_protocols';
 import ApparatusReducer from './reducer_apparatus';
-import DataReducer from './reducer_data';
+import ExperimentReducer from './reducer_experiment';
+import ExperimentListReducer from './reducer_experiment_list';
 
 const rootReducer = combineReducers({
-    current_protocol: ProtocolReducer,
-    current_apparatus: ApparatusReducer,
-    current_data: DataReducer
+    experiments: ExperimentReducer,
+    experiment_list: ExperimentListReducer
 });
 
 export default rootReducer;
