@@ -45,16 +45,16 @@ async def execute_procedure(protocol_id, procedure, session, me):
         logging.debug(f"Logging {results} to hub")
         await log(session, dumps(results))
 
-async def get_protocol(session):
+async def get_protocol(session, me):
     logging.debug("Attempting to get protocol")
     try:
         logging.debug(f"Connecting to {server}")
-        async with session.get(f"{server}/protocol", params=dict(device_id=DEVICE_NAME), timeout=10) as resp:
+        async with session.get(f"{server}/protocol", params=dict(device_id=me.name), timeout=10) as resp:
             response = await resp.text()
             if response.startswith("no protocol"):
                 return "", response
             response = loads(response)
-            protocol = loads(response["protocol"])[DEVICE_NAME]
+            protocol = loads(response["protocol"])[me.name]
             return response["protocol_id"], protocol
 
     except (aiohttp.client_exceptions.ClientError, asyncio.TimeoutError):
@@ -65,11 +65,12 @@ async def get_protocol(session):
 
     return "", False
 
-async def get_start_time(session):
+async def get_start_time(session, me):
 
     try:
         logging.debug("Getting start time")
-        async with session.get(f"{server}/start_time", params=dict(device_id=DEVICE_NAME)) as resp:
+        logging.debug(f"{me.name} getting start time")
+        async with session.get(f"{server}/start_time", params=dict(device_id=me.name)) as resp:
             response = await resp.text()
             logging.debug(f"Got {response} as response to start time request")
             try:
@@ -90,7 +91,7 @@ async def log(session, data):
         async with session.post(f"{server}/log", json={"data": data}) as resp:
             await resp.text()
     except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
-        with shelve.open('client') as db:
+        with shelve.open(f'client_{me.name}') as db:
             try:
                 db["log"] = db["log"] + [data]
             except KeyError:
@@ -103,27 +104,28 @@ async def log(session, data):
 
 async def main(loop, me):
     async with aiohttp.ClientSession(loop=loop, connector=aiohttp.TCPConnector(ssl=None)) as session:
+        print(f'starting {me.name}')
         while True:
             # try to get a protocol
             # TODO protocol = None
             protocol = "no protocol"
             while protocol == "no protocol":
-                protocol_id, protocol = await get_protocol(session)
+                protocol_id, protocol = await get_protocol(session, me)
                 logging.info("No new protocol received.")
-                time.sleep(5)
+                await asyncio.sleep(5)
             if not protocol:
-                time.sleep(5)
+                await asyncio.sleep(5)
                 continue
             logging.info(Fore.GREEN + f"Protocol received: {protocol}" + Style.RESET_ALL)
 
             # once a protocol is received, try to get a start time
-            start_time = await get_start_time(session)
+            start_time = await get_start_time(session, me)
             while start_time == "no start time":
-                start_time = await get_start_time(session)
+                start_time = await get_start_time(session, me)
                 logging.warning(
                     Fore.YELLOW +
                     "No start time received yet. Trying again in 5 seconds." + Style.RESET_ALL)
-                time.sleep(5)
+                await asyncio.sleep(5)
             # if the server doesn't get hear from all active components, it
             # will abort execution
             if start_time == "abort":
@@ -131,7 +133,7 @@ async def main(loop, me):
                 continue
             # handle connection failures
             if not start_time:
-                time.sleep(5)
+                await asyncio.sleep(5)
                 continue
             # verify start time hasn't happened yet
             if start_time < time.time():
@@ -140,7 +142,7 @@ async def main(loop, me):
             logging.info(Fore.GREEN + f"Start time received: {start_time}")
 
             # wait until the beginning of the protocol
-            time.sleep(start_time - time.time())
+            await asyncio.sleep(start_time - time.time())
 
             # create futures for each procedure in the protocol and execute
             # them
@@ -157,11 +159,11 @@ async def main(loop, me):
 
             # keep attempting to submit the failed logs
             try:
-                with shelve.open('client') as db:
+                with shelve.open(f'client_{me.name}') as db:
                     failed_submissions = db["log"]
                 while len(failed_submissions):
                     logging.info("Submitting failed logs")
-                    with shelve.open('client') as db:
+                    with shelve.open(f'client_{me.name}') as db:
                         db["log"] = []
                     for i in failed_submissions:
                         await log(session, i)
@@ -169,7 +171,7 @@ async def main(loop, me):
                 pass
             # don't lose data if the user exits
             except KeyboardInterrupt:
-                with shelve.open('client') as db:
+                with shelve.open(f'client_{me.name}') as db:
                     db["log"] = failed_submissions
                 logging.critical("Shutting down")
                 sys.exit()
@@ -196,9 +198,8 @@ def run_client(config):
 
     # get and execute protocols forever
     with class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"]) as me:
-        
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(main(loop, me))
+        return me
+
 
 
 if __name__ == "__main__":

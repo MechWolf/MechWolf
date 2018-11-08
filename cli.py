@@ -6,6 +6,7 @@ import click
 from click_didyoumean import DYMGroup
 import logging
 import mechwolf
+import asyncio
 
 def set_verbosity(v):
     # set up logging
@@ -55,11 +56,32 @@ def hub(v, port):
     help="The configuration file for the client")
 def client(v, config="client_config.yml"):
     set_verbosity(v)
-    from scripts.client import run_client
+    from scripts.client import main, run_client
     # get the config data
     with open(config, "r") as f:
         config = yaml.load(f)
-    run_client(config=config)
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main(loop, run_client(config=config)))
+
+@cli.command(help="Run multiple MechWolf clients")
+@click.option('-v', count=True, help="Verbose mode. Multiple -v options increase the verbosity. The maximum is 3.")
+@click.option(
+    '-c',
+    '--config',
+    type=click.Path(resolve_path=True, exists=True, dir_okay=False),
+    default="client_config_multiple.yml",
+    help="The configuration file for the client")
+def multi(v, config):
+    set_verbosity(v)
+    from scripts.client import main, run_client
+    # get the config data
+    with open(config, "r") as f:
+        configs = yaml.load(f)
+    loop = asyncio.get_event_loop()
+    print([config for config in configs])
+    clients = [main(loop, run_client(config=config)) for config in configs]
+    loop.run_until_complete(asyncio.gather(*clients))
 
 @cli.command(help="Convert a .db file into JSON or YAML")
 @click.argument('db', type=click.Path(exists=True))
