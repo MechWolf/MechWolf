@@ -33,11 +33,11 @@ export default function (state = {}, action) {
       //Need to initialize the array before the creation of the first datapoint.
       //If there is data for the device,
       if (!state[protocol_id].data[device_id]) {
-        data = {...state[protocol_id].data, [device_id]: [action.payload]}
+        data = {...state[protocol_id].data, [device_id]: [{data: action.payload.data, timestamp: action.payload.timestamp}]}
       }
       else {
         data = {...state[protocol_id].data, [device_id]:
-          [...state[protocol_id].data[device_id], action.payload]}
+          [...state[protocol_id].data[device_id], {data: action.payload.data, timestamp: action.payload.timestamp}]}
       }
       return {...state, [protocol_id]:
                 {...state[protocol_id], data}

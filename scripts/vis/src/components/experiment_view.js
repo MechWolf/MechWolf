@@ -55,7 +55,7 @@ class ExperimentView extends Component {
         {_.map(experiment.data, (data,key) => { return(
           <div key={key}>
             <h3>{key}</h3>
-            <ChartJSView data={data.map(a => a.payload).map(a => a.data)}
+            <ChartJSView data={data.map(a => a.data)}
                            times={data.map(a =>a.timestamp)}
                            time_zero={experiment.protocol_submit_time} />
           </div> )})}
