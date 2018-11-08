@@ -20,20 +20,21 @@ export default function ({data,times,time_zero}) {
       <Scatter data={
         { datasets: [
             {label: "Chart", data: filtered_graph, showLine: true, fill: false}
-          ],
-          options: {
+          ] }}
+          options = {{
+            responsive: true,
             scales: {
               xAxes: [{
                   display:true,
                   ticks: {
                     min: minimum,
-                    max: maximum
+                    max: maximum,
+                    step_size: 20
                   }
               }]
             }
-          }
-        }
-      } />
+          }}
+       />
     </div>
  );
 }
