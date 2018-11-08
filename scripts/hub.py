@@ -16,14 +16,21 @@ logging.getLogger("schedule").setLevel(logging.WARNING)
 logging.getLogger("werkzeug").setLevel(logging.INFO)
 
 app = Flask(__name__, static_folder="vis/",
+<<<<<<< HEAD
                       template_folder="vis/",
                       static_url_path="")
  # create flask app
 socketio = SocketIO(app)
+=======
+            template_folder="vis/",
+            static_url_path="")
+# create flask app
+>>>>>>> 5724943c3e5bb75d888b21f127892dee7bae3c97
 
 # how long to wait for check ins before aborting a protcol
 TIMEOUT = 60
 
+<<<<<<< HEAD
 # get the config data
 with open("hub_config.yml", "r") as f:
     config = yaml.load(f)
@@ -33,6 +40,9 @@ def any_root_path(path):
     return render_template('index.html')
 
 @app.route("/vis/")
+=======
+@app.route("/")
+>>>>>>> 5724943c3e5bb75d888b21f127892dee7bae3c97
 def index():
     return render_template("index.html")
 
@@ -198,23 +208,27 @@ def log():
 
 @app.route("/experiments", methods=["GET"])
 def experiments():
-    expts_folder = Path.cwd()/'experiments'
+    expts_folder = Path.cwd() / 'experiments'
     expts = [file.name for file in expts_folder.iterdir()]
     return jsonify(expts)
 # app.run(debug=False, host="0.0.0.0", use_reloader=True, threaded=True, port=80, ssl_context=('cert.pem', 'key.pem'))
 
 @app.route("/experiments/<uuid:expt_id>", methods=["GET"])
 def data(expt_id):
-    expts_folder = Path.cwd()/'experiments'
-    expt_path = expts_folder/str(expt_id)
+    expts_folder = Path.cwd() / 'experiments'
+    expt_path = expts_folder / str(expt_id)
     expts = [file for file in expts_folder.iterdir()]
     if expt_path in expts:
         with shelve.open(str(expt_path)) as db:
             return(jsonify(dict(db)))
     else:
+<<<<<<< HEAD
         return(jsonify({'protocol_id':None}))
 
 @app.route("/test/<msg>")
 def test(msg):
     socketio.emit('test',msg)
     return msg
+=======
+        return(f"Experiment {expt_id} not found")
+>>>>>>> 5724943c3e5bb75d888b21f127892dee7bae3c97
