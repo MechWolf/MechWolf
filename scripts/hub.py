@@ -24,10 +24,6 @@ socketio = SocketIO(app)
 # how long to wait for check ins before aborting a protcol
 TIMEOUT = 60
 
-# get the config data
-with open("hub_config.yml", "r") as f:
-    config = yaml.load(f)
-
 @app.route('/vis/<path:path>')
 def any_root_path(path):
     return render_template('index.html')
