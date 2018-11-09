@@ -15,6 +15,7 @@ import yaml
 import requests
 import itsdangerous
 import keyring
+from contextlib import contextmanager
 
 from mechwolf.components import *
 import mechwolf as mw
@@ -176,7 +177,7 @@ async def main(loop, me):
                 logging.critical("Shutting down")
                 sys.exit()
 
-
+@contextmanager
 def run_client(config):
 
     global DEVICE_NAME
@@ -198,7 +199,7 @@ def run_client(config):
 
     # get and execute protocols forever
     with class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"]) as me:
-        return me
+        yield me
 
 
 
