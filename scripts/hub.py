@@ -184,7 +184,7 @@ def log():
                 db["logs"] = logs
             else:
                 db["logs"] = [submission]
-            socketio.emit('log',submission)
+            socketio.emit(f'log/{protocol_id}',submission)
             return "logged"
         elif submission["type"] == 'sensor_data':
             data_point = {"data": submission["data"],
@@ -198,7 +198,7 @@ def log():
                 db["data"] = [data_point]
             #Fix this ugly mess
             data_point["protocol_id"] = protocol_id
-            socketio.emit('data', data_point)
+            socketio.emit(f'data/{protocol_id}', data_point)
             return "logged"
 
 @app.route("/experiments", methods=["GET"])
