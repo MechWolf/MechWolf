@@ -9,6 +9,7 @@ import urllib3
 import tempfile
 import webbrowser
 from math import isclose
+from uuid import uuid1
 
 import networkx as nx
 from terminaltables import AsciiTable
@@ -594,3 +595,26 @@ class Protocol(object):
                 print(f"Protocol id: {response}")
         except:
             pass
+
+def execute (protocol, apparatus, delay=5, **kwargs):
+    #Extract the protocol from the Protocol object (or protocol json)
+    if protocol.__class__.__name__ == 'Protocol':
+        p = protocol.compile()
+    else:
+        raise TypeError('protocol not of type mechwolf.Protocol')
+        #TODO allow JSON protocol parsing
+
+    if apparatus.__class__.__name__ != 'Apparatus':
+        raise TypeError('apparatus not of type mechwolf.Apparatus')
+        #Todo allow parsing of apparatus json
+
+    #Check that all devices in the protocol were passed to the executor.
+    for component in p.keys():
+        if component not in apparatus.components:
+            raise DeviceNotFound(f'Component {component} not in apparatus.')
+
+    experiment_id = f'{time.strftime("%Y-%m-%d")}-{uuid1()}'
+    print(f'Protocol {experiment_id} executing')
+
+class DeviceNotFound(Exception):
+    pass
