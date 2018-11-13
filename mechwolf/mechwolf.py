@@ -596,6 +596,16 @@ class Protocol(object):
         except:
             pass
 
+class Experiment(object):
+    '''
+        Experiments contain all data from execution of a protocol.
+    '''
+    def __init__(self, experiment_id, protocol, apparatus, start_time):
+        self.experiment_id = experiment_id
+        self.protocol = protocol
+        self.apparatus = apparatus
+        self.start_time = start_time
+
 def execute (protocol, apparatus, delay=5, **kwargs):
     #Extract the protocol from the Protocol object (or protocol json)
     if protocol.__class__.__name__ == 'Protocol':
@@ -614,7 +624,10 @@ def execute (protocol, apparatus, delay=5, **kwargs):
             raise DeviceNotFound(f'Component {component} not in apparatus.')
 
     experiment_id = f'{time.strftime("%Y-%m-%d")}-{uuid1()}'
-    print(f'Protocol {experiment_id} executing')
+    start_time = time.time() + delay
+    print(f'Experiment {experiment_id} in progress')
+    return Experiment(experiment_id, protocol, apparatus, start_time)
+
 
 class DeviceNotFound(Exception):
     pass
