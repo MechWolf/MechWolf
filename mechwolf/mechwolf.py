@@ -607,6 +607,23 @@ class Experiment(object):
         self.start_time = start_time
 
 def execute (protocol, apparatus, delay=5, **kwargs):
+    '''
+        Executes the protocol on the specified apparatus.
+        Starts after the specified delay.
+
+        Args:
+            protocol: A protocol of the form mechwolf.Protocol
+            apparatus: An apparatus of the form mechwolf.Apparatus
+            delay (sec): Number of seconds to delay execution of the protocol.
+
+        Returns:
+            mechwolf.Experiment object containing information about the running
+            protocol.
+
+        Raises:
+            DeviceNotFound: if a device in the protocol is not in the apparatus.
+    '''
+
     #Extract the protocol from the Protocol object (or protocol json)
     if protocol.__class__.__name__ == 'Protocol':
         p = protocol.compile()
@@ -628,6 +645,10 @@ def execute (protocol, apparatus, delay=5, **kwargs):
     print(f'Experiment {experiment_id} in progress')
     return Experiment(experiment_id, protocol, apparatus, start_time)
 
+async def generate_client_task(protocol_step):
+
+
 
 class DeviceNotFound(Exception):
+    '''Raised if a device specified in the protocol is not in the apparatus.'''
     pass
