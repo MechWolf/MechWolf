@@ -10,6 +10,7 @@ import tempfile
 import webbrowser
 from math import isclose
 from uuid import uuid1
+from contextlib import ExitStack
 
 import networkx as nx
 from terminaltables import AsciiTable
@@ -600,11 +601,12 @@ class Experiment(object):
     '''
         Experiments contain all data from execution of a protocol.
     '''
-    def __init__(self, experiment_id, protocol, apparatus, start_time):
+    def __init__(self, experiment_id, protocol, apparatus, start_time, tasks):
         self.experiment_id = experiment_id
         self.protocol = protocol
         self.apparatus = apparatus
         self.start_time = start_time
+        self.tasks = tasks
 
 def execute (protocol, apparatus, delay=5, **kwargs):
     '''
@@ -643,10 +645,45 @@ def execute (protocol, apparatus, delay=5, **kwargs):
     experiment_id = f'{time.strftime("%Y-%m-%d")}-{uuid1()}'
     start_time = time.time() + delay
     print(f'Experiment {experiment_id} in progress')
-    return Experiment(experiment_id, protocol, apparatus, start_time)
 
-async def generate_client_task(protocol_step):
+    # Run protocol
+    # Enter context managers for each component (initialize serial ports, etc.)
+    # We can do this with contextlib.ExitStack on an arbitrary number of components
+    tasks = []
+    with ExitStack() as stack:
+        components = [stack.enter_context(component) for component in p.keys()]
+        for component in components:
+            tasks += [
+                execute_procedure(
+                    experiment_id,
+                    procedure,
+                    component) for procedure in p[component]]
 
+    return Experiment(experiment_id, protocol, apparatus, start_time, tasks)
+
+
+async def execute_procedure(protocol_id, procedure, component):
+    server = "http://localhost:5000"
+
+    await asyncio.sleep(procedure["time"])
+    logging.info(Fore.GREEN + f"Executing: {procedure} at {time.time()}" + Style.RESET_ALL)
+    me.update_from_params(procedure["params"])
+    async for result in me.update():
+        if result["type"] == "sensor_data":
+            results = dict(data=result['data'],
+                           device_id=me.name,
+                           timestamp=result['time'],
+                           type=result['type'])
+        elif result["type"] == 'log':
+            results = dict(payload=result['payload'],
+                           protocol_id=protocol_id,
+                           device_id=me.name,
+                           timestamp=result['time'],
+                           procedure=procedure,
+                           success=True,
+                           type=result['type'])
+        logging.debug(f"Logging {results} to hub")
+        #TODO implement logging
 
 
 class DeviceNotFound(Exception):
