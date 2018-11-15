@@ -107,3 +107,9 @@ class ActiveComponent(Component):
 
         '''
         return {}
+
+    def update(self):
+        pass
+
+    async def monitor(self):
+        pass
