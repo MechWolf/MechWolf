@@ -57,11 +57,11 @@ class VarianPump(Pump):
             # so the operator can intervene (e.g prime)
             self.unlock()
 
-    async def update(self):
+    def update(self):
         new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
-        yield { "timestamp": time.time(),
-                "payload": {"rate": str(new_rate)},
+        return { "timestamp": time.time(),
+                "params": {"rate": str(new_rate)},
                 "type": 'log'}
 
     def config(self):

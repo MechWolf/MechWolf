@@ -28,22 +28,24 @@ class Sensor(ActiveComponent):
         '''Collect the data.'''
         raise NotImplementedError
 
-    async def update(self):
+    def update(self):
+        return { "timestamp": time.time(),
+                "params": {"rate": self.rate.to_base_units()},
+                "type": 'log'}
+
+    async def monitor(self):
         '''If data collection is off and needs to be turned on, turn it on.
            If data collection is on and needs to be turned off, turn off and return data.'''
-        yield { 'payload': {'rate': str(ureg.parse_expression(self.rate).to_base_units())},
-                'time': time.time(),
-                'type': 'log'}
-        while ureg.parse_expression(self.rate).to_base_units().magnitude != 0:
-            try:
-                frequency = 1 / ureg.parse_expression(self.rate).to_base_units().magnitude
-            except ZeroDivisionError:
-                return
-            #TODO Update this return value to be a dict instead of a tuple
-            yield { 'data': self.read(),
-                    'time': time.time(),
-                    'type': "sensor_data" }
-            await asyncio.sleep(frequency)
+        while True:
+            frequency = self.rate.to_base_units().magnitude
+            print(frequency)
+            if frequency != 0:
+                yield { 'data': self.read(),
+                        'time': time.time()}
+                await asyncio.sleep(1/frequency)
+            else:
+                await asyncio.sleep(frequency)
+
 
 class DummySensor(Sensor):
     """A dummy sensor returning the number of times it has been read.

@@ -11,6 +11,11 @@ import webbrowser
 from math import isclose
 from uuid import uuid1
 from contextlib import ExitStack
+import asyncio
+
+import logging
+from colorama import init, Fore, Back, Style
+
 
 import networkx as nx
 from terminaltables import AsciiTable
@@ -34,6 +39,8 @@ init(autoreset=True)
 
 # ignore warning when submitting to self signed certificate
 urllib3.disable_warnings()
+
+logging.basicConfig(level=3)
 
 class Apparatus(object):
     '''A unique network of components.
@@ -653,36 +660,31 @@ def execute (protocol, apparatus, delay=5, **kwargs):
     with ExitStack() as stack:
         components = [stack.enter_context(component) for component in p.keys()]
         for component in components:
-            tasks += [
-                execute_procedure(
-                    experiment_id,
-                    procedure,
-                    component) for procedure in p[component]]
-
+            tasks += [create_procedure(procedure, component)
+                         for procedure in p[component]]
+            tasks.append(monitor(component))
+        asyncio.run(main(tasks))
     return Experiment(experiment_id, protocol, apparatus, start_time, tasks)
 
+async def main(tasks):
+    await asyncio.gather(*tasks)
 
-async def execute_procedure(protocol_id, procedure, component):
+async def create_procedure(procedure, component):
     server = "http://localhost:5000"
 
-    await asyncio.sleep(procedure["time"])
-    logging.info(Fore.GREEN + f"Executing: {procedure} at {time.time()}" + Style.RESET_ALL)
-    me.update_from_params(procedure["params"])
-    async for result in me.update():
-        if result["type"] == "sensor_data":
-            results = dict(data=result['data'],
-                           device_id=me.name,
-                           timestamp=result['time'],
-                           type=result['type'])
-        elif result["type"] == 'log':
-            results = dict(payload=result['payload'],
-                           protocol_id=protocol_id,
-                           device_id=me.name,
-                           timestamp=result['time'],
-                           procedure=procedure,
-                           success=True,
-                           type=result['type'])
-        logging.debug(f"Logging {results} to hub")
+    await asyncio.sleep(procedure["time"].to("seconds").magnitude)
+    logging.info(Fore.GREEN + f"Executing: {procedure} on {component} at {time.time()}" + Style.RESET_ALL)
+    component.update_from_params(procedure["params"])
+    log = component.update()
+    logging.debug(f"logging procedure {log} to hub")
+
+async def monitor(component):
+    async for result in component.monitor():
+        results = dict(data=result['data'],
+                       device_id=component.name,
+                       timestamp=result['time'],
+                       type=result['type'])
+        logging.debug(f"Logging results {results} to hub")
         #TODO implement logging
 
 

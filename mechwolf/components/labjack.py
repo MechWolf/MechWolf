@@ -10,7 +10,7 @@ class LabJack(Sensor):
 
     def __init__(self,name):
         super().__init__(name=name)
-        
+
     def __enter__(self):
         self.device = u3.U3()
         self.device.configIO(FIOAnalog=15) #Configure FIO 0-3 as analog in
@@ -21,4 +21,4 @@ class LabJack(Sensor):
         self.device.close()
 
     def read(self):
-        return self.device.getAIN(0,1)        
+        return self.device.getAIN(0,1)
