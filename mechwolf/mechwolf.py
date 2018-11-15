@@ -682,8 +682,7 @@ async def monitor(component):
     async for result in component.monitor():
         results = dict(data=result['data'],
                        device_id=component.name,
-                       timestamp=result['time'],
-                       type=result['type'])
+                       timestamp=result['time'])
         logging.debug(f"Logging results {results} to hub")
         #TODO implement logging
 
