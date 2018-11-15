@@ -58,7 +58,7 @@ class VarianPump(Pump):
             self.unlock()
 
     def update(self):
-        new_rate = ureg.parse_expression(self.rate).to(ureg.ml / ureg.min).magnitude
+        new_rate = self.rate.to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
         return { "timestamp": time.time(),
                 "params": {"rate": str(new_rate)},
