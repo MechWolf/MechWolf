@@ -1,29 +1,27 @@
+import json
+import logging
+import sys
+import tempfile
+import time
+import webbrowser
+from contextlib import ExitStack
 from copy import deepcopy
 from datetime import datetime, timedelta
-import time
-import json
-import yaml
-from warnings import warn
-import sys
-import urllib3
-import tempfile
-import webbrowser
 from math import isclose
 from uuid import uuid1
-from contextlib import ExitStack
-
-import asyncio
-from asyncio import TimeoutError, CancelledError
-import aiohttp
-
-import logging
-from colorama import init, Fore, Back, Style
-
+from warnings import warn
 
 import networkx as nx
-from terminaltables import AsciiTable
 import requests
-from click import prompt, confirm
+import urllib3
+import yaml
+from click import confirm, prompt
+from colorama import Back, Fore, Style, init
+from terminaltables import AsciiTable
+
+from . import ureg
+from .components import *
+from .validate_component import validate_component
 
 # If visualization extras are available, import them
 try:
@@ -32,9 +30,6 @@ try:
 except ImportError:
     pass
 
-from . import ureg
-from .components import *
-from .validate_component import validate_component
 
 # initialize colored printing
 init(autoreset=True)
@@ -525,7 +520,7 @@ class Protocol(object):
         compiled = {k.name: v for (k, v) in compiled.items()}
         return json.dumps(compiled, sort_keys=True)
 
-    def dict(self,warnings=True):
+    def dict(self, warnings=True):
         compiled = deepcopy(self.compile(warnings=warnings))
         for item in compiled.items():
             for procedure in item[1]:

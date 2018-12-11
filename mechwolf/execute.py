@@ -1,12 +1,14 @@
 import asyncio
-import aiohttp
-import time
-from uuid import uuid1
-from contextlib import ExitStack
 import json
 import logging
-from colorama import init, Fore, Back, Style
+import time
 from collections import namedtuple
+from contextlib import ExitStack
+from uuid import uuid1
+
+from colorama import Back, Fore, Style, init
+
+import aiohttp
 
 server = "http://localhost:5000"
 
@@ -14,6 +16,7 @@ class Experiment(object):
     '''
         Experiments contain all data from execution of a protocol.
     '''
+
     def __init__(self, experiment_id, protocol, apparatus, start_time, logs):
         self.experiment_id = experiment_id
         self.protocol = protocol
@@ -25,7 +28,7 @@ class DeviceNotFound(Exception):
     '''Raised if a device specified in the protocol is not in the apparatus.'''
     pass
 
-def execute (protocol, apparatus, delay=5, **kwargs):
+def execute(protocol, apparatus, delay=5, **kwargs):
     '''
         Executes the protocol on the specified apparatus.
         Starts after the specified delay.
@@ -73,7 +76,6 @@ async def main(protocol, apparatus, start_time, experiment_id):
         if component not in apparatus.components:
             raise DeviceNotFound(f'Component {component} not in apparatus.')
 
-
     protocol_json = protocol.json()
 
     tasks = []
@@ -92,7 +94,7 @@ async def main(protocol, apparatus, start_time, experiment_id):
                 print(end_time)
 
                 tasks += [create_procedure(procedure, component, experiment_id, session, end_time)
-                             for procedure in p[component]]
+                          for procedure in p[component]]
                 tasks += [monitor(component, end_time, experiment_id, session)]
             print(tasks)
             completed_tasks = await asyncio.gather(*tasks)
@@ -113,14 +115,14 @@ async def create_procedure(procedure, component, experiment_id, session, end_tim
 
 async def monitor(component, end_time, experiment_id, session):
     data = []
-    datapoint = namedtuple('datapoint',[])
+    datapoint = namedtuple('datapoint', [])
     async for result in component.monitor():
-        datapoint=result['datapoint']
-        device_id=component.name
-        timestamp=result['timestamp']
+        datapoint = result['datapoint']
+        device_id = component.name
+        timestamp = result['timestamp']
         logging.debug(f"Logging results {datapoint} from {device_id} to hub")
         await log_data(datapoint, timestamp, device_id, experiment_id, session)
-        data.append((timestamp,datapoint))
+        data.append((timestamp, datapoint))
     return {component.name: data}
 
 async def log_start(protocol, start_time, experiment_id, session):
