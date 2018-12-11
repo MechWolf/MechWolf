@@ -7,5 +7,6 @@ __version__ = '0.0.1'
 
 # to avoid circular import
 from .mechwolf import Apparatus, Protocol
+from .execute import execute
 from .components import *
 from .validate_component import validate_component
