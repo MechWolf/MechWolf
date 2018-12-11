@@ -11,7 +11,10 @@ import webbrowser
 from math import isclose
 from uuid import uuid1
 from contextlib import ExitStack
+
 import asyncio
+from asyncio import TimeoutError, CancelledError
+import aiohttp
 
 import logging
 from colorama import init, Fore, Back, Style
@@ -41,6 +44,8 @@ init(autoreset=True)
 urllib3.disable_warnings()
 
 logging.basicConfig(level=3)
+
+server = "http://localhost:5000"
 
 class Apparatus(object):
     '''A unique network of components.
@@ -519,7 +524,15 @@ class Protocol(object):
             for procedure in item[1]:
                 procedure["time"] = procedure["time"].to_timedelta().total_seconds()
         compiled = {k.name: v for (k, v) in compiled.items()}
-        return json.dumps(compiled, indent=4, sort_keys=True)
+        return json.dumps(compiled, sort_keys=True)
+
+    def dict(self,warnings=True):
+        compiled = deepcopy(self.compile(warnings=warnings))
+        for item in compiled.items():
+            for procedure in item[1]:
+                procedure["time"] = procedure["time"].to_timedelta().total_seconds()
+        compiled = {k.name: v for (k, v) in compiled.items()}
+        return compiled
 
     def yaml(self, warnings=True):
         '''Compiles protocol and outputs to YAML.
@@ -603,90 +616,3 @@ class Protocol(object):
                 print(f"Protocol id: {response}")
         except:
             pass
-
-class Experiment(object):
-    '''
-        Experiments contain all data from execution of a protocol.
-    '''
-    def __init__(self, experiment_id, protocol, apparatus, start_time, tasks):
-        self.experiment_id = experiment_id
-        self.protocol = protocol
-        self.apparatus = apparatus
-        self.start_time = start_time
-        self.tasks = tasks
-
-def execute (protocol, apparatus, delay=5, **kwargs):
-    '''
-        Executes the protocol on the specified apparatus.
-        Starts after the specified delay.
-
-        Args:
-            protocol: A protocol of the form mechwolf.Protocol
-            apparatus: An apparatus of the form mechwolf.Apparatus
-            delay (sec): Number of seconds to delay execution of the protocol.
-
-        Returns:
-            mechwolf.Experiment object containing information about the running
-            protocol.
-
-        Raises:
-            DeviceNotFound: if a device in the protocol is not in the apparatus.
-    '''
-
-    #Extract the protocol from the Protocol object (or protocol json)
-    if protocol.__class__.__name__ == 'Protocol':
-        p = protocol.compile()
-    else:
-        raise TypeError('protocol not of type mechwolf.Protocol')
-        #TODO allow JSON protocol parsing
-
-    if apparatus.__class__.__name__ != 'Apparatus':
-        raise TypeError('apparatus not of type mechwolf.Apparatus')
-        #Todo allow parsing of apparatus json
-
-    #Check that all devices in the protocol were passed to the executor.
-    for component in p.keys():
-        if component not in apparatus.components:
-            raise DeviceNotFound(f'Component {component} not in apparatus.')
-
-    experiment_id = f'{time.strftime("%Y-%m-%d")}-{uuid1()}'
-    start_time = time.time() + delay
-    print(f'Experiment {experiment_id} in progress')
-
-    # Run protocol
-    # Enter context managers for each component (initialize serial ports, etc.)
-    # We can do this with contextlib.ExitStack on an arbitrary number of components
-    tasks = []
-    with ExitStack() as stack:
-        components = [stack.enter_context(component) for component in p.keys()]
-        for component in components:
-            tasks += [create_procedure(procedure, component)
-                         for procedure in p[component]]
-            tasks.append(monitor(component))
-        asyncio.run(main(tasks))
-    return Experiment(experiment_id, protocol, apparatus, start_time, tasks)
-
-async def main(tasks):
-    await asyncio.gather(*tasks)
-
-async def create_procedure(procedure, component):
-    server = "http://localhost:5000"
-
-    await asyncio.sleep(procedure["time"].to("seconds").magnitude)
-    logging.info(Fore.GREEN + f"Executing: {procedure} on {component} at {time.time()}" + Style.RESET_ALL)
-    component.update_from_params(procedure["params"])
-    log = component.update()
-    logging.debug(f"logging procedure {log} to hub")
-
-async def monitor(component):
-    async for result in component.monitor():
-        results = dict(data=result['data'],
-                       device_id=component.name,
-                       timestamp=result['time'])
-        logging.debug(f"Logging results {results} to hub")
-        #TODO implement logging
-
-
-class DeviceNotFound(Exception):
-    '''Raised if a device specified in the protocol is not in the apparatus.'''
-    pass
