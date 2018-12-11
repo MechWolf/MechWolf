@@ -36,6 +36,54 @@ class DeviceNotFound(Exception):
     '''Raised if a device specified in the protocol is not in the apparatus.'''
     pass
 
+async def jupyter_execute (protocol, delay=5, **kwargs):
+    '''
+        Executes the specified protocol.
+        Starts after the specified delay.
+
+        Args:
+            protocol: A protocol of the form mechwolf.Protocol
+            apparatus: An apparatus of the form mechwolf.Apparatus
+            delay (sec): Number of seconds to delay execution of the protocol.
+
+        Returns:
+            mechwolf.Experiment object containing information about the running
+            protocol.
+
+        Raises:
+            DeviceNotFound: if a device in the protocol is not in the apparatus.
+    '''
+
+    #Extract the protocol from the Protocol object (or protocol json)
+    apparatus = protocol.apparatus
+    experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
+    start_time = time.time() + delay
+    print(f'Experiment {experiment_id} in progress')
+
+    try:
+        logs = await main(protocol, apparatus, start_time, experiment_id)
+    finally:
+        for component in protocol.compile().keys():
+            component.done = False
+
+    executed_procedures = []
+    data = {}
+    for log in logs:
+        if log['type'] == 'executed_procedure':
+            executed_procedures.append(log)
+        if log['type'] == 'data':
+            component_name = log['component_name']
+            data[component_name] = log['data']
+
+    return Experiment(experiment_id,
+                      protocol,
+                      apparatus,
+                      start_time,
+                      data,
+                      executed_procedures,
+                      logs)
+
+
 def execute (protocol, delay=5, **kwargs):
     '''
         Executes the specified protocol.
@@ -132,7 +180,7 @@ async def create_procedure(procedure, component, experiment_id, session, end_tim
     component.update_from_params(procedure["params"])
     procedure_record = component.update()
     procedure_record['type'] = 'executed_procedure'
-    logging.debug(f"logging procedure {procedure} to hub")
+    #logging.debug(f"logging procedure {procedure} to hub")
     if end_time == execution_time:
         component.done = True
 
@@ -160,7 +208,8 @@ async def log_start(protocol, start_time, experiment_id, session):
                                                                         "experiment_id": experiment_id})) as resp:
             await resp.text()
     except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
-        print('Could not connect')
+        pass
+        #print('Could not connect')
     except (aiohttp.client_exceptions.ServerDisconnectedError):
         print('Hub disconnected')
     return {"experiment_id": experiment_id,
@@ -172,7 +221,8 @@ async def log_procedure(procedure_record, experiment_id, session):
         async with session.post(f"{server}/log_procedure", json=json.dumps({"procedure": procedure_record, "experiment_id": experiment_id})) as resp:
             await resp.text()
     except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
-        print('Could not connect')
+        pass
+        #print('Could not connect')
     except (aiohttp.client_exceptions.ServerDisconnectedError):
         print('Hub disconnected')
 
@@ -184,4 +234,5 @@ async def log_data(datapoint, timestamp, device_id, experiment_id, session):
                                                                        "timestamp": timestamp})) as resp:
             await resp.text()
     except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
-        print('Could not connect')
+        pass
+        #print('Could not connect')
