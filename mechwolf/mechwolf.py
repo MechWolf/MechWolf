@@ -22,7 +22,6 @@ from colorama import init, Fore, Back, Style
 
 import networkx as nx
 from terminaltables import AsciiTable
-from colorama import Fore, init
 import requests
 from click import prompt, confirm
 

@@ -1,5 +1,12 @@
 import asyncio
 import aiohttp
+import time
+from uuid import uuid1
+from contextlib import ExitStack
+import json
+import logging
+from colorama import init, Fore, Back, Style
+from collections import namedtuple
 
 server = "http://localhost:5000"
 
@@ -7,12 +14,16 @@ class Experiment(object):
     '''
         Experiments contain all data from execution of a protocol.
     '''
-    def __init__(self, experiment_id, protocol, apparatus, start_time, tasks):
+    def __init__(self, experiment_id, protocol, apparatus, start_time, logs):
         self.experiment_id = experiment_id
         self.protocol = protocol
         self.apparatus = apparatus
         self.start_time = start_time
-        self.tasks = tasks
+        self.logs = logs
+
+class DeviceNotFound(Exception):
+    '''Raised if a device specified in the protocol is not in the apparatus.'''
+    pass
 
 def execute (protocol, apparatus, delay=5, **kwargs):
     '''
@@ -33,16 +44,19 @@ def execute (protocol, apparatus, delay=5, **kwargs):
     '''
 
     #Extract the protocol from the Protocol object (or protocol json)
+    experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
+    start_time = time.time() + delay
+    print(f'Experiment {experiment_id} in progress')
 
     try:
-        tasks = asyncio.run(main(protocol, start_time, experiment_id))
+        logs = asyncio.run(main(protocol, apparatus, start_time, experiment_id))
     finally:
-        for component in p.keys():
+        for component in protocol.compile().keys():
             component.done = False
 
-    return Experiment(experiment_id, protocol, apparatus, start_time, tasks)
+    return Experiment(experiment_id, protocol, apparatus, start_time, logs)
 
-async def main(protocol, start_time, experiment_id):
+async def main(protocol, apparatus, start_time, experiment_id):
 
     if protocol.__class__.__name__ == 'Protocol':
         p = protocol.compile()
@@ -59,10 +73,8 @@ async def main(protocol, start_time, experiment_id):
         if component not in apparatus.components:
             raise DeviceNotFound(f'Component {component} not in apparatus.')
 
-    experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
-    start_time = time.time() + delay
+
     protocol_json = protocol.json()
-    print(f'Experiment {experiment_id} in progress')
 
     tasks = []
 
@@ -82,7 +94,7 @@ async def main(protocol, start_time, experiment_id):
                 tasks += [create_procedure(procedure, component, experiment_id, session, end_time)
                              for procedure in p[component]]
                 tasks += [monitor(component, end_time, experiment_id, session)]
-
+            print(tasks)
             completed_tasks = await asyncio.gather(*tasks)
             return completed_tasks
 
@@ -101,13 +113,14 @@ async def create_procedure(procedure, component, experiment_id, session, end_tim
 
 async def monitor(component, end_time, experiment_id, session):
     data = []
+    datapoint = namedtuple('datapoint',[])
     async for result in component.monitor():
-        datapoint=result['data']
+        datapoint=result['datapoint']
         device_id=component.name
         timestamp=result['timestamp']
         logging.debug(f"Logging results {datapoint} from {device_id} to hub")
         await log_data(datapoint, timestamp, device_id, experiment_id, session)
-        data.append((timestamp,datapoint,device_id))
+        data.append((timestamp,datapoint))
     return {component.name: data}
 
 async def log_start(protocol, start_time, experiment_id, session):
@@ -120,6 +133,8 @@ async def log_start(protocol, start_time, experiment_id, session):
         print('Could not connect')
     except (aiohttp.client_exceptions.ServerDisconnectedError):
         print('Hub disconnected')
+    return {"experiment_id": experiment_id,
+            "experiment_start_time": start_time}
 
 async def log_procedure(procedure_record, experiment_id, session):
     try:
@@ -139,7 +154,3 @@ async def log_data(datapoint, timestamp, device_id, experiment_id, session):
             await resp.text()
     except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
         print('Could not connect')
-
-class DeviceNotFound(Exception):
-    '''Raised if a device specified in the protocol is not in the apparatus.'''
-    pass
