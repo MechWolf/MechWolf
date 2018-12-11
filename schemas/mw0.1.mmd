@@ -1,0 +1,12 @@
+graph TD
+a.build[Build apparatus] -->|.mwa.json| a.val[Validate using JSON schema]
+a.build --> a.visualize[Visualize apparatus]
+a.val --> a.analyze[Validate apparatus connectivity and mapping]
+a.analyze --> p.build[Build protocol]
+p.build --> |.mwp.json|p.validate[Validate using JSON schema]
+p.build --> p.visualize[Visuzalize protcol]
+p.validate--> p.compile[Compile protocol]
+p.compile --> |.mwc.json|p.execute[Execute protocol]
+p.execute -->|flask/react-redux|p.execute.viz[Visualize data during execution]
+p.execute --> |.mwe.json|p.analyze[Analyze data]
+p.analyze -.-> p.build
