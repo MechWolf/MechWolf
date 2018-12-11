@@ -14,20 +14,29 @@ class Experiment(object):
     '''
         Experiments contain all data from execution of a protocol.
     '''
-    def __init__(self, experiment_id, protocol, apparatus, start_time, logs):
+    def __init__(self,
+                 experiment_id,
+                 protocol,
+                 apparatus,
+                 start_time,
+                 data,
+                 executed_procedures,
+                 logs):
         self.experiment_id = experiment_id
         self.protocol = protocol
         self.apparatus = apparatus
         self.start_time = start_time
         self.logs = logs
+        self.data = data
+        self.executed_procedures = executed_procedures
 
 class DeviceNotFound(Exception):
     '''Raised if a device specified in the protocol is not in the apparatus.'''
     pass
 
-def execute (protocol, apparatus, delay=5, **kwargs):
+def execute (protocol, delay=5, **kwargs):
     '''
-        Executes the protocol on the specified apparatus.
+        Executes the specified protocol.
         Starts after the specified delay.
 
         Args:
@@ -44,6 +53,7 @@ def execute (protocol, apparatus, delay=5, **kwargs):
     '''
 
     #Extract the protocol from the Protocol object (or protocol json)
+    apparatus = protocol.apparatus
     experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
     start_time = time.time() + delay
     print(f'Experiment {experiment_id} in progress')
@@ -54,7 +64,22 @@ def execute (protocol, apparatus, delay=5, **kwargs):
         for component in protocol.compile().keys():
             component.done = False
 
-    return Experiment(experiment_id, protocol, apparatus, start_time, logs)
+    executed_procedures = []
+    data = {}
+    for log in logs:
+        if log['type'] == 'executed_procedure':
+            executed_procedures.append(log)
+        if log['type'] == 'data':
+            component_name = log['component_name']
+            data[component_name] = log['data']
+
+    return Experiment(experiment_id,
+                      protocol,
+                      apparatus,
+                      start_time,
+                      data,
+                      executed_procedures,
+                      logs)
 
 async def main(protocol, apparatus, start_time, experiment_id):
 
@@ -94,7 +119,7 @@ async def main(protocol, apparatus, start_time, experiment_id):
                 tasks += [create_procedure(procedure, component, experiment_id, session, end_time)
                              for procedure in p[component]]
                 tasks += [monitor(component, end_time, experiment_id, session)]
-            print(tasks)
+
             completed_tasks = await asyncio.gather(*tasks)
             return completed_tasks
 
@@ -105,23 +130,27 @@ async def create_procedure(procedure, component, experiment_id, session, end_tim
     logging.info(Fore.GREEN + f"Executing: {procedure} on {component} at {time.time()}" + Style.RESET_ALL)
     component.update_from_params(procedure["params"])
     procedure_record = component.update()
+    procedure_record['type'] = 'executed_procedure'
     logging.debug(f"logging procedure {procedure} to hub")
-    await log_procedure(procedure_record, experiment_id, session)
     if end_time == execution_time:
         component.done = True
+
+    await log_procedure(procedure_record, experiment_id, session)
     return procedure_record
 
 async def monitor(component, end_time, experiment_id, session):
     data = []
-    datapoint = namedtuple('datapoint',[])
+    Datapoint = namedtuple('Datapoint',['datapoint', 'timestamp'])
     async for result in component.monitor():
         datapoint=result['datapoint']
         device_id=component.name
         timestamp=result['timestamp']
+        data.append(Datapoint(datapoint=datapoint, timestamp=timestamp))
+
         logging.debug(f"Logging results {datapoint} from {device_id} to hub")
         await log_data(datapoint, timestamp, device_id, experiment_id, session)
-        data.append((timestamp,datapoint))
-    return {component.name: data}
+
+    return {'component_name': component.name, 'data': data, 'type': 'data'}
 
 async def log_start(protocol, start_time, experiment_id, session):
     try:
@@ -134,7 +163,8 @@ async def log_start(protocol, start_time, experiment_id, session):
     except (aiohttp.client_exceptions.ServerDisconnectedError):
         print('Hub disconnected')
     return {"experiment_id": experiment_id,
-            "experiment_start_time": start_time}
+            "experiment_start_time": start_time,
+            "type": "experiment_start"}
 
 async def log_procedure(procedure_record, experiment_id, session):
     try:
