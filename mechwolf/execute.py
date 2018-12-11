@@ -1,12 +1,14 @@
 import asyncio
-import aiohttp
-import time
-from uuid import uuid1
-from contextlib import ExitStack
 import json
 import logging
-from colorama import init, Fore, Back, Style
+import time
 from collections import namedtuple
+from contextlib import ExitStack
+from uuid import uuid1
+
+from colorama import Back, Fore, Style, init
+
+import aiohttp
 
 server = "http://localhost:5000"
 
@@ -98,7 +100,6 @@ async def main(protocol, apparatus, start_time, experiment_id):
         if component not in apparatus.components:
             raise DeviceNotFound(f'Component {component} not in apparatus.')
 
-
     protocol_json = protocol.json()
 
     tasks = []
@@ -117,7 +118,7 @@ async def main(protocol, apparatus, start_time, experiment_id):
                 print(end_time)
 
                 tasks += [create_procedure(procedure, component, experiment_id, session, end_time)
-                             for procedure in p[component]]
+                          for procedure in p[component]]
                 tasks += [monitor(component, end_time, experiment_id, session)]
 
             completed_tasks = await asyncio.gather(*tasks)

@@ -1,0 +1,162 @@
+$schema: http://json-schema.org/draft-07/schema#
+$ref: '#/definitions/base'
+definitions:
+  base:
+    description: The base MechWolf JSON/YAML schema. All MechWolf schemas must validate
+      against on of the subschemas defined herein.
+    oneOf:
+    - $ref: '#/definitions/apparatus'
+    # - $ref: '#/definitions/protocol'
+  apparatus:
+    type: object
+    properties:
+      metadata:
+        $ref: '#/definitions/metadata'
+      components:
+        type: array
+        items:
+          $ref: '#/definitions/component'
+        minLength: 2
+        uniqueItems: true
+      connectivity:
+        type: array
+        items:
+          $ref: '#/definitions/connection'
+        minLength: 1
+        uniqueItems: true
+    required:
+    - metadata
+    - components
+    - connectivity
+    title: Apparatus
+  author:
+    type: object
+    properties:
+      first name:
+        type: string
+      last name:
+        type: string
+      affiliation:
+        type: array
+        items:
+          $ref: '#/definitions/affiliation'
+        uniqueItems: true
+      email:
+        type: string
+        format: email
+    required:
+    - affiliation
+    - email
+    - first name
+    - last name
+  affiliation:
+    type: object
+    additionalProperties: false
+    properties:
+      department:
+        type: string
+      institution:
+        type: string
+    required:
+    - institution
+  component:
+    type: object
+    properties:
+      name:
+        type: string
+      type:
+        enum:
+        - pump
+        - valve
+        - vessel
+        - dummy
+        - fraction collector
+        - sensor
+        - temperature controller
+        - mixer
+        - other
+      model:
+        type: string
+      base state:
+        type: object
+      mapping:
+        type: object
+      is active:
+        type: boolean
+      args:
+        type: object
+    required:
+    - name
+    - type
+    - is active
+  connection:
+    type: object
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+      tube:
+        $ref: '#/definitions/tube'
+    required:
+    - to
+    - from
+    - tube
+  tube:
+    type: object
+    properties:
+      length:
+        type: string
+        pattern: \d+ \w+
+      internal diameter:
+        type: string
+        pattern: \d+ \w+
+      external diameter:
+        type: string
+        pattern: \d+ \w+
+      material:
+        type: string
+    required:
+    - length
+    - internal diameter
+    - external diameter
+    - material
+  metadata:
+    type: object
+    properties:
+      name:
+        description: "The name of the object."
+        type: string
+      unix timestamp:
+        description: "The unix time the object was created, measured in seconds from 1/1/1970."
+        type: number
+      author:
+        description: "A list of the authors of the object."
+        type: array
+        items:
+          $ref: '#/definitions/author'
+        minLength: 1
+        uniqueItems: true
+      description:
+        description: "A description of the object."
+        type: string
+      reference DOIs:
+        description: "The DOIs of any references for the object."
+        type: array
+        items:
+          type: string
+        uniqueItems: true
+      compiler:
+        type: string
+      tags:
+        type: array
+        items:
+          type: string
+        uniqueItems: true
+      additional information:
+        type: object
+    additionalProperties: false
+    required:
+      - name
+      - unix timestamp
+      - author
