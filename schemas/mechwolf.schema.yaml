@@ -83,6 +83,8 @@ definitions:
         type: object
       is active:
         type: boolean
+      args:
+        type: object
     required:
     - name
     - type
