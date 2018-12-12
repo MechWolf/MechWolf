@@ -158,7 +158,11 @@ class Apparatus(object):
             title = title if not title else self.name
             f.attr(label=title)
 
-        f.view(cleanup=True)
+        try:
+            get_ipython()
+            return f
+        except NameError:
+            f.view(cleanup=True)
 
     def summarize(self):
         '''Prints a summary table of the apparatus.'''
@@ -574,11 +578,11 @@ class Protocol(object):
 
         # open it up in the default webbrowser
         try:
-            get_ipython
+            get_ipython()
             from IPython.display import IFrame
-            frame = IFrame(f.name, width=900 , height=500)
+            frame = IFrame(f.name, width=900 , height=300)
             return frame
-        except:
+        except NameError:
             if browser:
                 webbrowser.open("file://" + f.name)
                 return True
