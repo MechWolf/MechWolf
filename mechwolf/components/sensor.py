@@ -19,6 +19,7 @@ class Sensor(ActiveComponent):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 Hz")
         self._visualization_shape = "ellipse"
+        self.done = False
 
     def base_state(self):
         '''Default to being inactive.'''
@@ -30,17 +31,20 @@ class Sensor(ActiveComponent):
 
     def update(self):
         return { "timestamp": time.time(),
-                "params": {"rate": self.rate.to_base_units()},
-                "type": 'log'}
+                "params": {"rate": str(self.rate.to_base_units())},
+                "device": self.name}
 
     async def monitor(self):
         '''If data collection is off and needs to be turned on, turn it on.
            If data collection is on and needs to be turned off, turn off and return data.'''
         while True:
+            if self.done:
+                print(f'Done monitoring {self.name}')
+                break
             frequency = self.rate.to_base_units().magnitude
             if frequency != 0:
-                yield { 'data': self.read(),
-                        'time': time.time()}
+                yield { 'datapoint': self.read(),
+                        'timestamp': time.time()}
                 await asyncio.sleep(1/frequency)
             else:
                 await asyncio.sleep(frequency)

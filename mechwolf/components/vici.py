@@ -53,5 +53,5 @@ class ViciValve(Valve):
         self.ser.write(message.encode()) # send the message to the valve
         print(self.setting) # for introspection
         return { "timestamp": time.time(),
-                "params": {"setting": self.setting},
-                "type": 'log'}
+                 "params": {"setting": self.setting},
+                 "device": self.name}

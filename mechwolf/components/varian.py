@@ -62,7 +62,7 @@ class VarianPump(Pump):
         self.set_flow(new_rate)
         return { "timestamp": time.time(),
                 "params": {"rate": str(new_rate)},
-                "type": 'log'}
+                "device": self.name}
 
     def config(self):
         #TODO Make max_rate a ureg?
