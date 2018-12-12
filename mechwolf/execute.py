@@ -10,6 +10,7 @@ from colorama import Back, Fore, Style, init
 
 from bokeh.io import push_notebook, show, output_notebook
 from bokeh.plotting import figure
+from ipywidgets import Textarea
 
 server = "http://localhost:5000"
 
@@ -36,18 +37,16 @@ class Experiment(object):
         self._charts = {}
         self._transformed_data = {}
 
-    def transform_data(self, device):
+    def _transform_data(self, device):
         data = self.data[device]
         return {'datapoints': [datapoint.datapoint for datapoint in data],
                 'timestamps': [datapoint.timestamp - self.start_time for datapoint in data]}
 
     def visualize(self):
         output_notebook()
-        if not self.data:
-            print('No data to display yet')
-            return
+
         for device in self.data:
-            self._transformed_data[device] = self.transform_data(device)
+            self._transformed_data[device] = self._transform_data(device)
             p = figure(title = f'{device} data', plot_height = 300, plot_width = 600)
             r = p.line(source = self._transformed_data[device], x = 'timestamps', y = 'datapoints', color = '#2222aa', line_width = 3)
             target = show(p, notebook_handle=True)
@@ -56,14 +55,17 @@ class Experiment(object):
 
     def update_chart(self, device, datapoint):
         #If a chart has been registered to the device, update it.
+        self.data[device].append(datapoint)
         if device in self._transformed_data:
             target, r = self._charts[device]
             self._transformed_data[device]['datapoints'].append(datapoint.datapoint)
             self._transformed_data[device]['timestamps'].append(datapoint.timestamp - self.start_time)
-            r.data_source.data['datapoints'] = self._transformed_data['test']['datapoints']
-            r.data_source.data['timestamps'] = self._transformed_data['test']['timestamps']
+            r.data_source.data['datapoints'] = self._transformed_data[device]['datapoints']
+            r.data_source.data['timestamps'] = self._transformed_data[device]['timestamps']
             push_notebook(handle = target)
 
+    def procedure_did_execute(procedure_record):
+        self.executed_procedures.append(procedure_record)
 
 class DeviceNotFound(Exception):
     '''Raised if a device specified in the protocol is not in the apparatus.'''
@@ -89,8 +91,8 @@ def jupyter_execute (protocol, **kwargs):
     #Extract the protocol from the Protocol object (or protocol json)
     apparatus = protocol.apparatus
     experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
-    start_time = time.time()
     print(f'Experiment {experiment_id} in progress')
+    start_time = time.time()
     experiment = Experiment(experiment_id,
                   protocol,
                   apparatus,
@@ -198,7 +200,7 @@ async def create_procedure(procedure, component, experiment_id, experiment, end_
     if end_time == execution_time:
         component.done = True
 
-    experiment.executed_procedures.append(procedure_record)
+    experiment.procedure_did_execute(procedure_record)
     return procedure_record
 
 async def monitor(component, end_time, experiment_id, experiment):
@@ -206,7 +208,6 @@ async def monitor(component, end_time, experiment_id, experiment):
     experiment.data[device_id] = []
     async for result in component.monitor():
         datapoint = Datapoint(datapoint=result['datapoint'], timestamp=result['timestamp'])
-        experiment.data[device_id].append(datapoint)
         experiment.update_chart(device_id, datapoint)
     return {'component_name': component.name, 'data': experiment.data[device_id], 'type': 'data'}
 
