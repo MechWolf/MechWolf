@@ -200,8 +200,6 @@ async def main(protocol, apparatus, start_time, experiment_id, experiment):
             # Find out when each component's monitoring should end
             times = [procedure['time'] for procedure in p[component]]
             end_time = max(times).magnitude
-            print(end_time)
-
             tasks += [create_procedure(procedure, component, experiment_id, experiment, end_time)
                       for procedure in p[component]]
             tasks += [monitor(component, end_time, experiment_id, experiment)]
