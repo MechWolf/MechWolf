@@ -559,25 +559,31 @@ class Protocol(object):
         '''
 
         # set up the temporary file
-        tmp = tempfile.NamedTemporaryFile(delete=False)
-        path = tmp.name + '.html'
-        f = open(path, 'w')
+        #tmp = tempfile.NamedTemporaryFile(delete=False)
+        #path = tmp.name + '.html'
+        #f = open(path, 'w')
+        with open('vis.html', 'w') as f:
+            # render the html
+            env = Environment(autoescape=select_autoescape(['html', 'xml']),
+                              loader=PackageLoader("mechwolf", "templates"))
+            template = env.get_template('visualizer.html')
+            visualization = template.render(title=self.name, procedures=self.procedures)
 
-        # render the html
-        env = Environment(autoescape=select_autoescape(['html', 'xml']),
-                          loader=PackageLoader("mechwolf", "templates"))
-        template = env.get_template('visualizer.html')
-        visualization = template.render(title=self.name, procedures=self.procedures)
-
-        # write to the temp file
-        f.write(visualization)
-        f.close()
+            # write to the temp file
+            f.write(visualization)
 
         # open it up in the default webbrowser
-        if browser:
-            webbrowser.open("file://" + f.name)
-
-        return visualization
+        try:
+            get_ipython
+            from IPython.display import IFrame
+            frame = IFrame(f.name, width=900 , height=600)
+            return frame
+        except:
+            if browser:
+                webbrowser.open("file://" + f.name)
+                return True
+            else:
+                return False
 
     def execute(self, address="http://localhost:5000", confirmation=True):
         '''Executes the procedure.
