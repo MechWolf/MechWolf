@@ -2,6 +2,7 @@ from .component import ActiveComponent
 from . import ureg
 import asyncio
 import time
+from math import sin
 
 class Sensor(ActiveComponent):
     """A generic sensor.
@@ -68,4 +69,4 @@ class DummySensor(Sensor):
     def read(self):
         '''Collect the data.'''
         self.counter += 1
-        return self.counter
+        return sin(self.counter * 0.314)
