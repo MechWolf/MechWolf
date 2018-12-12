@@ -22,12 +22,8 @@ class Component(object):
         if name is None:
             self.name = self.__class__.__name__ + "_" + str(self.__class__._id_counter)
             self.__class__._id_counter += 1
-        elif name not in self.__class__._used_names:
-            self.name = name
-        else:
-            raise ValueError(Fore.RED + f"Cannot have two components with the name {name}.")
-        self.__class__._used_names.add(self.name)
-
+        
+        self.name = name
         self._visualization_shape = "box"
 
     def __repr__(self):
