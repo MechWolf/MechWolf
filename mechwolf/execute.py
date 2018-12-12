@@ -64,7 +64,7 @@ class Experiment(object):
             r.data_source.data['timestamps'] = self._transformed_data[device]['timestamps']
             push_notebook(handle = target)
 
-    def procedure_did_execute(procedure_record):
+    def procedure_did_execute(self, procedure_record):
         self.executed_procedures.append(procedure_record)
 
 class DeviceNotFound(Exception):
