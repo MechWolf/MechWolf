@@ -576,7 +576,7 @@ class Protocol(object):
         try:
             get_ipython
             from IPython.display import IFrame
-            frame = IFrame(f.name, width=900 , height=600)
+            frame = IFrame(f.name, width=900 , height=500)
             return frame
         except:
             if browser:
