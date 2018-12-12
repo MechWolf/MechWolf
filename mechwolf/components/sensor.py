@@ -69,4 +69,4 @@ class DummySensor(Sensor):
     def read(self):
         '''Collect the data.'''
         self.counter += 1
-        return sin(self.counter * 0.314)
+        return self.counter * sin(self.counter * 0.314)
