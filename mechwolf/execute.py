@@ -37,12 +37,15 @@ class Experiment(object):
         self._transformed_data = {}
 
     def transform_data(self, device):
-        return {'datapoints': [datapoint.datapoint for datapoint in self.data[device]],
-                'timestamps': [datapoint.timestamp - self.start_time for datapoint in self.data[device]]}
+        data = self.data[device]
+        return {'datapoints': [datapoint.datapoint for datapoint in data],
+                'timestamps': [datapoint.timestamp - self.start_time for datapoint in data]}
 
     def visualize(self):
         output_notebook()
-
+        if not self.data:
+            print('No data to display yet')
+            return
         for device in self.data:
             self._transformed_data[device] = self.transform_data(device)
             p = figure(title = f'{device} data', plot_height = 300, plot_width = 600)
@@ -97,30 +100,6 @@ def jupyter_execute (protocol, **kwargs):
 
     tasks = asyncio.ensure_future(main(protocol, apparatus, start_time, experiment_id, experiment))
     return experiment
-
-    #try:
-    #    logs = asyncio.ensure_future(main(protocol, apparatus, start_time, experiment_id))
-    #finally:
-    #    for component in protocol.compile().keys():
-    #        component.done = False
-    #
-    # executed_procedures = []
-    # data = {}
-    # for log in logs:
-    #     if log['type'] == 'executed_procedure':
-    #         executed_procedures.append(log)
-    #     if log['type'] == 'data':
-    #         component_name = log['component_name']
-    #         data[component_name] = log['data']
-    #
-    # return Experiment(experiment_id,
-    #                   protocol,
-    #                   apparatus,
-    #                   start_time,
-    #                   data,
-    #                   executed_procedures,
-    #                   logs)
-
 
 def execute (protocol, delay=5, **kwargs):
     '''
