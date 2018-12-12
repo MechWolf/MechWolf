@@ -42,7 +42,7 @@ setup(
         "yamlordereddictloader",
         "urllib3"],
     extras_require={
-        'vis': ["graphviz", "numpy"],
+        'vis': ["graphviz", "numpy", "jinja2"],
         'client': ["pyserial", "aiohttp"],
         'hub': ["flask", "gevent"],
         'doc': ["sphinxcontrib-programoutput", "sphinx", "sphinxcontrib-httpdomain"]
