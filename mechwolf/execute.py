@@ -8,9 +8,12 @@ from uuid import uuid1
 
 from colorama import Back, Fore, Style, init
 
-import aiohttp
+from bokeh.io import push_notebook, show, output_notebook
+from bokeh.plotting import figure
 
 server = "http://localhost:5000"
+
+Datapoint = namedtuple('Datapoint',['datapoint', 'timestamp'])
 
 class Experiment(object):
     '''
@@ -29,6 +32,35 @@ class Experiment(object):
         self.start_time = start_time
         self.data = data
         self.executed_procedures = executed_procedures
+
+        self._charts = {}
+        self._transformed_data = {}
+
+    def transform_data(self, device):
+        return {'datapoints': [datapoint.datapoint for datapoint in self.data[device]],
+                'timestamps': [datapoint.timestamp - self.start_time for datapoint in self.data[device]]}
+
+    def visualize(self):
+        output_notebook()
+
+        for device in self.data:
+            self._transformed_data[device] = self.transform_data(device)
+            p = figure(title = f'{device} data', plot_height = 300, plot_width = 600)
+            r = p.line(source = self._transformed_data[device], x = 'timestamps', y = 'datapoints', color = '#2222aa', line_width = 3)
+            target = show(p, notebook_handle=True)
+            #Register chart for continuous updating
+            self._charts[device] = (target, r)
+
+    def update_chart(self, device, datapoint):
+        #If a chart has been registered to the device, update it.
+        if device in self._transformed_data:
+            target, r = self._charts[device]
+            self._transformed_data[device]['datapoints'].append(datapoint.datapoint)
+            self._transformed_data[device]['timestamps'].append(datapoint.timestamp - self.start_time)
+            r.data_source.data['datapoints'] = self._transformed_data['test']['datapoints']
+            r.data_source.data['timestamps'] = self._transformed_data['test']['timestamps']
+            push_notebook(handle = target)
+
 
 class DeviceNotFound(Exception):
     '''Raised if a device specified in the protocol is not in the apparatus.'''
@@ -185,6 +217,7 @@ async def create_procedure(procedure, component, experiment_id, experiment, end_
     component.update_from_params(procedure["params"])
     procedure_record = component.update()
     procedure_record['type'] = 'executed_procedure'
+    procedure_record['executed_time'] = procedure_record['timestamp'] - experiment.start_time
     if end_time == execution_time:
         component.done = True
 
@@ -194,12 +227,10 @@ async def create_procedure(procedure, component, experiment_id, experiment, end_
 async def monitor(component, end_time, experiment_id, experiment):
     device_id=component.name
     experiment.data[device_id] = []
-    Datapoint = namedtuple('Datapoint',['datapoint', 'timestamp'])
     async for result in component.monitor():
-        datapoint=result['datapoint']
-        timestamp=result['timestamp']
-        experiment.data[device_id].append(Datapoint(datapoint=datapoint, timestamp=timestamp))
-
+        datapoint = Datapoint(datapoint=result['datapoint'], timestamp=result['timestamp'])
+        experiment.data[device_id].append(datapoint)
+        experiment.update_chart(device_id, datapoint)
     return {'component_name': component.name, 'data': experiment.data[device_id], 'type': 'data'}
 
 async def log_start(protocol, start_time, experiment_id, experiment):
