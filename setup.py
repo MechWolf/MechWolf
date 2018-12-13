@@ -40,11 +40,11 @@ setup(
         "click",
         "click_didyoumean",
         "yamlordereddictloader",
+        "pyserial",
+        "jinja2"
         "urllib3"],
     extras_require={
-        'vis': ["graphviz", "numpy", "jinja2"],
-        'client': ["pyserial", "aiohttp"],
-        'hub': ["flask", "gevent"],
+        'vis': ["graphviz", "numpy"],
         'doc': ["sphinxcontrib-programoutput", "sphinx", "sphinxcontrib-httpdomain"]
     },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
