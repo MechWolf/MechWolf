@@ -41,8 +41,9 @@ setup(
         "click_didyoumean",
         "yamlordereddictloader",
         "pyserial",
-        "jinja2"
-        "urllib3"],
+        "jinja2",
+        "urllib3",
+        "bokeh"],
     extras_require={
         'vis': ["graphviz", "numpy"],
         'doc': ["sphinxcontrib-programoutput", "sphinx", "sphinxcontrib-httpdomain"]
