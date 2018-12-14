@@ -18,6 +18,7 @@ import yaml
 from click import confirm, prompt
 from colorama import Back, Fore, Style, init
 from terminaltables import AsciiTable
+from jinja2 import Environment, PackageLoader, select_autoescape
 
 from . import ureg
 from .components import *
@@ -26,7 +27,6 @@ from .validate_component import validate_component
 # If visualization extras are available, import them
 try:
     from graphviz import Digraph
-    from jinja2 import Environment, PackageLoader, select_autoescape
 except ImportError:
     pass
 
