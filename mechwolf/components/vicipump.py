@@ -53,7 +53,7 @@ class ViciPump(Pump):
 
         self.ser.reset_input_buffer()
 
-    async def update(self):
+    def update(self):
 
         new_rate = ureg.parse_expression(self.rate)
 

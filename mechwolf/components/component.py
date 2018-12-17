@@ -22,7 +22,7 @@ class Component(object):
         if name is None:
             self.name = self.__class__.__name__ + "_" + str(self.__class__._id_counter)
             self.__class__._id_counter += 1
-        
+
         self.name = name
         self._visualization_shape = "box"
 
@@ -108,4 +108,4 @@ class ActiveComponent(Component):
         pass
 
     async def monitor(self):
-        pass
+        yield None

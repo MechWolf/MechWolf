@@ -2,6 +2,7 @@
 # because it references specific line numbers here.
 try:
     import serial
+    import time
 except ImportError:
     pass
 
@@ -51,7 +52,7 @@ class ViciValve(Valve):
     def update(self):
         message = f'GO{self.setting}\r'
         self.ser.write(message.encode()) # send the message to the valve
-        print(self.setting) # for introspection
+        #print(self.setting) # for introspection
         return { "timestamp": time.time(),
                  "params": {"setting": self.setting},
                  "device": self.name}

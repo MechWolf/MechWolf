@@ -38,25 +38,23 @@ class VarianPump(Pump):
     def lock(self):
         lock_command = [0xFF, self.pump_id, 0x0A, 0x4C, 0x0D]
         self.ser.write(lock_command)
-        print(self.ser.read_all())
+        #print(self.ser.read_all())
 
     def set_flow(self, flow_rate):
 
         max_rate = self.max_rate.to(ureg.ml / ureg.min).magnitude
-        print(f"rate {flow_rate} max_rate {max_rate}")
+        #print(f"rate {flow_rate} max_rate {max_rate}")
         #Flow rate must be supplied as an string from 000000 to 100000, where 100000 = 100% of the maximum pump flow rate.
         percentage = 100000 * flow_rate / max_rate
-        print(f"percentage {percentage}")
+        #print(f"percentage {percentage}")
         flow_command = [0xFF, self.pump_id, 0x0A, 0x58]
         flow_command.extend(list(str(int(percentage)).zfill(6).encode()))
         flow_command.append(0x0D)
-        print(flow_command)
+        #print(flow_command)
         self.ser.write(flow_command)
 
     def update(self):
-        print(f"old rate {self.rate}")
         new_rate = self.rate.to(ureg.ml / ureg.min).magnitude
-        print(f"new rate {new_rate}")
         self.set_flow(new_rate)
         return { "timestamp": time.time(),
 		"params": {"rate": str(new_rate)},

@@ -10,7 +10,6 @@ from colorama import Back, Fore, Style, init
 
 from bokeh.io import push_notebook, show, output_notebook
 from bokeh.plotting import figure
-from ipywidgets import Textarea
 
 server = "http://localhost:5000"
 
@@ -55,6 +54,8 @@ class Experiment(object):
 
     def update_chart(self, device, datapoint):
         #If a chart has been registered to the device, update it.
+        if device not in self.data:
+            self.data[device] = []
         self.data[device].append(datapoint)
         if device in self._transformed_data:
             target, r = self._charts[device]
@@ -205,8 +206,9 @@ async def create_procedure(procedure, component, experiment_id, experiment, end_
 
 async def monitor(component, end_time, experiment_id, experiment):
     device_id=component.name
-    experiment.data[device_id] = []
     async for result in component.monitor():
+        if result == None:
+            return
         datapoint = Datapoint(datapoint=result['datapoint'], timestamp=result['timestamp'])
         experiment.update_chart(device_id, datapoint)
     return {'component_name': component.name, 'data': experiment.data[device_id], 'type': 'data'}
