@@ -40,7 +40,6 @@ class Sensor(ActiveComponent):
            If data collection is on and needs to be turned off, turn off and return data.'''
         while True:
             if self.done:
-                print(f'Done monitoring {self.name}')
                 break
             frequency = self.rate.to_base_units().magnitude
             if frequency != 0:
