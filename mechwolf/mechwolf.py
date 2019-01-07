@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from math import isclose
 from uuid import uuid1
 from warnings import warn
+from pathlib import Path
 
 import networkx as nx
 import requests
@@ -562,32 +563,29 @@ class Protocol(object):
             ImportError: When the visualization package is not installed.
         '''
 
-        # set up the temporary file
-        #tmp = tempfile.NamedTemporaryFile(delete=False)
-        #path = tmp.name + '.html'
-        #f = open(path, 'w')
-        with open('vis.html', 'w') as f:
-            # render the html
-            env = Environment(autoescape=select_autoescape(['html', 'xml']),
-                              loader=PackageLoader("mechwolf", "templates"))
-            template = env.get_template('visualizer.html')
-            visualization = template.render(title=self.name, procedures=self.procedures)
+        # render the html
+        env = Environment(autoescape=select_autoescape(['html', 'xml']),
+                          loader=PackageLoader("mechwolf", "templates"))
+        visualization = env.get_template('viz_div.html').render(procedures=self.procedures)
 
-            # write to the temp file
-            f.write(visualization)
-
-        # open it up in the default webbrowser
+        # show it in Jupyter, if possible
         try:
             get_ipython()
-            from IPython.display import IFrame
-            frame = IFrame(f.name, width=900, height=300)
-            return frame
+            from IPython.display import HTML
+            return HTML(data=visualization)
         except NameError:
-            if browser:
-                webbrowser.open("file://" + f.name)
-                return True
-            else:
-                return False
+            pass
+
+        template = env.get_template('visualizer.html')
+        visualization = template.render(title=self.name,
+                                        visualization=visualization)
+
+        if browser:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp:
+                tmp.write(visualization.encode("utf-8"))
+                webbrowser.open("file://" + tmp.name)
+
+        return visualization
 
     def execute(self, address="http://localhost:5000", confirmation=True):
         '''Executes the procedure.
