@@ -143,7 +143,7 @@ class Apparatus(object):
         # go from left to right adding components and their tubing connections
         f.attr(rankdir='LR')
 
-        for component in list(self.components):
+        for component in sorted(list(self.components), key=lambda x: x.name):
             f.attr('node', shape=component._visualization_shape)
             f.node(component.description if isinstance(component, Vessel) and describe_vessels else component.name)
 
@@ -580,7 +580,7 @@ class Protocol(object):
         try:
             get_ipython()
             from IPython.display import IFrame
-            frame = IFrame(f.name, width=900 , height=300)
+            frame = IFrame(f.name, width=900, height=300)
             return frame
         except NameError:
             if browser:
