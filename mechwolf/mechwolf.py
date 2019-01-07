@@ -265,7 +265,6 @@ class Apparatus(object):
         for element in self.network:
             from_component, to_component, tube = _description(element[0], capitalize=True), _description(element[1]), element[2]
             result += f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {element[2].length}, ID {element[2].ID}, OD {element[2].OD}). "
-        print(result)
         return result
 
 class Protocol(object):
