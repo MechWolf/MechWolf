@@ -18,8 +18,9 @@ import urllib3
 import yaml
 from click import confirm, prompt
 from colorama import Back, Fore, Style, init
-from terminaltables import AsciiTable
+from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 from jinja2 import Environment, PackageLoader, select_autoescape
+from mistune import markdown
 
 from . import ureg
 from .components import *
@@ -165,8 +166,18 @@ class Apparatus(object):
         except NameError:
             f.view(cleanup=True)
 
-    def summarize(self):
-        '''Prints a summary table of the apparatus.'''
+    def summarize(self, style="gfm"):
+        '''Prints a summary table of the apparatus.
+
+        Args:
+            style (str, optional): Either `gfm`` for GitHub-flavored Markdown or ``ascii``. If equal to ``gfm`` and in a Jupyter notebook, returns a rendered HTML version of the GFM table.
+        '''
+
+        if style == "ascii":
+            tableStyle = AsciiTable
+        else:
+            tableStyle = GithubFlavoredMarkdownTable
+
         # create a components table
         summary = [["Name", "Type"]] # header rows of components table
         for component in list(self.components):
@@ -177,9 +188,8 @@ class Apparatus(object):
                 summary.append([component.description, component.__class__.__name__])
 
         # generate the components table
-        table = AsciiTable(summary)
-        table.title = "Components"
-        print(table.table)
+        components_table = tableStyle(summary)
+        components_table.title = "Components"
 
         # store and calculate the computed totals for tubing
         total_length = 0 * ureg.mm
@@ -198,13 +208,25 @@ class Apparatus(object):
                             round(edge[2].OD, 4),
                             round(edge[2].volume.to("ml"), 4),
                             edge[2].material])
-        summary.append(["", "Total", round(total_length, 4), "n/a", "n/a", round(total_volume.to("ml"), 4), "n/a"]) # footer row
+        summary.append(["", "**Total**" if style == "gfm" else "Total", round(total_length, 4), "n/a", "n/a", round(total_volume.to("ml"), 4), "n/a"]) # footer row
 
         # generate the tubing table
-        table = AsciiTable(summary)
-        table.title = "Tubing"
-        table.inner_footing_row_border = "True"
-        print(table.table)
+        tubing_table = tableStyle(summary)
+        tubing_table.title = "Tubing"
+        tubing_table.inner_footing_row_border = "True"
+
+        try:
+            get_ipython()
+            from IPython.display import HTML
+            if style == "gfm":
+                html = f"<h3>{components_table.title}</h3>{markdown(components_table.table)}<h3>{tubing_table.title}</h3>{markdown(tubing_table.table)}"
+                return HTML(data=html)
+        except NameError:
+            pass
+        print("Components")
+        print(components_table.table)
+        print("\nTubing")
+        print(tubing_table.table)
 
     def validate(self):
         '''Ensures that the apparatus is valid.
