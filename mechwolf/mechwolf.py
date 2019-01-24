@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from math import isclose
 from uuid import uuid1
 from warnings import warn
+from pathlib import Path
 
 import networkx as nx
 import requests
@@ -17,8 +18,9 @@ import urllib3
 import yaml
 from click import confirm, prompt
 from colorama import Back, Fore, Style, init
-from terminaltables import AsciiTable
+from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 from jinja2 import Environment, PackageLoader, select_autoescape
+from mistune import markdown
 
 from . import ureg
 from .components import *
@@ -143,7 +145,7 @@ class Apparatus(object):
         # go from left to right adding components and their tubing connections
         f.attr(rankdir='LR')
 
-        for component in list(self.components):
+        for component in sorted(list(self.components), key=lambda x: x.name):
             f.attr('node', shape=component._visualization_shape)
             f.node(component.description if isinstance(component, Vessel) and describe_vessels else component.name)
 
@@ -164,8 +166,18 @@ class Apparatus(object):
         except NameError:
             f.view(cleanup=True)
 
-    def summarize(self):
-        '''Prints a summary table of the apparatus.'''
+    def summarize(self, style="gfm"):
+        '''Prints a summary table of the apparatus.
+
+        Args:
+            style (str, optional): Either `gfm`` for GitHub-flavored Markdown or ``ascii``. If equal to ``gfm`` and in a Jupyter notebook, returns a rendered HTML version of the GFM table.
+        '''
+
+        if style == "ascii":
+            tableStyle = AsciiTable
+        else:
+            tableStyle = GithubFlavoredMarkdownTable
+
         # create a components table
         summary = [["Name", "Type"]] # header rows of components table
         for component in list(self.components):
@@ -176,9 +188,8 @@ class Apparatus(object):
                 summary.append([component.description, component.__class__.__name__])
 
         # generate the components table
-        table = AsciiTable(summary)
-        table.title = "Components"
-        print(table.table)
+        components_table = tableStyle(summary)
+        components_table.title = "Components"
 
         # store and calculate the computed totals for tubing
         total_length = 0 * ureg.mm
@@ -197,13 +208,25 @@ class Apparatus(object):
                             round(edge[2].OD, 4),
                             round(edge[2].volume.to("ml"), 4),
                             edge[2].material])
-        summary.append(["", "Total", round(total_length, 4), "n/a", "n/a", round(total_volume.to("ml"), 4), "n/a"]) # footer row
+        summary.append(["", "**Total**" if style == "gfm" else "Total", round(total_length, 4), "n/a", "n/a", round(total_volume.to("ml"), 4), "n/a"]) # footer row
 
         # generate the tubing table
-        table = AsciiTable(summary)
-        table.title = "Tubing"
-        table.inner_footing_row_border = "True"
-        print(table.table)
+        tubing_table = tableStyle(summary)
+        tubing_table.title = "Tubing"
+        tubing_table.inner_footing_row_border = "True"
+
+        try:
+            get_ipython()
+            from IPython.display import HTML
+            if style == "gfm":
+                html = f"<h3>{components_table.title}</h3>{markdown(components_table.table)}<h3>{tubing_table.title}</h3>{markdown(tubing_table.table)}"
+                return HTML(data=html)
+        except NameError:
+            pass
+        print("Components")
+        print(components_table.table)
+        print("\nTubing")
+        print(tubing_table.table)
 
     def validate(self):
         '''Ensures that the apparatus is valid.
@@ -264,7 +287,6 @@ class Apparatus(object):
         for element in self.network:
             from_component, to_component, tube = _description(element[0], capitalize=True), _description(element[1]), element[2]
             result += f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {element[2].length}, ID {element[2].ID}, OD {element[2].OD}). "
-        print(result)
         return result
 
 class Protocol(object):
@@ -562,32 +584,29 @@ class Protocol(object):
             ImportError: When the visualization package is not installed.
         '''
 
-        # set up the temporary file
-        #tmp = tempfile.NamedTemporaryFile(delete=False)
-        #path = tmp.name + '.html'
-        #f = open(path, 'w')
-        with open('vis.html', 'w') as f:
-            # render the html
-            env = Environment(autoescape=select_autoescape(['html', 'xml']),
-                              loader=PackageLoader("mechwolf", "templates"))
-            template = env.get_template('visualizer.html')
-            visualization = template.render(title=self.name, procedures=self.procedures)
+        # render the html
+        env = Environment(autoescape=select_autoescape(['html', 'xml']),
+                          loader=PackageLoader("mechwolf", "templates"))
+        visualization = env.get_template('viz_div.html').render(procedures=self.procedures)
 
-            # write to the temp file
-            f.write(visualization)
-
-        # open it up in the default webbrowser
+        # show it in Jupyter, if possible
         try:
             get_ipython()
-            from IPython.display import IFrame
-            frame = IFrame(f.name, width=900 , height=300)
-            return frame
+            from IPython.display import HTML
+            return HTML(data=visualization)
         except NameError:
-            if browser:
-                webbrowser.open("file://" + f.name)
-                return True
-            else:
-                return False
+            pass
+
+        template = env.get_template('visualizer.html')
+        visualization = template.render(title=self.name,
+                                        visualization=visualization)
+
+        if browser:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp:
+                tmp.write(visualization.encode("utf-8"))
+                webbrowser.open("file://" + tmp.name)
+
+        return visualization
 
     def execute(self, address="http://localhost:5000", confirmation=True):
         '''Executes the procedure.

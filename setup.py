@@ -43,7 +43,8 @@ setup(
         "pyserial",
         "jinja2",
         "urllib3",
-        "bokeh"],
+        "bokeh",
+        "mistune"],
     extras_require={
         'vis': ["graphviz", "numpy"],
         'doc': ["sphinxcontrib-programoutput", "sphinx", "sphinxcontrib-httpdomain"]
