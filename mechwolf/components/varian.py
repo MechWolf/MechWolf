@@ -32,7 +32,8 @@ class VarianPump(Pump):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.set_flow(ureg.parse_expression("0 mL/min").to(ureg.ml/ureg.min).magnitude)
+        self.rate = ureg.parse_expression("0 mL/min")
+        self.update()
         self.ser.close()
 
     def lock(self):
