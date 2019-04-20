@@ -163,52 +163,14 @@ the rest, ensuring that both pumps have their protocols and start in sync.
 Table of Contents
 -----------------
 
-About
-~~~~~
-
 .. toctree::
    :maxdepth: 2
 
-   about/why
-   about/faq
-   about/security
-   about/data_integrity
-   about/glossary
-   about/license
+   about/about
+   guide/guide
+   api/api
+   cli/cli
 
-User Guide
-~~~~~~~~~~
-
-.. toctree::
-   :maxdepth: 2
-
-   guide/gentle_intro
-   guide/installation
-   guide/getting_started
-   guide/rpi_setup
-   guide/new_components
-
-API Reference
-~~~~~~~~~~~~~
-
-.. toctree::
-   :maxdepth: 2
-
-   api/mechwolf
-   api/mechwolf.components
-   api/hub
-   api/resolver
-
-CLI Reference
-~~~~~~~~~~~~~
-
-.. toctree::
-   :maxdepth: 2
-
-   cli/mechwolf
-   cli/client
-   cli/hub
-   cli/convert
 
 
 Indices and tables

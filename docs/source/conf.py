@@ -43,8 +43,13 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinxcontrib.autohttp.flask',
-    'sphinxcontrib.programoutput'
+    'sphinxcontrib.programoutput',
+    'nbsphinx',
+    'sphinx.ext.mathjax',
 ]
+
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -89,11 +94,15 @@ html_theme = 'alabaster'
 #     'logo_only': True,
 # }
 html_theme_options = {
-    "fixed_sidebar": True,
-    "sidebar_collapse": False,
-    "github_user": "benjamin-lee",
-    "github_repo": "MechWolf",
+    # "fixed_sidebar": False,
+    # "sidebar_collapse": True,
+    # "github_user": "benjamin-lee",
+    # "github_repo": "MechWolf",
+    # "github_type": "star",
+    # "show_relbar_bottom": True,
     "show_related": True,
+    'logo_name': False,
+    'logo': 'wordmark.pdf'
 
 }
 
@@ -110,9 +119,7 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-# html_sidebars = {}
-
-html_logo = "../../logo/wordmark.pdf"
+html_sidebars = {}
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
