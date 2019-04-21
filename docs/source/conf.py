@@ -99,7 +99,7 @@ html_theme_options = {
     # "github_user": "benjamin-lee",
     # "github_repo": "MechWolf",
     # "github_type": "star",
-    # "show_relbar_bottom": True,
+    "show_relbar_bottom": True,
     "show_related": True,
     'logo_name': False,
     'logo': 'wordmark.pdf'
