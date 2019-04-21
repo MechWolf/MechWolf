@@ -22,8 +22,8 @@ class Component(object):
         if name is None:
             self.name = self.__class__.__name__ + "_" + str(self.__class__._id_counter)
             self.__class__._id_counter += 1
-
-        self.name = name
+        else:
+            self.name = name
         self._visualization_shape = "box"
 
     def __repr__(self):
