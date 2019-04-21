@@ -1,5 +1,6 @@
-from .component import ActiveComponent
 from . import ureg
+from .component import ActiveComponent
+
 
 class Pump(ActiveComponent):
     '''A generic pumping device whose primary feature is that it moves fluid.

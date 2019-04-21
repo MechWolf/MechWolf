@@ -1,19 +1,18 @@
+import imp
 import inspect
 import os
 import sys
-import imp
 from collections import OrderedDict
 
-from colorama import init, Fore, Back
-import yaml
-import requests
 import click
-from pick import pick
+import requests
+import yaml
 import yamlordereddictloader
+from colorama import Back, Fore, init
+from pick import pick
 from serial.tools import list_ports
 
 import mechwolf as mw
-
 
 # initialize colored printing
 init(autoreset=True)

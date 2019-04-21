@@ -1,5 +1,7 @@
 import re
+
 from mechwolf import generate_security_key, validate_security_key
+
 
 def test_validate_security_key():
     # invalid format

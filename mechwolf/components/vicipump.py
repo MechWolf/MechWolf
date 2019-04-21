@@ -1,5 +1,5 @@
-from .pump import Pump
 from . import ureg
+from .pump import Pump
 
 try:
     import serial

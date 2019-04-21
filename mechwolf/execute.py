@@ -6,19 +6,19 @@ from collections import namedtuple
 from contextlib import ExitStack
 from uuid import uuid1
 
-from colorama import Back, Fore, Style, init
-
-from bokeh.io import push_notebook, show, output_notebook
+from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
+from colorama import Back, Fore, Style, init
 
 server = "http://localhost:5000"
 
-Datapoint = namedtuple('Datapoint',['datapoint', 'timestamp'])
+Datapoint = namedtuple('Datapoint', ['datapoint', 'timestamp'])
 
 class Experiment(object):
     '''
         Experiments contain all data from execution of a protocol.
     '''
+
     def __init__(self,
                  experiment_id,
                  protocol,
@@ -46,8 +46,8 @@ class Experiment(object):
 
         for device in self.data:
             self._transformed_data[device] = self._transform_data(device)
-            p = figure(title = f'{device} data', plot_height = 300, plot_width = 600)
-            r = p.line(source = self._transformed_data[device], x = 'timestamps', y = 'datapoints', color = '#2222aa', line_width = 3)
+            p = figure(title=f'{device} data', plot_height=300, plot_width=600)
+            r = p.line(source=self._transformed_data[device], x='timestamps', y='datapoints', color='#2222aa', line_width=3)
             target = show(p, notebook_handle=True)
             #Register chart for continuous updating
             self._charts[device] = (target, r)
@@ -63,7 +63,7 @@ class Experiment(object):
             self._transformed_data[device]['timestamps'].append(datapoint.timestamp - self.start_time)
             r.data_source.data['datapoints'] = self._transformed_data[device]['datapoints']
             r.data_source.data['timestamps'] = self._transformed_data[device]['timestamps']
-            push_notebook(handle = target)
+            push_notebook(handle=target)
 
     def procedure_did_execute(self, procedure_record):
         self.executed_procedures.append(procedure_record)
@@ -72,7 +72,7 @@ class DeviceNotFound(Exception):
     '''Raised if a device specified in the protocol is not in the apparatus.'''
     pass
 
-def jupyter_execute (protocol, **kwargs):
+def jupyter_execute(protocol, **kwargs):
     '''
         Executes the specified protocol in a jupyter notebook.
 
@@ -95,16 +95,16 @@ def jupyter_execute (protocol, **kwargs):
     print(f'Experiment {experiment_id} in progress')
     start_time = time.time()
     experiment = Experiment(experiment_id,
-                  protocol,
-                  apparatus,
-                  start_time,
-                  data = {},
-                  executed_procedures = [])
+                            protocol,
+                            apparatus,
+                            start_time,
+                            data={},
+                            executed_procedures=[])
 
     tasks = asyncio.ensure_future(main(protocol, apparatus, start_time, experiment_id, experiment))
     return experiment
 
-def execute (protocol, delay=5, **kwargs):
+def execute(protocol, delay=5, **kwargs):
     '''
         Executes the specified protocol.
         Starts after the specified delay.
@@ -205,9 +205,9 @@ async def create_procedure(procedure, component, experiment_id, experiment, end_
     return procedure_record
 
 async def monitor(component, end_time, experiment_id, experiment):
-    device_id=component.name
+    device_id = component.name
     async for result in component.monitor():
-        if result == None:
+        if result is None:
             return
         datapoint = Datapoint(datapoint=result['datapoint'], timestamp=result['timestamp'])
         experiment.update_chart(device_id, datapoint)

@@ -1,6 +1,7 @@
-from .pump import Pump
-from . import ureg
 import time
+
+from . import ureg
+from .pump import Pump
 
 try:
     import serial
@@ -57,9 +58,9 @@ class VarianPump(Pump):
     def update(self):
         new_rate = self.rate.to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
-        return { "timestamp": time.time(),
-		"params": {"rate": str(new_rate)},
-		"device": "self.name"}
+        return {"timestamp": time.time(),
+                "params": {"rate": str(new_rate)},
+                "device": "self.name"}
 
     def config(self):
         #TODO Make max_rate a ureg?

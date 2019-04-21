@@ -1,12 +1,15 @@
+import asyncio
+import json
+import logging
 import os
 import shelve
-import json
-import yaml
+
 import click
+import yaml
 from click_didyoumean import DYMGroup
-import logging
+
 import mechwolf
-import asyncio
+
 
 def set_verbosity(v):
     # set up logging

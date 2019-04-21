@@ -1,5 +1,7 @@
-import mechwolf as mw
 import pytest
+
+import mechwolf as mw
+
 
 def test_validate_component():
     # not a subclass of ActiveComponent
@@ -120,7 +122,7 @@ def test_valid_component_no_config_required():
 
         def config(self):
             return {}
-    assert mw.validate_component(Test()) == True
+    assert mw.validate_component(Test())
 
 def test_config_dict_mismatch():
     # config dict is invalid due to variable mismatch
@@ -244,7 +246,7 @@ def test_valid_component_config_required():
 
         def config(self):
             return {"serial_port": (int, None)}
-    assert mw.validate_component(Test()) == True
+    assert mw.validate_component(Test())
 
 def test_validate_sensor_without_read():
     class Test(mw.Sensor):
@@ -267,4 +269,4 @@ def test_validate_sensor_with_read():
 
         def config(self):
             return {"serial_port": (int, None)}
-    assert mw.validate_component(Test()) == True
+    assert mw.validate_component(Test())

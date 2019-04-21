@@ -1,5 +1,6 @@
-import mechwolf as mw
 from datetime import timedelta
+
+import mechwolf as mw
 
 # define vessels
 hatu = mw.Vessel("HATU", name="hatu")

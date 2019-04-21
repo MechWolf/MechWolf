@@ -1,8 +1,10 @@
-from .component import ActiveComponent
-from . import ureg
 import asyncio
 import time
 from math import sin
+
+from . import ureg
+from .component import ActiveComponent
+
 
 class Sensor(ActiveComponent):
     """A generic sensor.
@@ -31,7 +33,7 @@ class Sensor(ActiveComponent):
         raise NotImplementedError
 
     def update(self):
-        return { "timestamp": time.time(),
+        return {"timestamp": time.time(),
                 "params": {"rate": str(self.rate.to_base_units())},
                 "device": self.name}
 
@@ -43,9 +45,9 @@ class Sensor(ActiveComponent):
                 break
             frequency = self.rate.to_base_units().magnitude
             if frequency != 0:
-                yield { 'datapoint': self.read(),
-                        'timestamp': time.time()}
-                await asyncio.sleep(1/frequency)
+                yield {'datapoint': self.read(),
+                       'timestamp': time.time()}
+                await asyncio.sleep(1 / frequency)
             else:
                 await asyncio.sleep(frequency)
 

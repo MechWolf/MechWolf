@@ -1,8 +1,10 @@
-import mechwolf as mw
-import pytest
-from datetime import timedelta
 import json
+from datetime import timedelta
+
+import pytest
 import yaml
+
+import mechwolf as mw
 
 A = mw.Apparatus()
 pump1 = mw.Pump("pump1")

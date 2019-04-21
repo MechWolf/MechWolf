@@ -1,6 +1,8 @@
 from math import pi
-from colorama import Fore, init
 from warnings import warn
+
+from colorama import Fore, init
+
 from . import ureg
 
 init(autoreset=True)

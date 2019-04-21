@@ -1,5 +1,7 @@
-import mechwolf as mw
 import pytest
+
+import mechwolf as mw
+
 
 def test_diameter_validation():
     # inner diameter is greater than outer diameter

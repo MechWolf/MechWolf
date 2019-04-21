@@ -1,24 +1,24 @@
+import asyncio
+import imp
+import logging
+import os
+import shelve
+import sys
+import time
+from contextlib import contextmanager
 from json import dumps, loads
 from json.decoder import JSONDecodeError
-import time
-import shelve
-import logging
-import sys
-import imp
-import os
 
 import aiohttp
-import asyncio
-# import async_timeout # pending removal
-from colorama import init, Fore, Back, Style
-import yaml
-import requests
 import itsdangerous
 import keyring
-from contextlib import contextmanager
+import requests
+import yaml
+# import async_timeout # pending removal
+from colorama import Back, Fore, Style, init
 
-from mechwolf.components import *
 import mechwolf as mw
+from mechwolf.components import *
 
 # initialize colored printing
 init(autoreset=True)
@@ -200,7 +200,6 @@ def run_client(config):
     # get and execute protocols forever
     with class_type(name=DEVICE_NAME, **config["device_info"]["device_settings"]) as me:
         yield me
-
 
 
 if __name__ == "__main__":

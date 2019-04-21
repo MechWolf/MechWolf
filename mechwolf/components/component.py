@@ -1,5 +1,7 @@
 from colorama import Fore
+
 from . import ureg
+
 
 class Component(object):
     """One of the individial, irreducible parts of a flow chemistry setup.
@@ -65,7 +67,7 @@ class ActiveComponent(Component):
         for key, value in params.items():
             try:
                 setattr(self, key, ureg.parse_expression(value))
-            except:
+            except BaseException:
                 setattr(self, key, value)
 
     def base_state(self):

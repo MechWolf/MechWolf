@@ -8,9 +8,9 @@ from contextlib import ExitStack
 from copy import deepcopy
 from datetime import datetime, timedelta
 from math import isclose
+from pathlib import Path
 from uuid import uuid1
 from warnings import warn
-from pathlib import Path
 
 import networkx as nx
 import requests
@@ -18,10 +18,10 @@ import urllib3
 import yaml
 from click import confirm, prompt
 from colorama import Back, Fore, Style, init
-from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
+from IPython.display import HTML, Code, Markdown
 from jinja2 import Environment, PackageLoader, select_autoescape
 from mistune import markdown
-from IPython.display import HTML, Markdown, Code
+from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 
 from . import ureg
 from .components import *
@@ -317,7 +317,7 @@ class Protocol(object):
     _id_counter = 0
 
     def __init__(self, apparatus, duration=None, name=None):
-        assert type(apparatus) == Apparatus
+        assert isinstance(apparatus, Apparatus)
         if apparatus.validate(): # ensure apparatus is valid
             self.apparatus = apparatus
         self.procedures = []
@@ -350,7 +350,7 @@ class Protocol(object):
                 kwargs["setting"] = component.mapping[kwargs["setting"]]
             except KeyError:
                 # allow direct specification of valve settings
-                if type(kwargs["setting"]) == int:
+                if isinstance(kwargs["setting"], int):
                     pass
 
         # don't let users give empty procedures
@@ -363,11 +363,11 @@ class Protocol(object):
             if not hasattr(component, kwarg):
                 raise ValueError(Fore.RED + f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}.")
 
-            if type(component.__dict__[kwarg]) == ureg.Quantity and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
+            if isinstance(component.__dict__[kwarg], ureg.Quantity) and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
                 raise ValueError(
                     Fore.RED + f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}.")
 
-            elif type(component.__dict__[kwarg]) != type(value) and type(component.__dict__[kwarg]) != ureg.Quantity:
+            elif not isinstance(component.__dict__[kwarg], type(value)) and not isinstance(component.__dict__[kwarg], ureg.Quantity):
                 raise ValueError(Fore.RED + f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}")
 
         if stop is not None and duration is not None:
@@ -391,7 +391,7 @@ class Protocol(object):
         elif stop is not None:
             if isinstance(stop, timedelta):
                 stop = str(stop.total_seconds()) + " seconds"
-            if type(stop) == str:
+            if isinstance(stop, str):
                 stop = ureg.parse_expression(stop)
 
         # a little magic for temperature controllers
@@ -458,8 +458,8 @@ class Protocol(object):
 
         # infer the duration of the protocol
         if self.duration == "auto":
-            self.duration = sorted([x["stop"] for x in self.procedures], key=lambda z: z.to_base_units().magnitude if type(z) == ureg.Quantity else 0)
-            if all([x == None for x in self.duration]):
+            self.duration = sorted([x["stop"] for x in self.procedures], key=lambda z: z.to_base_units().magnitude if isinstance(z, ureg.Quantity) else 0)
+            if all([x is None for x in self.duration]):
                 raise RuntimeError(Fore.RED + "Unable to automatically infer duration of protocol. Must define stop for at least one procedure to use duration=\"auto\".")
             self.duration = self.duration[-1]
 
@@ -591,7 +591,7 @@ class Protocol(object):
             return Code(compiled_yaml, language="yaml")
         except NameError:
             pass
-        return compiled_yaml;
+        return compiled_yaml
 
     def visualize(self, browser=True):
         '''Generates a Gantt plot visualization of the protocol.
@@ -658,5 +658,5 @@ class Protocol(object):
                 raise RuntimeError(Fore.RED + "Protocol rejected because hub is currently executing a different protocol.")
             elif response != "protocol rejected: invalid signature":
                 print(f"Protocol id: {response}")
-        except:
+        except BaseException:
             pass

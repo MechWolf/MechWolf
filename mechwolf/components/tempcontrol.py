@@ -1,7 +1,9 @@
 from colorama import Fore
+
+from . import ureg
 from .component import ActiveComponent
 from .tube import Tube
-from . import ureg
+
 
 class TempControl(ActiveComponent):
     """A generic temperature controller.

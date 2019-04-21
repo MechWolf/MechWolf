@@ -1,5 +1,6 @@
 from .component import Component
 
+
 class Mixer(Component):
     """A generic mixer.
 

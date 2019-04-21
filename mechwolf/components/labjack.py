@@ -1,5 +1,7 @@
-from .sensor import Sensor
 import u3
+
+from .sensor import Sensor
+
 
 class LabJack(Sensor):
     """
@@ -8,7 +10,7 @@ class LabJack(Sensor):
     See labjack.com for more details on their python API.
     """
 
-    def __init__(self,name):
+    def __init__(self, name):
         super().__init__(name=name)
 
     def __enter__(self):
@@ -21,4 +23,4 @@ class LabJack(Sensor):
         self.device.close()
 
     def read(self):
-        return self.device.getAIN(0,1)
+        return self.device.getAIN(0, 1)

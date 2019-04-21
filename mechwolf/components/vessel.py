@@ -3,8 +3,8 @@ import re
 from warnings import warn
 
 from cirpy import Molecule
-from terminaltables import SingleTable
 from colorama import Fore, init
+from terminaltables import SingleTable
 
 from .component import Component
 
@@ -34,7 +34,7 @@ class Vessel(Component):
                 M = Molecule(hit)
                 try: # in case the resolver is down, don't break
                     description = description.replace(f"`{hit}`", f"{hit} ({M.iupac_name})" if hit.lower() != M.iupac_name.lower() else hit)
-                except:
+                except BaseException:
                     warn(Fore.YELLOW + f"Failed to resolve {hit}. Continuing without resolving.")
                     continue
                 # show a warning table

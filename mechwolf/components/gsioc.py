@@ -5,6 +5,7 @@ except ImportError:
 
 from time import sleep
 
+
 class GsiocComponent:
     def __init__(self, serial_port=None, unit_id=0):
         self.ser = serial.Serial(serial_port,

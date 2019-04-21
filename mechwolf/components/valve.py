@@ -1,5 +1,6 @@
 from .component import ActiveComponent
 
+
 class Valve(ActiveComponent):
     """A generic valve.
 

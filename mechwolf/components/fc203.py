@@ -1,7 +1,8 @@
+from time import sleep
+
 from .component import ActiveComponent
 from .gsioc import GsiocComponent
 
-from time import sleep
 
 class GilsonFC203(ActiveComponent):
     '''Controls a Gilson FC203B Fraction collector '''

@@ -1,6 +1,7 @@
 from colorama import Fore, init
-from .components import ActiveComponent, Sensor
+
 from . import ureg
+from .components import ActiveComponent, Sensor
 
 init(autoreset=True)
 
@@ -16,7 +17,7 @@ def validate_component(component, warnings=True):
     '''
 
     # ensure is instance, not class
-    if type(component) == type:
+    if isinstance(component, type):
         if warnings:
             print(Fore.RED + f"{component} is a class, not an instance of one.")
         return False
@@ -46,7 +47,7 @@ def validate_component(component, warnings=True):
         return False
 
     # base_state method must return a dict
-    elif type(component.base_state()) != dict:
+    elif not isinstance(component.base_state(), dict):
         if warnings:
             print(Fore.RED + "base_state method does not return a dict")
         return False
@@ -57,17 +58,17 @@ def validate_component(component, warnings=True):
             if warnings:
                 print(Fore.RED + f"Invalid attribute {k} for {component}. Valid attributes are {component.__dict__}")
             return False
-        if type(component.__dict__[k]) == ureg.Quantity and ureg.parse_expression(v).dimensionality != component.__dict__[k].dimensionality:
+        if isinstance(component.__dict__[k], ureg.Quantity) and ureg.parse_expression(v).dimensionality != component.__dict__[k].dimensionality:
             if warnings:
                 print(Fore.RED + f"Invalid dimensionality {ureg.parse_expression(v).dimensionality} for {k} for {component}.")
             return False
-        elif type(component.__dict__[k]) != ureg.Quantity and type(component.__dict__[k]) != type(v):
+        elif not isinstance(component.__dict__[k], ureg.Quantity) and not isinstance(component.__dict__[k], type(v)):
             if warnings:
                 print(Fore.RED + f"Bad type matching for {k} in base_state dict. Should be {type(component.__dict__[k])} but is {type(v)}.")
             return False
 
     # ensure type of config is valid
-    if type(component.config()) != dict:
+    if not isinstance(component.config(), dict):
         if warnings:
             print(Fore.RED + f"Must return dictionary for config method for {component}.")
         return False
@@ -81,7 +82,7 @@ def validate_component(component, warnings=True):
             return False
 
         # check that the configuration tuple is valid
-        if type(v) not in [tuple, list] or len(v) != 2 or type(v[0]) != type:
+        if type(v) not in [tuple, list] or len(v) != 2 or not isinstance(v[0], type):
             if warnings:
                 print(Fore.RED + f"Invalid configuration for {k} in {component}. Should be (type, default).")
             return False
@@ -98,7 +99,7 @@ def validate_component(component, warnings=True):
             if warnings:
                 print(Fore.RED + "Sensors must have a read method that returns the sensor's data")
             return False
-        except:
+        except BaseException:
             pass
 
     return True

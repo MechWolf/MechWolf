@@ -1,6 +1,5 @@
 import mechwolf as mw
 
-
 # create components
 a = mw.Component(name="a")
 b = mw.Component(name="b")

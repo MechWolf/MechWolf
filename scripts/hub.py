@@ -1,24 +1,25 @@
 import json
-from time import time, sleep
-from uuid import uuid1
-import shelve
 import logging
+import shelve
+import webbrowser
+from pathlib import Path
+from time import sleep, time
+from uuid import uuid1
 
-from flask import Flask, render_template, jsonify, request, abort
 import schedule
 import yaml
-from pathlib import Path
+from flask import Flask, abort, jsonify, render_template, request
 from flask_socketio import SocketIO, emit
-import webbrowser
+
 import mechwolf as mw
 
 logging.getLogger("schedule").setLevel(logging.WARNING)
 logging.getLogger("werkzeug").setLevel(logging.INFO)
 
 app = Flask(__name__, static_folder="vis/",
-                      template_folder="vis/",
-                      static_url_path="")
- # create flask app
+            template_folder="vis/",
+            static_url_path="")
+# create flask app
 socketio = SocketIO(app)
 
 # how long to wait for check ins before aborting a protcol
@@ -51,31 +52,31 @@ def log_procedure():
             db["logs"] = logs
         else:
             db["logs"] = [submission]
-        socketio.emit(f'log/{experiment_id}',submission)
+        socketio.emit(f'log/{experiment_id}', submission)
         return "logged"
 
 @app.route("/log_data", methods=["POST", "GET"])
 def log_data():
-        logging.info(f"logging data {request.json}")
-        d = json.loads(request.json)
-        datapoint = d["datapoint"]
-        timestamp = d["timestamp"]
-        device_id = d["device_id"]
-        experiment_id = d["experiment_id"]
+    logging.info(f"logging data {request.json}")
+    d = json.loads(request.json)
+    datapoint = d["datapoint"]
+    timestamp = d["timestamp"]
+    device_id = d["device_id"]
+    experiment_id = d["experiment_id"]
 
-        to_log = {"data": datapoint,
-                  "timestamp": timestamp,
-                  "device_id": device_id}
+    to_log = {"data": datapoint,
+              "timestamp": timestamp,
+              "device_id": device_id}
 
-        with shelve.open(f'experiments/{experiment_id}') as db:
-            if "data" in db:
-                data = db["data"]
-                data.append(to_log)
-                db["data"] = data
-            else:
-                db["data"] = [to_log]
-            socketio.emit(f'data/{experiment_id}', to_log)
-            return "logged"
+    with shelve.open(f'experiments/{experiment_id}') as db:
+        if "data" in db:
+            data = db["data"]
+            data.append(to_log)
+            db["data"] = data
+        else:
+            db["data"] = [to_log]
+        socketio.emit(f'data/{experiment_id}', to_log)
+        return "logged"
 
 @app.route("/log_start", methods=["POST", "GET"])
 def log_start():
@@ -106,9 +107,9 @@ def data(expt_id):
             resp = dict(db)
             return(jsonify(resp))
     else:
-        return(jsonify({'protocol_id':None}))
+        return(jsonify({'protocol_id': None}))
 
 @app.route("/test/<msg>")
 def test(msg):
-    socketio.emit('test',msg)
+    socketio.emit('test', msg)
     return msg

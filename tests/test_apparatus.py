@@ -1,5 +1,6 @@
-import mechwolf as mw
 import pytest
+
+import mechwolf as mw
 
 a, b, c, d = [mw.Component() for i in range(4)]
 t = mw.Tube(length="1 foot", ID="1 in", OD="2 in", material="PVC")

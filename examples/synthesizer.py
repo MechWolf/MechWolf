@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 import mechwolf as mw
 
@@ -32,9 +32,9 @@ P.add(heater, temp="60 degC")
 start_time = timedelta(seconds=0)
 
 for amino_acid in "CACA":
-	P.add(amino_acid_mapping[amino_acid], start=start_time, duration="15 seconds", rate="15 ml/min")
-	P.add(valve, start=start_time, duration="15 seconds", setting=amino_acid_mapping[amino_acid])
-	start_time += timedelta(seconds=15)
+    P.add(amino_acid_mapping[amino_acid], start=start_time, duration="15 seconds", rate="15 ml/min")
+    P.add(valve, start=start_time, duration="15 seconds", setting=amino_acid_mapping[amino_acid])
+    start_time += timedelta(seconds=15)
 
 # P.execute("http://127.0.0.1:5000/submit_protcol")
 print(P.procedures)
