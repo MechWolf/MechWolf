@@ -44,10 +44,11 @@ setup(
         "jinja2",
         "urllib3",
         "bokeh",
-        "mistune"],
+        "mistune",
+        "ipython",
+        "jupyter"],
     extras_require={
-        'vis': ["graphviz", "numpy"],
-        'doc': ["sphinxcontrib-programoutput", "sphinx", "sphinxcontrib-httpdomain"]
+        'vis': ["graphviz", "numpy"]
     },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )

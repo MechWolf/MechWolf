@@ -21,6 +21,7 @@ from colorama import Back, Fore, Style, init
 from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 from jinja2 import Environment, PackageLoader, select_autoescape
 from mistune import markdown
+from IPython.display import HTML, Markdown, Code
 
 from . import ureg
 from .components import *
@@ -171,6 +172,9 @@ class Apparatus(object):
 
         Args:
             style (str, optional): Either `gfm`` for GitHub-flavored Markdown or ``ascii``. If equal to ``gfm`` and in a Jupyter notebook, returns a rendered HTML version of the GFM table.
+
+        Returns:
+            IPython.display.HTML: In Jupyter, a nice HTML table. Otherwise, the output is printed to the terminal.
         '''
 
         if style == "ascii":
@@ -216,11 +220,10 @@ class Apparatus(object):
         tubing_table.inner_footing_row_border = "True"
 
         try:
-            get_ipython()
-            from IPython.display import HTML
+            get_ipython
             if style == "gfm":
                 html = f"<h3>{components_table.title}</h3>{markdown(components_table.table)}<h3>{tubing_table.title}</h3>{markdown(tubing_table.table)}"
-                return HTML(data=html)
+                return HTML(html)
         except NameError:
             pass
         print("Components")
@@ -267,7 +270,7 @@ class Apparatus(object):
         '''Generates a human-readable description of the apparatus.
 
         Returns:
-            str: A description of apparatus.
+            str: A description of apparatus. When in Jupyter, this string is wrapped in a :class:`IPython.display.Markdown` object for nicer display.
 
         Raises:
             RuntimeError: When a component cannot be described.
@@ -287,6 +290,11 @@ class Apparatus(object):
         for element in self.network:
             from_component, to_component, tube = _description(element[0], capitalize=True), _description(element[1]), element[2]
             result += f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {element[2].length}, ID {element[2].ID}, OD {element[2].OD}). "
+        try:
+            get_ipython
+            return Markdown(result)
+        except NameError:
+            pass
         return result
 
 class Protocol(object):
@@ -534,7 +542,7 @@ class Protocol(object):
             warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
 
         Returns:
-            str: JSON of the compiled protocol.
+            str: JSON of the compiled protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
 
         Raises:
             Same as :meth:`Protocol.compile`.
@@ -544,7 +552,14 @@ class Protocol(object):
             for procedure in item[1]:
                 procedure["time"] = procedure["time"].to_timedelta().total_seconds()
         compiled = {k.name: v for (k, v) in compiled.items()}
-        return json.dumps(compiled, sort_keys=True)
+        compiled_json = json.dumps(compiled, sort_keys=True, indent=4)
+
+        try:
+            get_ipython
+            return Code(compiled_json, language="json")
+        except NameError:
+            pass
+        return compiled_json
 
     def dict(self, warnings=True):
         compiled = deepcopy(self.compile(warnings=warnings))
@@ -564,12 +579,19 @@ class Protocol(object):
             warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
 
         Returns:
-            str: YAML of the compiled protocol.
+            str: YAML of the compiled protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
 
         Raises:
             Same as :meth:`Protocol.compile`.
         '''
-        return yaml.safe_dump(json.loads(self.json(warnings=warnings)))
+        compiled_yaml = yaml.safe_dump(json.loads(str(self.json(warnings=warnings))))
+
+        try:
+            get_ipython
+            return Code(compiled_yaml, language="yaml")
+        except NameError:
+            pass
+        return compiled_yaml;
 
     def visualize(self, browser=True):
         '''Generates a Gantt plot visualization of the protocol.
@@ -578,7 +600,7 @@ class Protocol(object):
             browser (bool, optional): Whether to open in the browser. Defaults to true.
 
         Returns:
-            str: The html of the visualization.
+            str: The html of the visualization. When in Jupyter, this string is wrapped in a :class:`IPython.display.HTML` object for interactive display.
 
         Raises:
             ImportError: When the visualization package is not installed.
@@ -592,8 +614,7 @@ class Protocol(object):
         # show it in Jupyter, if possible
         try:
             get_ipython()
-            from IPython.display import HTML
-            return HTML(data=visualization)
+            return HTML(visualization)
         except NameError:
             pass
 

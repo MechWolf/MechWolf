@@ -180,6 +180,8 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None), 'itsdangerous': ('https://pythonhosted.org/itsdangerous', None)}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
+                       'itsdangerous': ('https://pythonhosted.org/itsdangerous', None),
+                       'IPython': ('https://ipython.readthedocs.io/en/stable', None)}
 autodoc_member_order = 'bysource'
 add_module_names = False
