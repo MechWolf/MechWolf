@@ -17,6 +17,11 @@ repos:
     hooks:
     - id: autopep8
       exclude: .*/__init__.py
+      args:
+        - -a
+        - -a
+        - -i
+        - -r
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.1.0  # Use the ref you want to point at
     hooks:
