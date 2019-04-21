@@ -1,3 +1,4 @@
+import logging
 import re
 from warnings import warn
 
@@ -8,6 +9,9 @@ from colorama import Fore, init
 from .component import Component
 
 init(autoreset=True)
+
+# ignore annoying CIRpy warnings
+logging.getLogger("cirpy").setLevel(logging.WARNING)
 
 class Vessel(Component):
     """A generic vessel.
