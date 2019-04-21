@@ -1,5 +1,6 @@
-from setuptools import setup, find_packages
 from os import path
+
+from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 
@@ -48,7 +49,8 @@ setup(
         "ipython",
         "jupyter"],
     extras_require={
-        'vis': ["graphviz", "numpy"]
+        'vis': ["graphviz", "numpy"],
+        "dev": ["pre-commit"]
     },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )
