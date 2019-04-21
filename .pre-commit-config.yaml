@@ -11,7 +11,7 @@ repos:
     rev: v4.3.17
     hooks:
     -   id: isort
-        exclude: mechwolf/__init__.py
+        exclude: .*/__init__.py
 -   repo: https://github.com/ambv/black
     rev: stable
     hooks:
