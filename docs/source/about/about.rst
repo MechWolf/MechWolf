@@ -1,5 +1,5 @@
-About
------
+About MechWolf
+--------------
 
 .. toctree::
    :maxdepth: 2
