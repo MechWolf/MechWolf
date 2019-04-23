@@ -25,7 +25,7 @@ setup(
         "Topic :: Scientific/Engineering :: Chemistry",
         'Programming Language :: Python :: 3.6',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     packages=find_packages(),
     tests_require=["pytest"],
     setup_requires=['pytest-runner'],
@@ -50,7 +50,7 @@ setup(
         "jupyter"],
     extras_require={
         'vis': ["graphviz", "numpy"],
-        "dev": ["pre-commit"]
+        "dev": ["pre-commit", "isort", "pytest", "flake8"]
     },
     entry_points={'console_scripts': ['mechwolf=cli:cli']},
 )
