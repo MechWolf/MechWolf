@@ -1,8 +1,13 @@
 CLI Reference
 -------------
 
-.. toctree::
-   :maxdepth: 2
+Mechwolf CLI
+============
 
-   mechwolf
-   convert
+.. command-output:: mechwolf --help
+
+
+Database Serialization CLI
+==========================
+
+.. command-output:: mechwolf convert --help
