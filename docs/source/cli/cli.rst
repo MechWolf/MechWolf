@@ -5,6 +5,4 @@ CLI Reference
    :maxdepth: 2
 
    mechwolf
-   client
-   hub
    convert
