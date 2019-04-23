@@ -2,30 +2,27 @@ import json
 import logging
 import sys
 import tempfile
-import time
 import webbrowser
-from contextlib import ExitStack
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import timedelta
 from math import isclose
-from pathlib import Path
-from uuid import uuid1
 from warnings import warn
 
 import networkx as nx
-import requests
+# import requests
 import urllib3
 import yaml
-from click import confirm, prompt
-from colorama import Back, Fore, Style, init
+# from click import confirm
+from colorama import Fore, init
 from IPython.display import HTML, Code, Markdown
 from jinja2 import Environment, PackageLoader, select_autoescape
 from mistune import markdown
 from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 
 from . import ureg
-from .components import *
-from .validate_component import validate_component
+from .components import ActiveComponent, Component, TempControl, Tube, Valve, Vessel
+
+# from .validate_component import validate_component
 
 # If visualization extras are available, import them
 try:
@@ -40,9 +37,7 @@ init(autoreset=True)
 # ignore warning when submitting to self signed certificate
 urllib3.disable_warnings()
 
-logging.basicConfig(level=3)
-
-server = "http://localhost:5000"
+logging.basicConfig(level=20)
 
 class Apparatus(object):
     '''A unique network of components.
@@ -289,7 +284,7 @@ class Apparatus(object):
         # iterate over the network and describe the connections
         for element in self.network:
             from_component, to_component, tube = _description(element[0], capitalize=True), _description(element[1]), element[2]
-            result += f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {element[2].length}, ID {element[2].ID}, OD {element[2].OD}). "
+            result += f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {tube.length}, ID {element[2].ID}, OD {element[2].OD}). "
         try:
             get_ipython
             return Markdown(result)
@@ -398,7 +393,7 @@ class Protocol(object):
         if issubclass(component.__class__, TempControl):
             if kwargs.get("temp") is not None and kwargs.get("active") is None:
                 kwargs["active"] = True
-            elif kwargs.get("active") == False and kwargs.get("temp") is None:
+            elif not kwargs.get("active") and kwargs.get("temp") is None:
                 kwargs["temp"] = "0 degC"
             elif kwargs["active"] and kwargs.get("temp") is None:
                 raise RuntimeError(Fore.RED + f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add().")
@@ -645,18 +640,19 @@ class Protocol(object):
         '''
 
         # Ensure that execution isn't happening on invalid components
-        if not all([validate_component(x["component"]) for x in self.procedures]):
-            raise RuntimeError(Fore.RED + f"Attempting to execute protocol on invalid component {component}. Aborted.")
-
-        if confirmation:
-            confirm("Are you sure you want to execute this procedure?", abort=True, default=True)
-
-        # subit the protocol to the hub
-        try:
-            response = requests.post(f"{address}/submit_protocol", data=dict(protocol=self.json()), verify=False).text
-            if response == "protocol rejected: different protocol being executed":
-                raise RuntimeError(Fore.RED + "Protocol rejected because hub is currently executing a different protocol.")
-            elif response != "protocol rejected: invalid signature":
-                print(f"Protocol id: {response}")
-        except BaseException:
-            pass
+        # if not all([validate_component(x["component"]) for x in self.procedures]):
+        #     raise RuntimeError(Fore.RED + f"Attempting to execute protocol on invalid component {x['component']}. Aborted.")
+        #
+        # if confirmation:
+        #     confirm("Are you sure you want to execute this procedure?", abort=True, default=True)
+        #
+        # # subit the protocol to the hub
+        # try:
+        #     response = requests.post(f"{address}/submit_protocol", data=dict(protocol=self.json()), verify=False).text
+        #     if response == "protocol rejected: different protocol being executed":
+        #         raise RuntimeError(Fore.RED + "Protocol rejected because hub is currently executing a different protocol.")
+        #     elif response != "protocol rejected: invalid signature":
+        #         print(f"Protocol id: {response}")
+        # except BaseException:
+        #     pass
+        warn("This functions has been temporarily deprecated", DeprecationWarning)
