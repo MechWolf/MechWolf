@@ -52,5 +52,5 @@ setup(
         'vis': ["graphviz", "numpy"],
         "dev": ["pre-commit", "isort", "pytest", "flake8"]
     },
-    entry_points={'console_scripts': ['mechwolf=cli:cli']},
+    entry_points={'console_scripts': ['mechwolf=mechwolf.cli:cli']},
 )
