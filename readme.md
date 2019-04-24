@@ -9,4 +9,5 @@
 <a href="https://github.com/Benjamin-Lee/MechWolf/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square" alt="GPLv3 license" /></a>
 <img src="https://img.shields.io/travis/Benjamin-Lee/MechWolf.svg?style=flat-square" alt="Python version" /></p>
 </div>
-> Continuous flow process description, analysis, and automation
+
+>Continuous flow process description, analysis, and automation
