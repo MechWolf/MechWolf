@@ -1,5 +1,3 @@
-from time import sleep
-
 from .component import ActiveComponent
 from .gsioc import GsiocComponent
 

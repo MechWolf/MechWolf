@@ -1,5 +1,4 @@
-import u3
-
+from . import term
 from .sensor import Sensor
 
 
@@ -12,9 +11,13 @@ class LabJack(Sensor):
 
     def __init__(self, name):
         super().__init__(name=name)
+        try:
+            import u3 # noqa
+        except ImportError:
+            raise ImportError(term.red("Unable to create LabJack. No u3 module installed. Try getting it here: https://github.com/labjack/LabJackPython/blob/master/src/u3.py."))
 
     def __enter__(self):
-        self.device = u3.U3()
+        self.device = u3.U3() # noqa
         self.device.configIO(FIOAnalog=15) #Configure FIO 0-3 as analog in
         return self
 
