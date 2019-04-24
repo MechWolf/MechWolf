@@ -1,5 +1,3 @@
-from colorama import Fore
-
 from . import ureg
 
 

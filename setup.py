@@ -34,7 +34,7 @@ setup(
         "pint",
         "networkx",
         "CIRpy",
-        "colorama",
+        "blessings",
         "pyyaml",
         "requests",
         "pick",

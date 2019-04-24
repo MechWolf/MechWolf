@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import time
 from collections import namedtuple
@@ -8,7 +7,8 @@ from uuid import uuid1
 
 from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
-from colorama import Back, Fore, Style, init
+
+from .mechwolf import term
 
 server = "http://localhost:5000"
 
@@ -92,7 +92,7 @@ def jupyter_execute(protocol, **kwargs):
     #Extract the protocol from the Protocol object (or protocol json)
     apparatus = protocol.apparatus
     experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
-    print(f'Experiment {experiment_id} in progress')
+    print(term.green_bold(f'Experiment {experiment_id} in progress'))
     start_time = time.time()
     experiment = Experiment(experiment_id,
                             protocol,
@@ -101,7 +101,7 @@ def jupyter_execute(protocol, **kwargs):
                             data={},
                             executed_procedures=[])
 
-    tasks = asyncio.ensure_future(main(protocol, apparatus, start_time, experiment_id, experiment))
+    asyncio.ensure_future(main(protocol, apparatus, start_time, experiment_id, experiment))
     return experiment
 
 def execute(protocol, delay=5, **kwargs):
@@ -167,8 +167,6 @@ async def main(protocol, apparatus, start_time, experiment_id, experiment):
         if component not in apparatus.components:
             raise DeviceNotFound(f'Component {component} not in apparatus.')
 
-    protocol_json = protocol.json()
-
     tasks = []
 
     # Run protocol
@@ -193,7 +191,7 @@ async def create_procedure(procedure, component, experiment_id, experiment, end_
 
     execution_time = procedure["time"].to("seconds").magnitude
     await asyncio.sleep(execution_time)
-    logging.info(Fore.GREEN + f"Executing: {procedure} on {component} at {time.time()}" + Style.RESET_ALL)
+    logging.info(term.green(f"Executing: {procedure} on {component} at {time.time()}"))
     component.update_from_params(procedure["params"])
     procedure_record = component.update()
     procedure_record['type'] = 'executed_procedure'

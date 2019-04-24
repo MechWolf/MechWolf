@@ -1,6 +1,4 @@
-from colorama import Fore
-
-from . import ureg
+from . import term, ureg
 from .component import ActiveComponent
 from .tube import Tube
 
@@ -22,7 +20,7 @@ class TempControl(ActiveComponent):
     def __init__(self, name, internal_tubing):
         super().__init__(name=name)
         if not isinstance(internal_tubing, Tube):
-            raise TypeError(Fore.RED + "TempControl must have internal_tubing of type Tube.")
+            raise TypeError(term.red("TempControl must have internal_tubing of type Tube."))
         self.temp = ureg.parse_expression("0 degC")
         self.active = False
 

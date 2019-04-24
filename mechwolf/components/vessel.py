@@ -3,12 +3,10 @@ import re
 from warnings import warn
 
 from cirpy import Molecule
-from colorama import Fore, init
 from terminaltables import SingleTable
 
+from . import term
 from .component import Component
-
-init(autoreset=True)
 
 # ignore annoying CIRpy warnings
 logging.getLogger("cirpy").setLevel(logging.WARNING)
@@ -21,7 +19,7 @@ class Vessel(Component):
         name (str): The name of the vessel, if different from the description.
         resolve (bool, optional): Whether to resolve the names of chemicals surrounded by :literal:`\`` s into their IUPAC names. Defaults to True.
         warnings (bool, optional): Whether to show the resolved chemicals for manual confirmation. Defaults to False.
-    """
+    """ # noqa
 
     def __init__(self, description, resolve=True, warnings=False, name=None):
 
@@ -35,7 +33,7 @@ class Vessel(Component):
                 try: # in case the resolver is down, don't break
                     description = description.replace(f"`{hit}`", f"{hit} ({M.iupac_name})" if hit.lower() != M.iupac_name.lower() else hit)
                 except BaseException:
-                    warn(Fore.YELLOW + f"Failed to resolve {hit}. Continuing without resolving.")
+                    warn(term.yellow(f"Failed to resolve {hit}. Continuing without resolving."))
                     continue
                 # show a warning table
                 if warnings:
