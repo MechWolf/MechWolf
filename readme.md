@@ -1,4 +1,6 @@
-![MechWolf Wordmark](logo/wordmark3x.png)
+<p align ="center">
+<img src='https://github.com/Benjamin-Lee/MechWolf/raw/master/logo/wordmark3x.png' height="150">
+</p>
 
 ---
 
