@@ -71,11 +71,11 @@ is well worth the read for getting a feel for virtualenv.
 
 To install virtualenv use the following command in your terminal::
 
-    $ pip install virtualenv
+    $ pip3 install virtualenv
 
 Then in the directory you want to use, create a virtualenv named mechwolf-env::
 
-    $ virtualenv -p python3.6 mechwolf-env
+    $ virtualenv -p python3.7 mechwolf-env
 
 And then activate the environment with::
 
