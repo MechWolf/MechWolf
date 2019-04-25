@@ -17,7 +17,7 @@ It was developed as a collaboration between computer scientists, chemists, and c
 Features include:
 
 - Natural language description, analysis, and visualization of continuous flow networks
-- Automated execution of protocols via the Internet of Things
+- Automated execution of protocols
 - Full user extensibility
 - Smart default settings, designed by scientists for scientists
 - Extensive checking to prevent potentially costly and dangerous errors before runtime
@@ -32,7 +32,7 @@ It's as easy as:
 $ pip3 install mechwolf
 ```
 
-Or, to get the latest development branch:
+Or, to get the latest (but not necessarily stable) development branch:
 
 ```bash
 $ pip3 install git+https://github.com/Benjamin-Lee/MechWolf.git
@@ -51,8 +51,8 @@ First, we create an `Apparatus` object:
 import mechwolf as mw
 
 # define the vessels
-aminophenol = mw.Vessel(description="15 mL `4-aminophenol`", name="aminophenol")
-acetic_anhydride = mw.Vessel("15 mL `acetic anhydride`", name="acetic anhydride")
+aminophenol = mw.Vessel(description="15 mL 4-aminophenol", name="aminophenol")
+acetic_anhydride = mw.Vessel("15 mL acetic anhydride", name="acetic anhydride")
 acetaminophen = mw.Vessel("`acetaminophen`", name="acetaminophen")
 
 # define the pumps
@@ -90,6 +90,7 @@ P.execute()
 ```
 
 That's it! You can do this and a whole lot more with MechWolf.
+To learn more, take a look at the [docs](example.com).
 
 ## Documentation
 
