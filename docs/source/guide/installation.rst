@@ -11,7 +11,7 @@ MechWolf is available from `PyPI <https://pypi.org>`_, the Python Package Index.
 Installation is a breeze. In your :ref:`virtualenv <virtualenv_instructions>`,
 use the ``pip3`` command to install MechWolf::
 
-    $ sudo pip3 install mechwolf[vis]
+    $ pip3 install mechwolf[vis]
 
 If you're just getting started, this is the installation we recommend.
 
