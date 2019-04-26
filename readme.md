@@ -53,7 +53,7 @@ import mechwolf as mw
 # define the vessels
 aminophenol = mw.Vessel(description="15 mL 4-aminophenol", name="aminophenol")
 acetic_anhydride = mw.Vessel("15 mL acetic anhydride", name="acetic anhydride")
-acetaminophen = mw.Vessel("`acetaminophen`", name="acetaminophen")
+acetaminophen = mw.Vessel("acetaminophen", name="acetaminophen")
 
 # define the pumps
 pump_1 = mw.Pump(name="pump_1")
