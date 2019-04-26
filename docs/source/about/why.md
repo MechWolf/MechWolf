@@ -18,10 +18,7 @@ Among the biggest draws of continuous flow processes is the enhanced degree of
 safety provided by doing reactions in small scale. However, these reactions can
 still be dangerous. Every aspect of MechWolf was designed to prevent accidents,
 from multiple methods of introspection to extensive error checking to thoughtful
-programming interfaces that reduce the likelihood of mistakes. Our entire IoT
-communication protocol is built to be rock solid. Should some components be
-unreachable, execution will be aborted before it even starts. Your EH&S
-department will thank you.
+programming interfaces that reduce the likelihood of mistakes.
 
 ## MechWolf takes the "pro" out of programming.
 
