@@ -1,5 +1,4 @@
 sphinxcontrib-programoutput
-sphinxcontrib-httpdomain
 nbsphinx
 ipykernel
 recommonmark

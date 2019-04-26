@@ -6,7 +6,7 @@ About MechWolf
 
    why
    faq
-   security
+   support
    data_integrity
    glossary
    license

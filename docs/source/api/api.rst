@@ -6,5 +6,3 @@ API Reference
 
    mechwolf
    mechwolf.components
-   hub
-   resolver

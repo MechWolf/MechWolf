@@ -105,7 +105,7 @@ Example: Making the Philosopher's Stone
 
 Let's say that you discovered the `philosopher's stone
 <https://en.wikipedia.org/wiki/Philosopher%27s_stone>`_, which is capable of
-turning anything into gold. But that's not good enough. You want an IoT
+turning anything into gold. But that's not good enough. You want an automated
 philosopher's stone with MechWolf!
 
 To make it work with MechWolf, we'll follow the process of creating a new
@@ -303,7 +303,7 @@ Sure enough, it works. This isn't just an example however, it's exactly how the
 Vici valve in the :mod:`~mechwolf.components.vici` module works!
 
 If you're stuck trying to make a new component, don't hesitate to reach out for
-:ref:`help <help>`.
+:doc:`help <support>`.
 
 A Note on Naming
 ----------------
