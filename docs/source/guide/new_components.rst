@@ -258,7 +258,7 @@ do need to tell MechWolf about what to ask for during configuration using the
 
 Now for the important parts: we need to make the object be able to make its
 real-world state match the object's state. We do that with the ``update``
-method. It needs to be an `async` function that yields data to be reported back
+method. It needs to be an ``async`` function that yields data to be reported back
 to the hub. This is the driver, the heart of the component that allows for
 execution:
 

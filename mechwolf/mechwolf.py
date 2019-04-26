@@ -10,7 +10,7 @@ from warnings import warn
 
 import networkx as nx
 # import requests
-import urllib3
+# import urllib3
 import yaml
 # from click import confirm
 from IPython.display import HTML, Code, Markdown
@@ -30,7 +30,7 @@ except ImportError:
     pass
 
 # ignore warning when submitting to self signed certificate
-urllib3.disable_warnings()
+# urllib3.disable_warnings()
 
 logging.basicConfig(level=20)
 

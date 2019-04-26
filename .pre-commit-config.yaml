@@ -17,13 +17,18 @@ repos:
     - id: autopep8
       exclude: .*/__init__.py
       args:
-        - -a
-        - -a
-        - -i
-        - -r
+        - -a # aggressive
+        - -a # even more aggressive
+        - -i # in place
+        - -r # recursive
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.1.0
     hooks:
       - id: flake8
         exclude: .*/__init__.py
       - id: check-merge-conflict
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.3.0  # Use the ref you want to point at
+    hooks:
+      - id: rst-backticks
+      - id: python-no-log-warn
