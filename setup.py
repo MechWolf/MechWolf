@@ -47,7 +47,15 @@ setup(
         "jupyter",
     ],
     extras_require={
-        "dev": ["pre-commit", "isort", "pytest", "flake8", "pipdeptree", "pipreqs"]
+        "dev": [
+            "pre-commit",
+            "isort",
+            "pytest",
+            "flake8",
+            "pipdeptree",
+            "pipreqs",
+            "black",
+        ]
     },
     entry_points={
         "console_scripts": ["mechwolf=mechwolf.cli:cli", "mw=mechwolf.cli:cli"]
