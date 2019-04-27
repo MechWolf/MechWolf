@@ -29,13 +29,13 @@ Features include:
 It's as easy as:
 
 ```bash
-$ pip3 install mechwolf
+$ pip install mechwolf
 ```
 
 Or, to get the latest (but not necessarily stable) development branch:
 
 ```bash
-$ pip3 install git+https://github.com/Benjamin-Lee/MechWolf.git
+$ pip install git+https://github.com/Benjamin-Lee/MechWolf.git
 ```
 
 ## What can MechWolf do?
