@@ -8,6 +8,8 @@
 <a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/DOI-to%20be%20determined-brightgreen.svg?style=flat-square" alt="DOI" /></a>
 <a href="https://github.com/Benjamin-Lee/MechWolf/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square" alt="GPLv3 license" /></a>
 <img src="https://img.shields.io/travis/Benjamin-Lee/MechWolf.svg?style=flat-square" alt="Python version" /></p>
+<a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square"></a>
+
 </div>
 
 >Continuous flow process description, analysis, and automation
