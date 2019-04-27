@@ -25,28 +25,29 @@ class Sensor(ActiveComponent):
         self.done = False
 
     def base_state(self):
-        '''Default to being inactive.'''
+        """Default to being inactive."""
         return dict(rate="0 Hz")
 
     def read(self):
-        '''Collect the data.'''
+        """Collect the data."""
         raise NotImplementedError
 
     def update(self):
-        return {"timestamp": time.time(),
-                "params": {"rate": str(self.rate.to_base_units())},
-                "device": self.name}
+        return {
+            "timestamp": time.time(),
+            "params": {"rate": str(self.rate.to_base_units())},
+            "device": self.name,
+        }
 
     async def monitor(self):
-        '''If data collection is off and needs to be turned on, turn it on.
-           If data collection is on and needs to be turned off, turn off and return data.'''
+        """If data collection is off and needs to be turned on, turn it on.
+           If data collection is on and needs to be turned off, turn off and return data."""
         while True:
             if self.done:
                 break
             frequency = self.rate.to_base_units().magnitude
             if frequency != 0:
-                yield {'datapoint': self.read(),
-                       'timestamp': time.time()}
+                yield {"datapoint": self.read(), "timestamp": time.time()}
                 await asyncio.sleep(1 / frequency)
             else:
                 await asyncio.sleep(frequency)
@@ -68,6 +69,6 @@ class DummySensor(Sensor):
         self.counter = 0
 
     def read(self):
-        '''Collect the data.'''
+        """Collect the data."""
         self.counter += 1
         return self.counter * sin(self.counter * 0.314)

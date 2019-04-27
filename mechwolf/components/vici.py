@@ -10,7 +10,7 @@ from .valve import Valve
 
 
 class ViciValve(Valve):
-    '''Controls a VICI Valco Valve'''
+    """Controls a VICI Valco Valve"""
 
     def __init__(self, name, mapping={}, serial_port=None):
         super().__init__(name=name, mapping=mapping)
@@ -18,12 +18,14 @@ class ViciValve(Valve):
 
     def __enter__(self):
         # create the serial connection
-        self.ser = serial.Serial(self.serial_port,
-                                 9600,
-                                 parity=serial.PARITY_NONE,
-                                 stopbits=1,
-                                 timeout=0.1,
-                                 write_timeout=0.1)
+        self.ser = serial.Serial(
+            self.serial_port,
+            9600,
+            parity=serial.PARITY_NONE,
+            stopbits=1,
+            timeout=0.1,
+            write_timeout=0.1,
+        )
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -31,7 +33,7 @@ class ViciValve(Valve):
         self.ser.close()
 
     def get_position(self):
-        '''Returns the position of the valve.
+        """Returns the position of the valve.
 
         Note:
             This method was used for introspection and debugging.
@@ -39,8 +41,8 @@ class ViciValve(Valve):
 
         Returns:
             int: The position of the valve.
-        '''
-        self.ser.write(b'CP\r')
+        """
+        self.ser.write(b"CP\r")
         response = self.ser.readline()
         if response:
             position = int(response[2:4])  # Response is in the form 'CPXX\r'
@@ -51,9 +53,11 @@ class ViciValve(Valve):
         return {"serial_port": (str, None)}
 
     def update(self):
-        message = f'GO{self.setting}\r'
-        self.ser.write(message.encode()) # send the message to the valve
-        #print(self.setting) # for introspection
-        return {"timestamp": time.time(),
-                "params": {"setting": self.setting},
-                "device": self.name}
+        message = f"GO{self.setting}\r"
+        self.ser.write(message.encode())  # send the message to the valve
+        # print(self.setting) # for introspection
+        return {
+            "timestamp": time.time(),
+            "params": {"setting": self.setting},
+            "device": self.name,
+        }

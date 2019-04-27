@@ -3,7 +3,7 @@ from .gsioc import GsiocComponent
 
 
 class GilsonFC203(ActiveComponent):
-    '''Controls a Gilson FC203B Fraction collector '''
+    """Controls a Gilson FC203B Fraction collector """
 
     def __init__(self, name, serial_port=None, unit_id=1):
         super().__init__(name=name)
@@ -17,30 +17,30 @@ class GilsonFC203(ActiveComponent):
         self.gsioc = GsiocComponent(serial_port=self.serial_port, unit_id=self.unit_id)
 
         self.lock()
-        self.gsioc.buffered_command('W1        MechWolf')
-        self.gsioc.buffered_command('W2        ')
+        self.gsioc.buffered_command("W1        MechWolf")
+        self.gsioc.buffered_command("W2        ")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.unlock()
 
     def lock(self):
-        self.gsioc.buffered_command('L0')
+        self.gsioc.buffered_command("L0")
 
     def unlock(self):
-        self.gsioc.buffered_command('L1')
+        self.gsioc.buffered_command("L1")
 
     def goto(self, position):
-        goto_command = 'T' + str(int(position)).zfill(3)
+        goto_command = "T" + str(int(position)).zfill(3)
         print(goto_command)
         self.gsioc.buffered_command(goto_command)
-        self.gsioc.buffered_command('W2       Collect ' + str(position))
+        self.gsioc.buffered_command("W2       Collect " + str(position))
 
     def drain(self):
-        drain_command = 'Y0000'
+        drain_command = "Y0000"
         print(drain_command)
         self.gsioc.buffered_command(drain_command)
-        self.gsioc.buffered_command('W2         Drain')
+        self.gsioc.buffered_command("W2         Drain")
 
     def config(self):
         return {"serial_port": (str, None), "unit_id": (int, 1)}
@@ -55,6 +55,6 @@ class GilsonFC203(ActiveComponent):
         yield {"position": self.position}
 
     def base_state(self):
-        '''We assume that the collector starts at the drain position.
-        '''
+        """We assume that the collector starts at the drain position.
+        """
         return dict(position=0)

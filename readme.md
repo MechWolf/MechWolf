@@ -45,7 +45,7 @@ Let's say you're trying to automate the production of [acetaminophen](https://en
 The reaction involves combining two chemicals, 4-aminophenol and acetic anhydride.
 The basic level of organization in MechWolf are individual components, such as the vessels and pumps.
 
-First, we create an `Apparatus` object:
+First, we create an **`Apparatus`** object:
 
 ```python
 import mechwolf as mw
@@ -78,7 +78,7 @@ A.add([pump_1, pump_2], mixer, tube) # connect pump_1 and pump_2 to mixer
 A.add(mixer, acetaminophen, tube) # connect mixer to vessel_3
 ```
 
-Then we define a protocol and run it:
+Then we define a **`Protocol`** and run it:
 
 ```python
 # create the Protocol object

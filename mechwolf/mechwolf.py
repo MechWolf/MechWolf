@@ -9,10 +9,7 @@ from math import isclose
 from warnings import warn
 
 import networkx as nx
-# import requests
-# import urllib3
 import yaml
-# from click import confirm
 from IPython.display import HTML, Code, Markdown
 from jinja2 import Environment, PackageLoader, select_autoescape
 from mistune import markdown
@@ -34,8 +31,9 @@ except ImportError:
 
 logging.basicConfig(level=20)
 
+
 class Apparatus(object):
-    '''A unique network of components.
+    """A unique network of components.
 
     Note:
         The same components may be organized into multiple distinct apparatuses, depending on the connections between them.
@@ -45,7 +43,8 @@ class Apparatus(object):
             of the apparatus.
         components (set): The components that make up the apparatus.
         name (str): The name of the apparatus. Defaults to "Apparatus_X" where *X* is apparatus count.
-    '''
+    """
+
     _id_counter = 0
 
     def __init__(self, name=None):
@@ -62,10 +61,10 @@ class Apparatus(object):
         return self.name
 
     def _add_single(self, from_component, to_component, tube):
-        '''Adds a single connection to the apparatus.
+        """Adds a single connection to the apparatus.
 
         For args, see add().
-        '''
+        """
         if not issubclass(from_component.__class__, Component):
             raise ValueError(term.red("From component must be a subclass of Component"))
         if not issubclass(to_component.__class__, Component):
@@ -77,7 +76,7 @@ class Apparatus(object):
         self.components.update([from_component, to_component])
 
     def add(self, from_component, to_component, tube):
-        '''Adds connections to the apparatus.
+        """Adds connections to the apparatus.
 
         Args:
             from_component (Component or Iterable): The :class:`~mechwolf.components.component.Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
@@ -86,7 +85,7 @@ class Apparatus(object):
 
         Raises:
             ValueError: When the connection being added is invalid.
-        '''
+        """
 
         try:
             iter(from_component)
@@ -96,8 +95,18 @@ class Apparatus(object):
         for component in from_component:
             self._add_single(component, to_component, tube)
 
-    def visualize(self, title=True, label_tubes=False, describe_vessels=False, node_attr={}, edge_attr={}, graph_attr=dict(splines="ortho"), file_format="pdf", filename=None):
-        '''Generates a visualization of the graph of an apparatus.
+    def visualize(
+        self,
+        title=True,
+        label_tubes=False,
+        describe_vessels=False,
+        node_attr={},
+        edge_attr={},
+        graph_attr=dict(splines="ortho"),
+        file_format="pdf",
+        filename=None,
+    ):
+        """Generates a visualization of the graph of an apparatus.
 
         For full list of acceptable Graphviz attributes for see `the
         graphviz.org docs <http://www.graphviz.org/doc/info/attrs.html>`_ and
@@ -120,31 +129,51 @@ class Apparatus(object):
 
         Raises:
             ImportError: When the visualization package is not installed.
-        '''
+        """
 
         if "graphviz" not in sys.modules:
-            raise ImportError(term.red("Visualization package not installed. Install mechwolf with the [vis] extra enabled. Try this command: pip install mechwolf[vis]"))
+            raise ImportError(
+                term.red(
+                    "Visualization package not installed. Install mechwolf with the [vis] extra enabled. Try this command: pip install mechwolf[vis]"
+                )
+            )
 
-        self.validate() # ensure apparatus is valid
-        f = Digraph(name=self.name,
-                    node_attr=node_attr,
-                    edge_attr=edge_attr,
-                    graph_attr=graph_attr,
-                    format=file_format,
-                    filename=filename)
+        self.validate()  # ensure apparatus is valid
+        f = Digraph(
+            name=self.name,
+            node_attr=node_attr,
+            edge_attr=edge_attr,
+            graph_attr=graph_attr,
+            format=file_format,
+            filename=filename,
+        )
 
         # go from left to right adding components and their tubing connections
-        f.attr(rankdir='LR')
+        f.attr(rankdir="LR")
 
         for component in sorted(list(self.components), key=lambda x: x.name):
-            f.attr('node', shape=component._visualization_shape)
-            f.node(component.description if isinstance(component, Vessel) and describe_vessels else component.name)
+            f.attr("node", shape=component._visualization_shape)
+            f.node(
+                component.description
+                if isinstance(component, Vessel) and describe_vessels
+                else component.name
+            )
 
         for x in self.network:
-            tube_label = f"Length {x[2].length}\nID {x[2].ID}\nOD {x[2].OD}" if label_tubes else ""
-            f.edge(x[0].description if isinstance(x[0], Vessel) and describe_vessels else x[0].name,
-                   x[1].description if isinstance(x[1], Vessel) and describe_vessels else x[1].name,
-                   label=tube_label)
+            tube_label = (
+                f"Length {x[2].length}\nID {x[2].ID}\nOD {x[2].OD}"
+                if label_tubes
+                else ""
+            )
+            f.edge(
+                x[0].description
+                if isinstance(x[0], Vessel) and describe_vessels
+                else x[0].name,
+                x[1].description
+                if isinstance(x[1], Vessel) and describe_vessels
+                else x[1].name,
+                label=tube_label,
+            )
 
         # show the title of the graph
         if title:
@@ -158,14 +187,14 @@ class Apparatus(object):
             f.view(cleanup=True)
 
     def summarize(self, style="gfm"):
-        '''Prints a summary table of the apparatus.
+        """Prints a summary table of the apparatus.
 
         Args:
             style (str, optional): Either `gfm`` for GitHub-flavored Markdown or ``ascii``. If equal to ``gfm`` and in a Jupyter notebook, returns a rendered HTML version of the GFM table.
 
         Returns:
             IPython.display.HTML: In Jupyter, a nice HTML table. Otherwise, the output is printed to the terminal.
-        '''
+        """
 
         if style == "ascii":
             tableStyle = AsciiTable
@@ -173,7 +202,7 @@ class Apparatus(object):
             tableStyle = GithubFlavoredMarkdownTable
 
         # create a components table
-        summary = [["Name", "Type"]] # header rows of components table
+        summary = [["Name", "Type"]]  # header rows of components table
         for component in list(self.components):
             if not isinstance(component, Vessel):
                 summary.append([component.name, component.__class__.__name__])
@@ -193,16 +222,40 @@ class Apparatus(object):
             total_volume += tube.volume
 
         # summarize the tubing
-        summary = [["From", "To", "Length", "Inner Diameter", "Outer Diameter", "Volume", "Material"]] # header row
+        summary = [
+            [
+                "From",
+                "To",
+                "Length",
+                "Inner Diameter",
+                "Outer Diameter",
+                "Volume",
+                "Material",
+            ]
+        ]  # header row
         for edge in self.network:
-            summary.append([edge[0].name,
-                            edge[1].name,
-                            round(edge[2].length, 4),
-                            round(edge[2].ID, 4),
-                            round(edge[2].OD, 4),
-                            round(edge[2].volume.to("ml"), 4),
-                            edge[2].material])
-        summary.append(["", "**Total**" if style == "gfm" else "Total", round(total_length, 4), "n/a", "n/a", round(total_volume.to("ml"), 4), "n/a"]) # footer row
+            summary.append(
+                [
+                    edge[0].name,
+                    edge[1].name,
+                    round(edge[2].length, 4),
+                    round(edge[2].ID, 4),
+                    round(edge[2].OD, 4),
+                    round(edge[2].volume.to("ml"), 4),
+                    edge[2].material,
+                ]
+            )
+        summary.append(
+            [
+                "",
+                "**Total**" if style == "gfm" else "Total",
+                round(total_length, 4),
+                "n/a",
+                "n/a",
+                round(total_volume.to("ml"), 4),
+                "n/a",
+            ]
+        )  # footer row
 
         # generate the tubing table
         tubing_table = tableStyle(summary)
@@ -222,7 +275,7 @@ class Apparatus(object):
         print(tubing_table.table)
 
     def validate(self):
-        '''Ensures that the apparatus is valid.
+        """Ensures that the apparatus is valid.
 
         Note:
             Calling this function yourself is likely unnecessary because the :class:`Protocol` class calls it upon
@@ -233,52 +286,77 @@ class Apparatus(object):
 
         Raises:
             RuntimeError: If the protocol is invalid.
-        '''
-        G = nx.Graph() # convert the network to an undirected NetworkX graph
+        """
+        G = nx.Graph()  # convert the network to an undirected NetworkX graph
         G.add_edges_from([(x[0], x[1]) for x in self.network])
-        if not nx.is_connected(G): # make sure that all of the components are connected
-            raise RuntimeError(term.red("Unable to validate: not all components connected"))
+        if not nx.is_connected(G):  # make sure that all of the components are connected
+            raise RuntimeError(
+                term.red("Unable to validate: not all components connected")
+            )
 
         # valve checking
-        for valve in list(set([x[0] for x in self.network if issubclass(x[0].__class__, Valve)])):
+        for valve in list(
+            set([x[0] for x in self.network if issubclass(x[0].__class__, Valve)])
+        ):
             for name in valve.mapping.keys():
                 # ensure that valve's mapping components are part of apparatus
                 if name not in [x.name for x in list(self.components)]:
-                    raise RuntimeError(term.red(f"Invalid mapping for Valve {valve}. No component named {name} exists."))
+                    raise RuntimeError(
+                        term.red(
+                            f"Invalid mapping for Valve {valve}. No component named {name} exists."
+                        )
+                    )
             # no more than one output from a valve (might have to change this)
             if len([x for x in self.network if x[0] == valve]) != 1:
                 raise RuntimeError(term.red(f"Valve {valve} has multiple outputs."))
 
             # make sure valve's mapping is complete
-            non_mapped_components = [x[0] for x in self.network if x[1] == valve and valve.mapping.get(x[0].name) is None]
+            non_mapped_components = [
+                x[0]
+                for x in self.network
+                if x[1] == valve and valve.mapping.get(x[0].name) is None
+            ]
             if non_mapped_components:
-                raise RuntimeError(term.red(f"Valve {valve} has incomplete mapping. No mapping for {non_mapped_components}"))
+                raise RuntimeError(
+                    term.red(
+                        f"Valve {valve} has incomplete mapping. No mapping for {non_mapped_components}"
+                    )
+                )
 
         return True
 
     def describe(self):
-        '''Generates a human-readable description of the apparatus.
+        """Generates a human-readable description of the apparatus.
 
         Returns:
             str: A description of apparatus. When in Jupyter, this string is wrapped in a :class:`IPython.display.Markdown` object for nicer display.
 
         Raises:
             RuntimeError: When a component cannot be described.
-        '''
+        """
+
         def _description(element, capitalize=False):
-            '''takes a component and converts it to a string description'''
+            """takes a component and converts it to a string description"""
             if issubclass(element.__class__, Vessel):
                 return f"{'A' if capitalize else 'a'} vessel containing {element.description}"
             elif issubclass(element.__class__, Component):
                 return element.__class__.__name__ + " " + element.name
             else:
-                raise RuntimeError(term.red(f"{element} cannot be described. If you're seeing this message, something *very* wrong has happened."))
+                raise RuntimeError(
+                    term.red(
+                        f"{element} cannot be described. If you're seeing this message, something *very* wrong has happened."
+                    )
+                )
 
         result = ""
 
         # iterate over the network and describe the connections
         for element in self.network:
-            from_component, to_component, tube = _description(element[0], capitalize=True), _description(element[1]), element[2]
+            from_component, to_component, tube = (
+                _description(element[0], capitalize=True),
+                _description(element[1]),
+                element[2],
+            )
             result += f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {tube.length}, ID {element[2].ID}, OD {element[2].OD}). "
         try:
             get_ipython
@@ -287,8 +365,9 @@ class Apparatus(object):
             pass
         return result
 
+
 class Protocol(object):
-    '''A set of procedures for an apparatus.
+    """A set of procedures for an apparatus.
 
     A protocol is defined as a list of procedures, atomic steps for the individual active components of an apparatus.
 
@@ -303,12 +382,13 @@ class Protocol(object):
             protocol.
             If a string, such as "3 minutes", the duration will be explicitly defined. Defaults to None.
         name (str, optional): The name of the protocol. Defaults to "Protocol_X" where *X* is protocol count.
-    '''
+    """
+
     _id_counter = 0
 
     def __init__(self, apparatus, duration=None, name=None):
         assert isinstance(apparatus, Apparatus)
-        if apparatus.validate(): # ensure apparatus is valid
+        if apparatus.validate():  # ensure apparatus is valid
             self.apparatus = apparatus
         self.procedures = []
         if name is not None:
@@ -321,18 +401,26 @@ class Protocol(object):
         if duration not in [None, "auto"]:
             duration = ureg.parse_expression(duration)
             if duration.dimensionality != ureg.hours.dimensionality:
-                raise ValueError(term.red(f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}"))
+                raise ValueError(
+                    term.red(
+                        f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}"
+                    )
+                )
         self.duration = duration
 
-    def _add_single(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
-        '''Adds a single procedure to the protocol.
+    def _add_single(
+        self, component, start="0 seconds", stop=None, duration=None, **kwargs
+    ):
+        """Adds a single procedure to the protocol.
 
         See add() for full documentation.
-        '''
+        """
 
         # make sure that the component being added to the protocol is part of the apparatus
         if component not in self.apparatus.components:
-            raise ValueError(term.red(f"{component} is not a component of {self.apparatus.name}."))
+            raise ValueError(
+                term.red(f"{component} is not a component of {self.apparatus.name}.")
+            )
 
         # perform the mapping for valves
         if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
@@ -345,23 +433,46 @@ class Protocol(object):
 
         # don't let users give empty procedures
         if not kwargs:
-            raise RuntimeError(term.red("No kwargs supplied. This will not manipulate the state of your sythesizer. Ensure your call to add() is valid."))
+            raise RuntimeError(
+                term.red(
+                    "No kwargs supplied. This will not manipulate the state of your sythesizer. Ensure your call to add() is valid."
+                )
+            )
 
         # make sure the component and keywords are valid
         for kwarg, value in kwargs.items():
 
             if not hasattr(component, kwarg):
-                raise ValueError(term.red(f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}."))
-
-            if isinstance(component.__dict__[kwarg], ureg.Quantity) and ureg.parse_expression(value).dimensionality != component.__dict__[kwarg].dimensionality:
                 raise ValueError(
-                    term.red(f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}."))
+                    term.red(
+                        f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}."
+                    )
+                )
 
-            elif not isinstance(component.__dict__[kwarg], type(value)) and not isinstance(component.__dict__[kwarg], ureg.Quantity):
-                raise ValueError(term.red(f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}"))
+            if (
+                isinstance(component.__dict__[kwarg], ureg.Quantity)
+                and ureg.parse_expression(value).dimensionality
+                != component.__dict__[kwarg].dimensionality
+            ):
+                raise ValueError(
+                    term.red(
+                        f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}."
+                    )
+                )
+
+            elif not isinstance(
+                component.__dict__[kwarg], type(value)
+            ) and not isinstance(component.__dict__[kwarg], ureg.Quantity):
+                raise ValueError(
+                    term.red(
+                        f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}"
+                    )
+                )
 
         if stop is not None and duration is not None:
-            raise RuntimeError(term.red("Must provide one of stop and duration, not both."))
+            raise RuntimeError(
+                term.red("Must provide one of stop and duration, not both.")
+            )
 
         # parse the start time if given
         if isinstance(start, timedelta):
@@ -376,8 +487,12 @@ class Protocol(object):
 
         # determine stop time
         if not any([stop, self.duration, duration]):
-            raise RuntimeError(term.red("Must specify protocol duration during instantiation in order to omit stop and duration. "
-                                        f"To automatically set duration of protocol as end of last procedure in protocol, use duration=\"auto\" when creating {self.name}."))
+            raise RuntimeError(
+                term.red(
+                    "Must specify protocol duration during instantiation in order to omit stop and duration. "
+                    f'To automatically set duration of protocol as end of last procedure in protocol, use duration="auto" when creating {self.name}.'
+                )
+            )
         elif stop is not None:
             if isinstance(stop, timedelta):
                 stop = str(stop.total_seconds()) + " seconds"
@@ -391,13 +506,19 @@ class Protocol(object):
             elif not kwargs.get("active") and kwargs.get("temp") is None:
                 kwargs["temp"] = "0 degC"
             elif kwargs["active"] and kwargs.get("temp") is None:
-                raise RuntimeError(term.red(f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add()."))
+                raise RuntimeError(
+                    term.red(
+                        f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add()."
+                    )
+                )
 
         # add the procedure to the procedure list
-        self.procedures.append(dict(start=start, stop=stop, component=component, params=kwargs))
+        self.procedures.append(
+            dict(start=start, stop=stop, component=component, params=kwargs)
+        )
 
     def add(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
-        '''Adds a procedure to the protocol.
+        """Adds a procedure to the protocol.
 
         Warning:
             If stop and duration are both None, the procedure's stop time will be inferred as the end of the protocol.
@@ -419,7 +540,7 @@ class Protocol(object):
             TypeError: A component is not of the correct type (*i.e.* a Component object)
             ValueError: An error occurred when attempting to parse the kwargs.
             RuntimeError: Stop time of procedure is unable to be determined or invalid component.
-        '''
+        """
 
         try:
             iter(component)
@@ -427,10 +548,12 @@ class Protocol(object):
             component = [component]
 
         for _component in component:
-            self._add_single(_component, start=start, stop=stop, duration=duration, **kwargs)
+            self._add_single(
+                _component, start=start, stop=stop, duration=duration, **kwargs
+            )
 
     def compile(self, warnings=True, _visualization=False):
-        '''Compile the protocol into a dict of devices and their procedures.
+        """Compile the protocol into a dict of devices and their procedures.
 
         Args:
             warnings (bool, optional): Whether to warn the user of automatic inferences and non-fatal issues.
@@ -443,82 +566,168 @@ class Protocol(object):
 
         Raises:
             RuntimeError: When compilation fails.
-        '''
+        """
         output = {}
 
         # infer the duration of the protocol
         if self.duration == "auto":
-            self.duration = sorted([x["stop"] for x in self.procedures], key=lambda z: z.to_base_units().magnitude if isinstance(z, ureg.Quantity) else 0)
+            self.duration = sorted(
+                [x["stop"] for x in self.procedures],
+                key=lambda z: z.to_base_units().magnitude
+                if isinstance(z, ureg.Quantity)
+                else 0,
+            )
             if all([x is None for x in self.duration]):
-                raise RuntimeError(term.red("Unable to automatically infer duration of protocol. Must define stop for at least one procedure to use duration=\"auto\"."))
+                raise RuntimeError(
+                    term.red(
+                        'Unable to automatically infer duration of protocol. Must define stop for at least one procedure to use duration="auto".'
+                    )
+                )
             self.duration = self.duration[-1]
 
         # deal only with compiling active components
-        for component in [x for x in self.apparatus.components if issubclass(x.__class__, ActiveComponent)]:
+        for component in [
+            x
+            for x in self.apparatus.components
+            if issubclass(x.__class__, ActiveComponent)
+        ]:
             # make sure all active components are activated, raising warning if not
             if component not in [x["component"] for x in self.procedures]:
                 if warnings:
-                    warn(term.yellow(f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning. To suppress this warning, use warnings=False."))
+                    warn(
+                        term.yellow(
+                            f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning. To suppress this warning, use warnings=False."
+                        )
+                    )
 
             # determine the procedures for each component
-            component_procedures = sorted([x for x in self.procedures if x["component"] == component], key=lambda x: x["start"])
+            component_procedures = sorted(
+                [x for x in self.procedures if x["component"] == component],
+                key=lambda x: x["start"],
+            )
 
             # skip compilation of components with no procedures added
             if not len(component_procedures):
                 continue
 
             # check for conflicting continuous procedures
-            if len([x for x in component_procedures if x["start"] is None and x["stop"] is None]) > 1:
-                raise RuntimeError(term.red((f"{component} cannot have two procedures for the entire duration of the protocol. "
-                                             "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "
-                                             "Otherwise, reduce ambiguity by defining start and stop times for each procedure.")))
+            if (
+                len(
+                    [
+                        x
+                        for x in component_procedures
+                        if x["start"] is None and x["stop"] is None
+                    ]
+                )
+                > 1
+            ):
+                raise RuntimeError(
+                    term.red(
+                        (
+                            f"{component} cannot have two procedures for the entire duration of the protocol. "
+                            "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "
+                            "Otherwise, reduce ambiguity by defining start and stop times for each procedure."
+                        )
+                    )
+                )
 
             for i, procedure in enumerate(component_procedures):
                 # ensure that the start time is before the stop time if given
-                if procedure["stop"] is not None and procedure["start"] > procedure["stop"]:
-                    raise RuntimeError(term.red("Start time must be less than or equal to stop time."))
+                if (
+                    procedure["stop"] is not None
+                    and procedure["start"] > procedure["stop"]
+                ):
+                    raise RuntimeError(
+                        term.red("Start time must be less than or equal to stop time.")
+                    )
 
                 # make sure that the start time isn't outside the duration
-                if self.duration is not None and procedure["start"] is not None and procedure["start"] > self.duration:
-                    raise ValueError(term.red(f"Procedure cannot start at {procedure['start']}, which is outside the duration of the experiment ({self.duration})."))
+                if (
+                    self.duration is not None
+                    and procedure["start"] is not None
+                    and procedure["start"] > self.duration
+                ):
+                    raise ValueError(
+                        term.red(
+                            f"Procedure cannot start at {procedure['start']}, which is outside the duration of the experiment ({self.duration})."
+                        )
+                    )
 
                 # make sure that the end time isn't outside the duration
-                if self.duration is not None and procedure["stop"] is not None and procedure["stop"] > self.duration:
-                    raise ValueError(term.red(f"Procedure cannot end at {procedure['stop']}, which is outside the duration of the experiment ({self.duration})."))
+                if (
+                    self.duration is not None
+                    and procedure["stop"] is not None
+                    and procedure["stop"] > self.duration
+                ):
+                    raise ValueError(
+                        term.red(
+                            f"Procedure cannot end at {procedure['stop']}, which is outside the duration of the experiment ({self.duration})."
+                        )
+                    )
 
                 # automatically infer start and stop times
                 try:
-                    if component_procedures[i + 1]["start"] == ureg.parse_expression("0 seconds"):
-                        raise RuntimeError(term.red(f"Ambiguous start time for {procedure['component']}."))
-                    elif component_procedures[i + 1]["start"] is not None and procedure["stop"] is None:
+                    if component_procedures[i + 1]["start"] == ureg.parse_expression(
+                        "0 seconds"
+                    ):
+                        raise RuntimeError(
+                            term.red(
+                                f"Ambiguous start time for {procedure['component']}."
+                            )
+                        )
+                    elif (
+                        component_procedures[i + 1]["start"] is not None
+                        and procedure["stop"] is None
+                    ):
                         if warnings:
                             warn(
-                                term.yellow(f"Automatically inferring stop time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False."))
+                                term.yellow(
+                                    f"Automatically inferring stop time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False."
+                                )
+                            )
                         procedure["stop"] = component_procedures[i + 1]["start"]
                 except IndexError:
                     if procedure["stop"] is None:
                         if warnings:
                             warn(
-                                term.yellow(f"Automatically inferring stop for {procedure['component']} as the end of the protocol. To override, provide stop in your call to add(). To suppress this warning, use warnings=False."))
+                                term.yellow(
+                                    f"Automatically inferring stop for {procedure['component']} as the end of the protocol. To override, provide stop in your call to add(). To suppress this warning, use warnings=False."
+                                )
+                            )
                         procedure["stop"] = self.duration
 
             # give the component instructions at all times
             compiled = []
             for i, procedure in enumerate(component_procedures):
                 if _visualization:
-                    compiled.append(dict(start=procedure["start"], stop=procedure["stop"], params=procedure["params"]))
+                    compiled.append(
+                        dict(
+                            start=procedure["start"],
+                            stop=procedure["stop"],
+                            params=procedure["params"],
+                        )
+                    )
                 else:
-                    compiled.append(dict(time=procedure["start"], params=procedure["params"]))
+                    compiled.append(
+                        dict(time=procedure["start"], params=procedure["params"])
+                    )
 
                     # if the procedure is over at the same time as the next procedure begins, don't go back to the base state
                     try:
-                        if isclose(component_procedures[i + 1]["start"].to_base_units().magnitude, procedure["stop"].to_base_units().magnitude):
+                        if isclose(
+                            component_procedures[i + 1]["start"]
+                            .to_base_units()
+                            .magnitude,
+                            procedure["stop"].to_base_units().magnitude,
+                        ):
                             continue
                     except IndexError:
                         pass
 
                     # otherwise, go back to base state
-                    compiled.append(dict(time=procedure["stop"], params=component.base_state()))
+                    compiled.append(
+                        dict(time=procedure["stop"], params=component.base_state())
+                    )
 
             output[component] = compiled
 
@@ -526,7 +735,7 @@ class Protocol(object):
         return output
 
     def json(self, warnings=True):
-        '''Compiles protocol and outputs to JSON.
+        """Compiles protocol and outputs to JSON.
 
         Args:
             warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
@@ -536,7 +745,7 @@ class Protocol(object):
 
         Raises:
             Same as :meth:`Protocol.compile`.
-        '''
+        """
         compiled = deepcopy(self.compile(warnings=warnings))
         for item in compiled.items():
             for procedure in item[1]:
@@ -560,7 +769,7 @@ class Protocol(object):
         return compiled
 
     def yaml(self, warnings=True):
-        '''Compiles protocol and outputs to YAML.
+        """Compiles protocol and outputs to YAML.
 
         Internally, this is a conversion of the output of :meth:`Protocol.json`
         for the purpose of enhanced human readability.
@@ -573,7 +782,7 @@ class Protocol(object):
 
         Raises:
             Same as :meth:`Protocol.compile`.
-        '''
+        """
         compiled_yaml = yaml.safe_dump(json.loads(str(self.json(warnings=warnings))))
 
         try:
@@ -584,7 +793,7 @@ class Protocol(object):
         return compiled_yaml
 
     def visualize(self, browser=True):
-        '''Generates a Gantt plot visualization of the protocol.
+        """Generates a Gantt plot visualization of the protocol.
 
         Args:
             browser (bool, optional): Whether to open in the browser. Defaults to true.
@@ -594,12 +803,16 @@ class Protocol(object):
 
         Raises:
             ImportError: When the visualization package is not installed.
-        '''
+        """
 
         # render the html
-        env = Environment(autoescape=select_autoescape(['html', 'xml']),
-                          loader=PackageLoader("mechwolf", "templates"))
-        visualization = env.get_template('viz_div.html').render(procedures=self.procedures)
+        env = Environment(
+            autoescape=select_autoescape(["html", "xml"]),
+            loader=PackageLoader("mechwolf", "templates"),
+        )
+        visualization = env.get_template("viz_div.html").render(
+            procedures=self.procedures
+        )
 
         # show it in Jupyter, if possible
         try:
@@ -608,9 +821,8 @@ class Protocol(object):
         except NameError:
             pass
 
-        template = env.get_template('visualizer.html')
-        visualization = template.render(title=self.name,
-                                        visualization=visualization)
+        template = env.get_template("visualizer.html")
+        visualization = template.render(title=self.name, visualization=visualization)
 
         if browser:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp:
@@ -620,7 +832,7 @@ class Protocol(object):
         return visualization
 
     def execute(self, address="http://localhost:5000", confirmation=True):
-        '''Executes the procedure.
+        """Executes the procedure.
 
         Args:
             address (str, optional): The address of the hub to connect to.
@@ -632,7 +844,7 @@ class Protocol(object):
 
         Raises:
             RuntimeError: When attempting to execute a protocol on invalid components.
-        '''
+        """
 
         # Ensure that execution isn't happening on invalid components
         # if not all([validate_component(x["component"]) for x in self.procedures]):

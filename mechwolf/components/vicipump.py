@@ -6,12 +6,13 @@ try:
 except ImportError:
     pass
 
+
 class ViciPump(Pump):
-    '''A Vici M50 pump.
+    """A Vici M50 pump.
     This pump is characterized by the volume of fluid dispensed per revolution
     which can be found on the certificate of conformance
     This is specified in ml now, we can perhaps make it a ureg later
-    '''
+    """
 
     def __init__(self, name, serial_port=None, volume_per_rev=0):
         super().__init__(name=name)
@@ -21,12 +22,14 @@ class ViciPump(Pump):
 
     def __enter__(self):
 
-        self.ser = serial.Serial(self.serial_port,
-                                 9600,
-                                 parity=serial.PARITY_NONE,
-                                 stopbits=1,
-                                 timeout=0.1,
-                                 write_timeout=0.1)
+        self.ser = serial.Serial(
+            self.serial_port,
+            9600,
+            parity=serial.PARITY_NONE,
+            stopbits=1,
+            timeout=0.1,
+            write_timeout=0.1,
+        )
 
         return self
 
@@ -43,13 +46,17 @@ class ViciPump(Pump):
         steps_per_second *= gear_ratio
         steps_per_second = int(steps_per_second)
 
-        flow_command = 'SL {}\r\n'.format(steps_per_second)
+        flow_command = "SL {}\r\n".format(steps_per_second)
 
         flow_rate_readable = flow_rate.to(ureg.ml / ureg.min).magnitude
 
-        print("Setting flow rate to {} ml/min using command {}".format(flow_rate_readable, flow_command))
+        print(
+            "Setting flow rate to {} ml/min using command {}".format(
+                flow_rate_readable, flow_command
+            )
+        )
 
-        self.ser.write(flow_command.encode(encoding='ascii'))
+        self.ser.write(flow_command.encode(encoding="ascii"))
 
         self.ser.reset_input_buffer()
 

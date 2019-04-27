@@ -6,21 +6,16 @@ repos:
     rev: v1.8.0
     hooks:
     - id: seed-isort-config
+-   repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+    - id: black
+      language_version: python3.7
 -   repo: https://github.com/pre-commit/mirrors-isort
     rev: v4.3.17
     hooks:
     -   id: isort
         exclude: .*/__init__.py
--   repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v1.4.4
-    hooks:
-    - id: autopep8
-      exclude: .*/__init__.py
-      args:
-        - -a # aggressive
-        - -a # even more aggressive
-        - -i # in place
-        - -r # recursive
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.1.0
     hooks:

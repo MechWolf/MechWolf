@@ -14,6 +14,7 @@ class Component(object):
     Raises:
         ValueError: When a component has the same name as another component.
     """
+
     _id_counter = 0
     _used_names = set()
 
@@ -35,6 +36,7 @@ class Component(object):
     def __exit__(self, exc_type, exc_value, traceback):
         pass
 
+
 class ActiveComponent(Component):
     """A connected, controllable component.
 
@@ -50,18 +52,19 @@ class ActiveComponent(Component):
         name (str): The name of the component.
 
     """
+
     _id_counter = 0
 
     def __init__(self, name):
         super().__init__(name=name)
 
     def update_from_params(self, params):
-        '''Updates the attributes of the object from a dict.
+        """Updates the attributes of the object from a dict.
 
         Args:
             params (dict): A dict whose keys are the strings of attribute names and values are the new values of the attribute.
 
-        '''
+        """
         for key, value in params.items():
             try:
                 setattr(self, key, ureg.parse_expression(value))
@@ -69,7 +72,7 @@ class ActiveComponent(Component):
                 setattr(self, key, value)
 
     def base_state(self):
-        '''A placeholder method for the base state of the component.
+        """A placeholder method for the base state of the component.
 
         All subclasses of ActiveComponent must implement a function that returns
         a dict of its base state. At the end of a protocol, the component will
@@ -83,11 +86,11 @@ class ActiveComponent(Component):
             >>> Pump.base_state()
             {"rate": "0 ml/min"}
 
-        '''
+        """
         pass
 
     def config(self):
-        '''A placeholder method containing the information needed to configure the component.
+        """A placeholder method containing the information needed to configure the component.
 
         When an ActiveComponent is used in the real world, there is likely
         variables that will need to be configured such as serial port. This
@@ -101,7 +104,7 @@ class ActiveComponent(Component):
             >>> ViciValve.config()
             {"serial_port": (str, None)}
 
-        '''
+        """
         return {}
 
     def update(self):

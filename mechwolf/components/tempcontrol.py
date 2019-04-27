@@ -20,10 +20,12 @@ class TempControl(ActiveComponent):
     def __init__(self, name, internal_tubing):
         super().__init__(name=name)
         if not isinstance(internal_tubing, Tube):
-            raise TypeError(term.red("TempControl must have internal_tubing of type Tube."))
+            raise TypeError(
+                term.red("TempControl must have internal_tubing of type Tube.")
+            )
         self.temp = ureg.parse_expression("0 degC")
         self.active = False
 
     def base_state(self):
-        '''Default to being inactive.'''
+        """Default to being inactive."""
         return dict(temp="0 degC", active=False)

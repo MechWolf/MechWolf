@@ -14,6 +14,7 @@ class Mixer(Component):
         super().__init__(name=name)
         self._visualization_shape = "cds"
 
+
 class TMixer(Mixer):
     """A T mixer.
 
@@ -26,6 +27,7 @@ class TMixer(Mixer):
     def __init__(self, name=None):
         super().__init__(name=name)
 
+
 class YMixer(Mixer):
     """A Y mixer.
 
@@ -37,6 +39,7 @@ class YMixer(Mixer):
 
     def __init__(self, name=None):
         super().__init__(name=name)
+
 
 class CrossMixer(Mixer):
     """A cross mixer.

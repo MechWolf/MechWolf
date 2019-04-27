@@ -21,7 +21,7 @@ class Valve(ActiveComponent):
         self._visualization_shape = "parallelogram"
 
     def base_state(self):
-        '''Default to the first setting.
+        """Default to the first setting.
 
-        This is an arbitrary choice but is guaranteed to be a valid setting.'''
+        This is an arbitrary choice but is guaranteed to be a valid setting."""
         return dict(setting=1)
