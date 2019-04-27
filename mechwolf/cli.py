@@ -6,7 +6,7 @@ import click
 import yaml
 from click_didyoumean import DYMGroup
 
-from . import mechwolf
+from . import __version__
 
 
 @click.group(cls=DYMGroup)
@@ -33,7 +33,7 @@ def convert(db, output):
 
 @cli.command(help="Print the MechWolf version")
 def version():
-    print(mechwolf.__version__)
+    print(__version__)
 
 
 if __name__ == "__main__":
