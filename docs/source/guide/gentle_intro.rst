@@ -30,7 +30,7 @@ You can pick up the basics of Python in a day or two. A few good resources are l
 - `Learn Python the Hard Way <https://learnpythonthehardway.org/python3/>`_ (note: despite the name, it isn't actually hard)
 
 
-Install Python 3.6 or greater
+Install Python 3.7 or greater
 -----------------------------
 
 Although Python is likely already installed on your computer (especially if

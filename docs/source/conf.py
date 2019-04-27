@@ -43,7 +43,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
-    'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.programoutput',
     'nbsphinx',
     'sphinx.ext.mathjax',
