@@ -8,9 +8,7 @@ from uuid import uuid1
 from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
 
-from .mechwolf import term
-
-server = "http://localhost:5000"
+from . import term
 
 Datapoint = namedtuple("Datapoint", ["datapoint", "timestamp"])
 
