@@ -4,6 +4,7 @@ import time
 from collections import namedtuple
 from contextlib import ExitStack
 from uuid import uuid1
+from datetime import datetime
 
 from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
@@ -39,7 +40,7 @@ class Experiment(object):
         }
     
     def __repr__(self):
-        return(f'Experiment started on {self.start_time.strftime("%a, %d %b %Y %H:%M:%S")}')
+        return(f'Experiment started on {datetime.fromtimestamp(self.start_time).strftime("%a, %d %b %Y %H:%M:%S")}')
 
     def visualize(self):
         try:
