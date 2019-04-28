@@ -22,3 +22,15 @@ guaranteed to be safe or stable**, you can install MechWolf directly from the
 GitHub repository using the following command::
 
     $ pip install git+https://github.com/Benjamin-Lee/MechWolf.git
+
+Updating MechWolf
+-----------------
+
+Updating MechWolf is as easy as installing it. Just call ``pip`` with the ``--upgrade`` flag::
+
+  $ pip install mechwolf --upgrade
+
+.. tip::
+
+    Use ``pip install pip --upgrade`` to upgrade ``pip``. Check ``pip`` version with
+    ``pip --version``.
