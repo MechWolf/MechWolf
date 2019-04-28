@@ -56,6 +56,8 @@ class Protocol(object):
                     )
                 )
         self.duration = duration
+        self.is_executing = False
+        self.was_executed = False
     
     def __repr__(self):
         return(f'MechWolf protocol for Apparatus {self.apparatus}')

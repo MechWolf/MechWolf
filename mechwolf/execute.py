@@ -111,6 +111,11 @@ def jupyter_execute(protocol, **kwargs):
         Raises:
             DeviceNotFound: if a device in the protocol is not in the apparatus.
     """
+    #If protocol is executing, return an error
+    if protocol.is_executing:
+        print('Protocol is currently running.')
+        return
+
     # reinitialize objects
     for component in protocol.compile().keys():
         component.done = False
@@ -125,10 +130,15 @@ def jupyter_execute(protocol, **kwargs):
     experiment = Experiment(
         experiment_id, protocol, apparatus, start_time, data={}, executed_procedures=[]
     )
-
-    asyncio.ensure_future(
-        main(protocol, apparatus, start_time, experiment_id, experiment)
-    )
+    
+    try:
+        protocol.is_executing = True
+        asyncio.ensure_future(
+            main(protocol, apparatus, start_time, experiment_id, experiment)
+        )
+    finally:
+        protocol.is_executing = False
+        protocol_was_executed = True
     return experiment
 
 
@@ -149,7 +159,10 @@ def execute(protocol, delay=5, **kwargs):
         Raises:
             DeviceNotFound: if a device in the protocol is not in the apparatus.
     """
-
+    if protocol.is_executing:
+        print('Protocol is currently running.')
+        return
+    
     # reinitialize objects
     for component in protocol.compile().keys():
         component.done = False
@@ -165,8 +178,11 @@ def execute(protocol, delay=5, **kwargs):
         experiment_id, protocol, apparatus, start_time, data={}, executed_procedures=[]
     )
     try:
+        protocol.is_executing = True
         asyncio.run(main(protocol, apparatus, start_time, experiment_id, experiment))
     finally:
+        protocol.is_executing = False
+        protocol.was_executed = True
         for component in protocol.compile().keys():
             component.done = False
 
