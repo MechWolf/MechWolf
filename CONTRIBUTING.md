@@ -65,5 +65,5 @@ Anything tagged with "enhancement" and "help wanted" is open to whoever wants to
     ```
     Pre-commit will make sure that your changes conform to our coding style, as well as that it passes some [static analysis tests](http://flake8.pycqa.org/en/latest/).
 1. When you're done, create a pull request for us to review.
-    As a general rule, pull requests should ensure that the tests and documentation are updated.
+    As a general rule, ensure that the tests and documentation are updated before submitting your pull request.
     Furthermore, it should be compatible with all supported Python versions, which is currently Python 3.7 and 3.8.
