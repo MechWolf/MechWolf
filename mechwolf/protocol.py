@@ -511,4 +511,13 @@ class Protocol(object):
         #         print(f"Protocol id: {response}")
         # except BaseException:
         #     pass
-        warn("This functions has been temporarily deprecated", DeprecationWarning)
+        # warn("This functions has been temporarily deprecated", DeprecationWarning)
+        try:
+            get_ipython
+            from .execute import jupyter_execute
+
+            return jupyter_execute(self)
+        except NameError:
+            from .execute import execute
+
+            return execute(self)

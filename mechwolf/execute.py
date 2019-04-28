@@ -104,7 +104,7 @@ def jupyter_execute(protocol, **kwargs):
     # Extract the protocol from the Protocol object (or protocol json)
     apparatus = protocol.apparatus
     experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
-    print(term.green_bold(f"Experiment {experiment_id} in progress"))
+    print(term.green_bold(f"Experiment {experiment_id} initiated"))
     start_time = time.time()
     experiment = Experiment(
         experiment_id, protocol, apparatus, start_time, data={}, executed_procedures=[]
@@ -199,6 +199,7 @@ async def main(protocol, apparatus, start_time, experiment_id, experiment):
             tasks += [monitor(component, end_time, experiment_id, experiment)]
 
         completed_tasks = await asyncio.gather(*tasks)
+        print(term.green_bold(f"Experiment {experiment_id} completed."))
         return completed_tasks
 
 
