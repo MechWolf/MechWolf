@@ -41,7 +41,7 @@ setup(
         "click_didyoumean",
         "Pint",
         "graphviz",
-        "ipython",
+        "ipython>=7.0",
         "pyserial",
         "PyYAML",
         "jupyter",
