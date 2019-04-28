@@ -37,6 +37,9 @@ class Experiment(object):
             "datapoints": [datapoint.datapoint for datapoint in data],
             "timestamps": [datapoint.timestamp - self.start_time for datapoint in data],
         }
+    
+    def __repr__(self):
+        return f'Experiment started on {start_time.strftime("%a, %d %b %Y %H:%M:%S")}'
 
     def visualize(self):
         output_notebook()
