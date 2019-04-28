@@ -42,6 +42,15 @@ class Experiment(object):
         return(f'Experiment started on {self.start_time.strftime("%a, %d %b %Y %H:%M:%S")}')
 
     def visualize(self):
+        try:
+            get_ipython  # noqa
+        except NameError:
+            logging.warning(
+                term.yellow(
+                    "Visualization of Experiment objects is only supported inside Jupyter notebooks. Skipping..."
+                )
+            )
+            return False
         output_notebook()
 
         for device in self.data:
@@ -107,7 +116,10 @@ def jupyter_execute(protocol, **kwargs):
     # Extract the protocol from the Protocol object (or protocol json)
     apparatus = protocol.apparatus
     experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
+
     print(term.green_bold(f"Experiment {experiment_id} initiated"))
+    logging.info(f"Experiment {experiment_id} initiated")
+
     start_time = time.time()
     experiment = Experiment(
         experiment_id, protocol, apparatus, start_time, data={}, executed_procedures=[]
@@ -143,19 +155,20 @@ def execute(protocol, delay=5, **kwargs):
     # Extract the protocol from the Protocol object (or protocol json)
     apparatus = protocol.apparatus
     experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
+
     print(term.green_bold(f"Experiment {experiment_id} initiated"))
+    logging.info(f"Experiment {experiment_id} initiated")
+
     start_time = time.time()
     experiment = Experiment(
         experiment_id, protocol, apparatus, start_time, data={}, executed_procedures=[]
     )
-    print(f"Experiment {experiment_id} in progress")
-
     try:
         asyncio.run(main(protocol, apparatus, start_time, experiment_id, experiment))
     finally:
         for component in protocol.compile().keys():
             component.done = False
-    
+
     return experiment
 
 
