@@ -39,7 +39,7 @@ class Experiment(object):
         }
     
     def __repr__(self):
-        return f'Experiment started on {start_time.strftime("%a, %d %b %Y %H:%M:%S")}'
+        return(f'Experiment started on {self.start_time.strftime("%a, %d %b %Y %H:%M:%S")}')
 
     def visualize(self):
         output_notebook()

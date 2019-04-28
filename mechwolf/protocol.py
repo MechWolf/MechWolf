@@ -56,6 +56,9 @@ class Protocol(object):
                     )
                 )
         self.duration = duration
+    
+    def __repr__(self):
+        return(f'MechWolf protocol for Apparatus {self.apparatus}')
 
     def _add_single(
         self, component, start="0 seconds", stop=None, duration=None, **kwargs
