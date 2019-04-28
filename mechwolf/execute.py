@@ -134,30 +134,26 @@ def execute(protocol, delay=5, **kwargs):
             DeviceNotFound: if a device in the protocol is not in the apparatus.
     """
 
+    # reinitialize objects
+    for component in protocol.compile().keys():
+        component.done = False
     # Extract the protocol from the Protocol object (or protocol json)
     apparatus = protocol.apparatus
     experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
-    start_time = time.time() + delay
+    print(term.green_bold(f"Experiment {experiment_id} initiated"))
+    start_time = time.time()
+    experiment = Experiment(
+        experiment_id, protocol, apparatus, start_time, data={}, executed_procedures=[]
+    )
     print(f"Experiment {experiment_id} in progress")
 
     try:
-        logs = asyncio.run(main(protocol, apparatus, start_time, experiment_id))
+        asyncio.run(main(protocol, apparatus, start_time, experiment_id, experiment))
     finally:
         for component in protocol.compile().keys():
             component.done = False
-
-    executed_procedures = []
-    data = {}
-    for log in logs:
-        if log["type"] == "executed_procedure":
-            executed_procedures.append(log)
-        if log["type"] == "data":
-            component_name = log["component_name"]
-            data[component_name] = log["data"]
-
-    return Experiment(
-        experiment_id, protocol, apparatus, start_time, data, executed_procedures
-    )
+    
+    return experiment
 
 
 async def main(protocol, apparatus, start_time, experiment_id, experiment):
