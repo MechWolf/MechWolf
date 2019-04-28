@@ -15,3 +15,8 @@ from .protocol import Protocol
 from .execute import execute, jupyter_execute, Experiment
 from .components import *
 from .validate_component import validate_component
+
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.WARNING)

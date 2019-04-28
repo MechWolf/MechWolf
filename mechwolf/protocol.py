@@ -1,5 +1,4 @@
 import json
-import logging
 import tempfile
 import webbrowser
 from copy import deepcopy
@@ -14,8 +13,6 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from . import term, ureg
 from .apparatus import Apparatus
 from .components import ActiveComponent, TempControl, Valve
-
-logging.basicConfig(level=20)
 
 
 class Protocol(object):
