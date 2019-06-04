@@ -45,6 +45,7 @@ setup(
         "pyserial",
         "PyYAML",
         "jupyter",
+        "stackprinter",
     ],
     extras_require={
         "dev": [

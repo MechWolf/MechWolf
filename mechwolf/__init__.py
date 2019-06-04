@@ -20,3 +20,7 @@ import logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
+
+import stackprinter
+
+stackprinter.set_excepthook(style="lightbg")
