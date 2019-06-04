@@ -62,10 +62,8 @@ class ViciPump(Pump):
 
     def update(self):
 
-        new_rate = ureg.parse_expression(self.rate)
-
-        self.set_flow(new_rate)
-        return {"rate": str(new_rate)}
+        self.set_flow(self.rate)
+        return {"rate": str(self.rate)}
 
     def config(self):
         return dict(serial_port=(str, None), volume_per_rev=(float, None))
