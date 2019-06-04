@@ -28,7 +28,7 @@ class Tube(object):
             if measurement.dimensionality != ureg.mm.dimensionality:
                 raise ValueError(
                     term.red(
-                        f"{measurement.dimensionality} is an invalid unit of measurement for {measurement}. Must be a {ureg.mm.dimensionality}."
+                        f"{measurement.units} is an invalid unit of measurement for length."
                     )
                 )
 
