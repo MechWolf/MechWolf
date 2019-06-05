@@ -86,7 +86,9 @@ def validate_component(component, warnings=True):
     if not isinstance(component.config(), dict):
         if warnings:
             print(
-                term.red(f"Must return dictionary for config method for {component}.")
+                term.red(
+                    f"The config() method for {component} must return a dictionary."
+                )
             )
         return False
 
