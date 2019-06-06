@@ -54,11 +54,6 @@ class ViciPump(Pump):
 
         flow_rate_readable = flow_rate.to(ureg.ml / ureg.min).magnitude
 
-#        print(
-#            "Setting flow rate to {} ml/min using command {}".format(
-#                flow_rate_readable, flow_command
-#            )
-
         self.ser.write(flow_command.encode(encoding="ascii"))
 
         self.ser.reset_input_buffer()
@@ -68,7 +63,7 @@ class ViciPump(Pump):
         return {
             "timestamp": time.time(),
             "params": {"rate": str(self.rate)},
-            "device": "self.name",
+            "device": self.name,
         }
 
     def config(self):

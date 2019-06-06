@@ -62,7 +62,7 @@ class VarianPump(Pump):
         return {
             "timestamp": time.time(),
             "params": {"rate": str(new_rate)},
-            "device": "self.name",
+            "device": self.name,
         }
 
     def config(self):
