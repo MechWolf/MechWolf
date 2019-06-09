@@ -1,3 +1,5 @@
+import time
+
 from . import ureg
 from .pump import Pump
 
@@ -34,6 +36,8 @@ class ViciPump(Pump):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        self.rate = ureg.parse_expression("0 mL/min")
+        self.update()
         self.ser.close()
 
     def set_flow(self, flow_rate):
@@ -50,20 +54,17 @@ class ViciPump(Pump):
 
         flow_rate_readable = flow_rate.to(ureg.ml / ureg.min).magnitude
 
-        print(
-            "Setting flow rate to {} ml/min using command {}".format(
-                flow_rate_readable, flow_command
-            )
-        )
-
         self.ser.write(flow_command.encode(encoding="ascii"))
 
         self.ser.reset_input_buffer()
 
     def update(self):
-
         self.set_flow(self.rate)
-        return {"rate": str(self.rate)}
+        return {
+            "timestamp": time.time(),
+            "params": {"rate": str(self.rate)},
+            "device": self.name,
+        }
 
     def config(self):
         return dict(serial_port=(str, None), volume_per_rev=(float, None))
