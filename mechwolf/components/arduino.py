@@ -24,6 +24,9 @@ class ArduinoSensor(Sensor):
             parity=serial.PARITY_NONE,
             stopbits=1
             )
+            
+        while self.ser.in_waiting:
+            self.ser.reset_input_buffer()
 
         return self
 
@@ -32,12 +35,16 @@ class ArduinoSensor(Sensor):
         self.ser.close()
 
     def read(self):
+
         # flush in buffer in case we have stale data
-        self.ser.reset_input_buffer()
+        while self.ser.in_waiting:
+            self.ser.reset_input_buffer()
+
         # send the command
         self.ser.write(self.command)
         # read the data and sanitize
         data = self.ser.readline().decode(encoding='ASCII').strip()
+
         try :
             # maybe it is a nice integer (straight from ADC)
             return int(data)
