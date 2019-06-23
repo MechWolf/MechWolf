@@ -208,4 +208,4 @@ def test_json():
 def test_yaml():
     P = mw.Protocol(A, duration="auto")
     P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
-    assert yaml.load(P.yaml()) == json.loads(P.json())
+    assert yaml.safe_load(P.yaml()) == json.loads(P.json())
