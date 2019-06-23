@@ -23,4 +23,9 @@ logger.setLevel(logging.WARNING)
 
 import stackprinter
 
-stackprinter.set_excepthook(style="lightbg")
+# set the color coding based on whether in use in terminal
+try:
+    get_ipython()
+    stackprinter.set_excepthook(style="lightbg")
+except NameError:
+    stackprinter.set_excepthook(style="darkbg2")
