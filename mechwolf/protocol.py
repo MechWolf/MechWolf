@@ -58,9 +58,9 @@ class Protocol(object):
         self.duration = duration
         self.is_executing = False
         self.was_executed = False
-    
+
     def __repr__(self):
-        return(f'MechWolf protocol for Apparatus {self.apparatus}')
+        return f"MechWolf protocol for Apparatus {self.apparatus}"
 
     def _add_single(
         self, component, start="0 seconds", stop=None, duration=None, **kwargs
@@ -485,12 +485,8 @@ class Protocol(object):
 
         return visualization
 
-    def execute(self, address="http://localhost:5000", confirmation=True):
+    def execute(self):
         """Executes the procedure.
-
-        Args:
-            address (str, optional): The address of the hub to connect to.
-            confirmation (bool, optional): Whether to ask for confirmation. Defaults to True.
 
         Note:
             Must only contain :class:`~mechwolf.components.component.ActiveComponent` s that have an
