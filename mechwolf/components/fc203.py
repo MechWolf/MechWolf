@@ -42,9 +42,6 @@ class GilsonFC203(ActiveComponent):
         self.gsioc.buffered_command(drain_command)
         self.gsioc.buffered_command("W2         Drain")
 
-    def config(self):
-        return {"serial_port": (str, None), "unit_id": (int, 1)}
-
     async def update(self):
         if self.position == 0:
             self.drain()

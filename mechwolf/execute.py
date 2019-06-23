@@ -3,8 +3,8 @@ import logging
 import time
 from collections import namedtuple
 from contextlib import ExitStack
-from uuid import uuid1
 from datetime import datetime
+from uuid import uuid1
 
 from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
@@ -38,9 +38,9 @@ class Experiment(object):
             "datapoints": [datapoint.datapoint for datapoint in data],
             "timestamps": [datapoint.timestamp - self.start_time for datapoint in data],
         }
-    
+
     def __repr__(self):
-        return(f'Experiment started on {datetime.fromtimestamp(self.start_time).strftime("%a, %d %b %Y %H:%M:%S")}')
+        return f'Experiment started on {datetime.fromtimestamp(self.start_time).strftime("%a, %d %b %Y %H:%M:%S")}'
 
     def visualize(self):
         try:
@@ -87,9 +87,6 @@ class Experiment(object):
             ]
             push_notebook(handle=target)
 
-    def procedure_did_execute(self, procedure_record):
-        self.executed_procedures.append(procedure_record)
-
 
 class DeviceNotFound(Exception):
     """Raised if a device specified in the protocol is not in the apparatus."""
@@ -111,9 +108,9 @@ def jupyter_execute(protocol, **kwargs):
         Raises:
             DeviceNotFound: if a device in the protocol is not in the apparatus.
     """
-    #If protocol is executing, return an error
+    # If protocol is executing, return an error
     if protocol.is_executing:
-        print('Protocol is currently running.')
+        print("Protocol is currently running.")
         return
 
     # reinitialize objects
@@ -130,7 +127,7 @@ def jupyter_execute(protocol, **kwargs):
     experiment = Experiment(
         experiment_id, protocol, apparatus, start_time, data={}, executed_procedures=[]
     )
-    
+
     try:
         protocol.is_executing = True
         asyncio.ensure_future(
@@ -138,7 +135,6 @@ def jupyter_execute(protocol, **kwargs):
         )
     finally:
         protocol.is_executing = False
-        protocol_was_executed = True
     return experiment
 
 
@@ -160,9 +156,9 @@ def execute(protocol, delay=5, **kwargs):
             DeviceNotFound: if a device in the protocol is not in the apparatus.
     """
     if protocol.is_executing:
-        print('Protocol is currently running.')
+        print("Protocol is currently running.")
         return
-    
+
     # reinitialize objects
     for component in protocol.compile().keys():
         component.done = False
@@ -237,16 +233,26 @@ async def create_procedure(procedure, component, experiment_id, experiment, end_
     execution_time = procedure["time"].to("seconds").magnitude
     await asyncio.sleep(execution_time)
     logging.info(term.green(f"Executing: {procedure} on {component} at {time.time()}"))
-    component.update_from_params(procedure["params"])
-    procedure_record = component.update()
+    component.update_from_params(
+        procedure["params"]
+    )  # NOTE: this doesn't actually call the update() method
+    procedure_record = component.update()  # NOTE: This does!
+
+    try:
+        timestamp = procedure_record["timestamp"]
+    except KeyError:
+        logging.debug(
+            f"No timestamp passed for {component}. Defaulting to current time."
+        )
+        timestamp = time.time()
+
     procedure_record["type"] = "executed_procedure"
-    procedure_record["executed_time"] = (
-        procedure_record["timestamp"] - experiment.start_time
-    )
+    procedure_record["experiment_elapsed_time"] = timestamp - experiment.start_time
     if end_time == execution_time:
         component.done = True
 
-    experiment.procedure_did_execute(procedure_record)
+    experiment.executed_procedures.append(procedure_record)
+
     return procedure_record
 
 

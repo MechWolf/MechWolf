@@ -49,23 +49,7 @@ what you need. In that case, you'll have to create your own component. Here's ho
     what is happening. At the end of your protocol,
     :meth:`~mechwolf.Protocol.compile` adds a procedure for each
     :class:`~mechwolf.components.component.ActiveComponent` in the protocol to
-    return to its base state.
-
-#. **Give it a config method.**
-    Often times, components will require some configuration information when
-    running mechwolf-setup. For example, Varian pumps need to know to what
-    serial port they are connected. To get this information, give your component
-    a configuration method, called ``config`` that returns a dictionary whose
-    keys are parameters to be configured and whose values are tuples with the
-    desired type and default value for the parameter. Going back to the Varian
-    pump example, a config dict could look like this::
-
-        >>> VarianPump(name="pump").config()
-        {"serial_port": (str, None), "max_rate": (int, None)}
-
-    Note that, when there is no default, the second value of the tuple is
-    ``None``. When your component is instantiated on the client, these values
-    will be passed to ``__init__()`` as keyword arguments.
+    return to its base state.å
 
 #. **Give it an update method.**
     The job of the update method is to make the object's real-world state match
@@ -140,26 +124,6 @@ Now we'll need a base state::
         def base_state(self):
             return dict(rate="0 g/min")
 
-And a config method. Let's pretend that the Philosopher's Stone needs to know to
-what serial port it's connected. We'll ignore the complexities of actually
-connecting to it for the purposes of this tutorial, however. We'll add
-``serial_port`` as an argument to ``__init__()`` and have the ``config`` method
-return a dictionary saying that ``serial_port`` is an integer without a default::
-
-    from mechwolf import ActiveComponent, ureg
-
-    class PhilosophersStone(ActiveComponent):
-        def __init__(self, name=None, serial_port=None):
-            super().__init__(name=name)
-            self.rate = ureg.parse_expression("0 g/min")
-            self.serial_port = serial_port
-
-        def base_state(self):
-            return dict(rate="0 g/min")
-
-        def config(self):
-            return dict(serial_port=(int, None))
-
 And finally, a way to update it. Here, we'll have to rely on our imagination::
 
     from mechwolf import ActiveComponent, ureg
@@ -172,9 +136,6 @@ And finally, a way to update it. Here, we'll have to rely on our imagination::
 
         def base_state(self):
             return dict(rate="0 g/min")
-
-        def config(self):
-            return dict(serial_port=(int, None))
 
         async def update(self):
             # magic goes here
@@ -243,18 +204,7 @@ client.
 
 We can skip adding a base state because
 :class:`~mechwolf.components.valve.Valve` already has one, meaning that
-:class:`~mechwolf.components.vici.ViciValve` will inherit it automatically. We
-do need to tell MechWolf about what to ask for during configuration using the
-``config`` method. All we actually need to know is what the serial port is:
-
-.. literalinclude:: ../../../mechwolf/components/vici.py
-    :pyobject: ViciValve.config
-
-.. note::
-
-    MechWolf will automatically offer serial port suggestions during
-    configuration if there is an argument called ``serial_port`` in the
-    ``config`` dictionary.
+:class:`~mechwolf.components.vici.ViciValve` will inherit it automatically.
 
 Now for the important parts: we need to make the object be able to make its
 real-world state match the object's state. We do that with the ``update``

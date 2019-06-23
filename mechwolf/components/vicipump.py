@@ -64,6 +64,3 @@ class ViciPump(Pump):
 
         self.set_flow(self.rate)
         return {"rate": str(self.rate)}
-
-    def config(self):
-        return dict(serial_port=(str, None), volume_per_rev=(float, None))

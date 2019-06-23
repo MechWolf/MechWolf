@@ -15,6 +15,3 @@ class Dummy(ActiveComponent):
         else:
             print("Inactive and async.")
         yield dict(active=self.active)
-
-    def config(self):
-        return {}

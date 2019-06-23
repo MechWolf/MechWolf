@@ -82,38 +82,6 @@ def validate_component(component, warnings=True):
                 )
             return False
 
-    # ensure type of config is valid
-    if not isinstance(component.config(), dict):
-        if warnings:
-            print(
-                term.red(
-                    f"The config() method for {component} must return a dictionary."
-                )
-            )
-        return False
-
-    for k, v in component.config().items():
-
-        # check that the attributes match
-        if not hasattr(component, k):
-            if warnings:
-                print(
-                    term.red(
-                        f"Invalid attribute {k} for {component}. Valid attributes are {component.__dict__}"
-                    )
-                )
-            return False
-
-        # check that the configuration tuple is valid
-        if type(v) not in [tuple, list] or len(v) != 2 or not isinstance(v[0], type):
-            if warnings:
-                print(
-                    term.red(
-                        f"Invalid configuration for {k} in {component}. Should be (type, default)."
-                    )
-                )
-            return False
-
     if isinstance(component, Sensor):
         if not callable(getattr(component, "read", None)):
             if warnings:

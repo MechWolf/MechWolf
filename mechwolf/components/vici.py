@@ -49,9 +49,6 @@ class ViciValve(Valve):
             return position
         return False
 
-    def config(self):
-        return {"serial_port": (str, None)}
-
     def update(self):
         message = f"GO{self.setting}\r"
         self.ser.write(message.encode())  # send the message to the valve

@@ -87,28 +87,14 @@ class ActiveComponent(Component):
             {"rate": "0 ml/min"}
 
         """
-        pass
-
-    def config(self):
-        """A placeholder method containing the information needed to configure the component.
-
-        When an ActiveComponent is used in the real world, there is likely
-        variables that will need to be configured such as serial port. This
-        method returns that information.
-
-        Returns:
-            dict: A dict of the form ``{attribute: (type, default)}``. If there is no
-            default, the value should be ``(type, None)``.
-
-        Example:
-            >>> ViciValve.config()
-            {"serial_port": (str, None)}
-
-        """
-        return {}
+        raise NotImplementedError(
+            "Please implement the base_state() method for the object."
+        )
 
     def update(self):
-        pass
+        raise NotImplementedError(
+            "Please implement the update() method for the object."
+        )
 
     async def monitor(self):
         yield None

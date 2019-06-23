@@ -64,7 +64,3 @@ class VarianPump(Pump):
             "params": {"rate": str(new_rate)},
             "device": "self.name",
         }
-
-    def config(self):
-        # TODO Make max_rate a ureg?
-        return dict(serial_port=(str, None), max_rate=(int, None))
