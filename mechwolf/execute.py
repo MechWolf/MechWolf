@@ -94,7 +94,7 @@ class DeviceNotFound(Exception):
     pass
 
 
-def jupyter_execute(protocol, **kwargs):
+def jupyter_execute(protocol):
     """
         Executes the specified protocol in a jupyter notebook.
 
@@ -138,15 +138,13 @@ def jupyter_execute(protocol, **kwargs):
     return experiment
 
 
-def execute(protocol, delay=5, **kwargs):
+def execute(protocol):
     """
         Executes the specified protocol.
-        Starts after the specified delay.
 
         Args:
             protocol: A protocol of the form mechwolf.Protocol
             apparatus: An apparatus of the form mechwolf.Apparatus
-            delay (sec): Number of seconds to delay execution of the protocol.
 
         Returns:
             mechwolf.Experiment object containing information about the running
