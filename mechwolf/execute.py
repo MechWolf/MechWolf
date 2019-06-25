@@ -1,9 +1,10 @@
 import asyncio
-import logging
 import time
 from collections import namedtuple
 from contextlib import ExitStack
 from datetime import datetime
+
+from loguru import logger
 
 from .components import Sensor
 
@@ -14,6 +15,7 @@ async def main(experiment, dry_run):
 
     tasks = []
 
+    logger.info(f"Compiling protocol with dry_run = {dry_run}")
     compiled_protocol = experiment.protocol.compile(dry_run=dry_run)
 
     # Run protocol
@@ -30,6 +32,8 @@ async def main(experiment, dry_run):
                 [procedure["time"] for procedure in compiled_protocol[component]]
             ).magnitude
 
+            logger.debug(f"Calculated {component} end time is {end_time}")
+
             for procedure in compiled_protocol[component]:
                 tasks.append(
                     create_procedure(
@@ -43,22 +47,27 @@ async def main(experiment, dry_run):
 
             # for sensors, add the monitor task
             if isinstance(component, Sensor):
+                logger.debug(f"Creating sensor monitoring task for {component}")
                 tasks.append(
                     monitor(component=component, experiment=experiment, dry_run=dry_run)
                 )
 
         experiment.start_time = time.time()
 
-        print(
-            f"{experiment} started at {datetime.fromtimestamp(experiment.start_time)} ({experiment.start_time} Unix time)"
+        start_msg = (
+            f"{experiment} started at {datetime.fromtimestamp(experiment.start_time)}"
+            f" ({experiment.start_time} Unix time)"
         )
+        logger.success(start_msg)
         await asyncio.gather(*tasks)
 
         # when this code block is reached, the tasks will have completed
         experiment.end_time = time.time()
-        print(
-            f"{experiment} completed at {datetime.fromtimestamp(experiment.end_time)} ({experiment.end_time} Unix time)"
+        end_msg = (
+            f"{experiment} completed at {datetime.fromtimestamp(experiment.end_time)}"
+            f" ({experiment.end_time} Unix time)"
         )
+        logger.success(end_msg)
 
 
 async def create_procedure(procedure, component, experiment, end_time, dry_run):
@@ -72,18 +81,18 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
     )  # NOTE: this doesn't actually call the update() method
 
     if dry_run:
-        logging.info(
+        logger.info(
             f"Simulating execution: {procedure} on {component} at {time.time()}"
         )
         procedure_record = {}
     else:
-        logging.info(f"Executing: {procedure} on {component} at {time.time()}")
+        logger.info(f"Executing: {procedure} on {component} at {time.time()}")
         procedure_record = component.update()  # NOTE: This does!
 
     try:
         timestamp = procedure_record["timestamp"]
     except KeyError:
-        logging.debug(
+        logger.trace(
             f"No timestamp passed for {component}. Defaulting to current time."
         )
         timestamp = time.time()

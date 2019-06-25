@@ -45,6 +45,7 @@ setup(
         "pyserial",
         "PyYAML",
         "jupyter",
+        "loguru",
         "stackprinter",
     ],
     extras_require={

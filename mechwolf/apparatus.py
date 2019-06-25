@@ -1,4 +1,3 @@
-import logging
 import sys
 
 import networkx as nx
@@ -9,8 +8,6 @@ from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 
 from . import term, ureg
 from .components import Component, Tube, Valve, Vessel
-
-logging.basicConfig(level=20)
 
 
 class Apparatus(object):
