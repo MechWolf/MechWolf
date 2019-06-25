@@ -3,6 +3,7 @@ import logging
 import time
 from collections import namedtuple
 from contextlib import ExitStack
+from datetime import datetime
 
 from .components import Sensor
 
@@ -48,11 +49,16 @@ async def main(experiment, dry_run):
 
         experiment.start_time = time.time()
 
-        print(f"{experiment} started at {experiment.start_time}")
+        print(
+            f"{experiment} started at {datetime.fromtimestamp(experiment.start_time)} ({experiment.start_time} Unix time)"
+        )
         await asyncio.gather(*tasks)
 
         # when this code block is reached, the tasks will have completed
-        print(f"{experiment} completed.")
+        experiment.end_time = time.time()
+        print(
+            f"{experiment} completed at {datetime.fromtimestamp(experiment.end_time)} ({experiment.end_time} Unix time)"
+        )
 
 
 async def create_procedure(procedure, component, experiment, end_time, dry_run):

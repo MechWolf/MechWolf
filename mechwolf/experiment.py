@@ -12,10 +12,11 @@ class Experiment(object):
     """
 
     def __init__(self, protocol):
-        self.experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
+        self.experiment_id = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{uuid1()}'
 
         self.protocol = protocol
         self.start_time = None  # the experiment hasn't started until main() is called
+        self.end_time = None
         self.data = {}
         self.executed_procedures = []
 
