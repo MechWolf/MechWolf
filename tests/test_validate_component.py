@@ -1,3 +1,5 @@
+import pytest
+
 import mechwolf as mw
 
 
@@ -7,19 +9,8 @@ def test_validate_component():
         def __init__(self):
             super().__init__()
 
-    assert not mw.validate_component(Test())
-
-
-def test_no_update_method():
-    # doesn't have an update method
-    class Test(mw.ActiveComponent):
-        def __init__(self):
-            super().__init__(name=None)
-
-        def base_state(self):
-            pass
-
-    assert not mw.validate_component(Test())
+    assert Test().validate(dry_run=True)
+    assert not Test().validate(dry_run=False)
 
 
 def test_no_update_dict():
@@ -27,14 +18,19 @@ def test_no_update_dict():
     class Test(mw.ActiveComponent):
         def __init__(self):
             super().__init__(name=None)
+            self.active = True
 
         def update(self):
             pass
 
         def base_state(self):
-            pass
+            return dict(active=True)
 
-    assert not mw.validate_component(Test())
+    with pytest.warns(UserWarning):
+        assert Test().validate(
+            dry_run=True
+        )  # this shouldn't be caught during a dry run
+        assert not Test().validate(dry_run=False)
 
 
 def test_empty_base_state():
@@ -50,7 +46,8 @@ def test_empty_base_state():
         def base_state(self):
             return {}
 
-    assert not mw.validate_component(Test())
+    with pytest.warns(UserWarning):
+        assert not Test().validate(dry_run=True)
 
 
 def test_invalid_base_state():
@@ -66,7 +63,8 @@ def test_invalid_base_state():
         def base_state(self):
             return dict(rate="10 mL")
 
-    assert not mw.validate_component(Test())
+    with pytest.warns(UserWarning):
+        assert not Test().validate(dry_run=True)
 
 
 def test_wrong_base_state_dimensionality():
@@ -82,7 +80,8 @@ def test_wrong_base_state_dimensionality():
         def base_state(self):
             return dict(rate="10 mL")
 
-    assert not mw.validate_component(Test())
+    with pytest.warns(UserWarning):
+        assert not Test().validate(dry_run=True)
 
 
 def test_passing_class():
@@ -93,13 +92,14 @@ def test_passing_class():
             self.serial_port = serial_port
 
         def update(self):
-            pass
+            return {}
 
         def base_state(self):
             return dict(active=False)
 
-    # passing the class, not an instance
-    assert not mw.validate_component(Test)
+    # should pass both as a dry run and as a real run (since update doesn't do anything)
+    assert Test().validate(dry_run=True)
+    assert Test().validate(dry_run=False)
 
 
 def test_base_state_type():
@@ -116,7 +116,8 @@ def test_base_state_type():
         def base_state(self):
             return dict(active="10 mL")
 
-    assert not mw.validate_component(Test())
+    with pytest.warns(UserWarning):
+        assert not Test().validate(dry_run=True)
 
     # not right base_state value type
     class Test(mw.ActiveComponent):
@@ -131,7 +132,8 @@ def test_base_state_type():
         def base_state(self):
             return "not a dict"
 
-    assert not mw.validate_component(Test())
+    with pytest.warns(UserWarning):
+        assert not Test().validate(dry_run=True)
 
 
 def test_validate_sensor_without_read():
@@ -140,7 +142,9 @@ def test_validate_sensor_without_read():
             super().__init__(name=None)
             self.serial_port = serial_port
 
-    assert not mw.validate_component(Test())
+    with pytest.warns(UserWarning):
+        assert Test().validate(dry_run=True)  # should pass during a dry run
+        assert not Test().validate(dry_run=False)
 
 
 def test_validate_sensor_with_read():
@@ -149,7 +153,8 @@ def test_validate_sensor_with_read():
             super().__init__(name=None)
             self.serial_port = serial_port
 
-        def read():
+        def read(self):
             pass
 
-    assert mw.validate_component(Test())
+    with pytest.warns(UserWarning):
+        assert Test().validate(dry_run=False)

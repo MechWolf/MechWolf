@@ -1,6 +1,7 @@
 import asyncio
 import time
 from math import sin
+from warnings import warn
 
 from . import ureg
 from .component import ActiveComponent
@@ -39,7 +40,7 @@ class Sensor(ActiveComponent):
             "device": self.name,
         }
 
-    async def monitor(self):
+    async def monitor(self, dry_run=False):
         """If data collection is off and needs to be turned on, turn it on.
            If data collection is on and needs to be turned off, turn off and return data."""
         while True:
@@ -47,10 +48,29 @@ class Sensor(ActiveComponent):
                 break
             frequency = self.rate.to_base_units().magnitude
             if frequency != 0:
-                yield {"datapoint": self.read(), "timestamp": time.time()}
+                if not dry_run:
+                    yield {"datapoint": self.read(), "timestamp": time.time()}
+                else:
+                    yield {"datapoint": "simulated read", "timestamp": time.time()}
                 await asyncio.sleep(1 / frequency)
             else:
                 await asyncio.sleep(frequency)
+
+    def validate(self, dry_run):
+        if not dry_run:
+            try:
+                res = self.read()
+            except NotImplementedError:
+                warn("Sensors must have a read method that returns the sensor's data")
+                return False
+
+            if not res:
+                warn(
+                    "Sensor reads should probably return data. "
+                    f"Currently, {self}.read() does not return anything."
+                )
+
+        return super().validate(dry_run=dry_run)
 
 
 class DummySensor(Sensor):

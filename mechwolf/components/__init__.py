@@ -6,7 +6,7 @@ term = _term
 from .component import Component, ActiveComponent
 from .dummy import Dummy
 from .mixer import Mixer, TMixer, YMixer, CrossMixer
-from .pump import Pump
+from .pump import Pump, DummyPump
 from .sensor import Sensor, DummySensor
 from .tempcontrol import TempControl
 from .tube import Tube
