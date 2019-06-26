@@ -8,9 +8,7 @@ from loguru import logger
 
 from .components import Sensor
 
-Datapoint = namedtuple(
-    "Datapoint", ["datapoint", "timestamp", "experiment_elapsed_time"]
-)
+Datapoint = namedtuple("Datapoint", ["data", "timestamp", "experiment_elapsed_time"])
 
 
 async def main(experiment, dry_run):
@@ -104,8 +102,6 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
         "executed_procedure" if not dry_run else "simulated_procedure"
     )
     procedure_record["experiment_elapsed_time"] = timestamp - experiment.start_time
-    if end_time == execution_time:
-        component.done = True
 
     experiment.executed_procedures.append(procedure_record)
 
@@ -115,7 +111,7 @@ async def monitor(component, experiment, dry_run):
         experiment.update(
             component.name,
             Datapoint(
-                datapoint=result["datapoint"],
+                data=result["datapoint"],
                 timestamp=result["timestamp"],
                 experiment_elapsed_time=result["timestamp"] - experiment.start_time,
             ),

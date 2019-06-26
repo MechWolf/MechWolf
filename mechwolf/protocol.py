@@ -455,12 +455,6 @@ class Protocol(object):
             print("Protocol is currently running.")
             return
 
-        compiled = self.compile(dry_run=dry_run)
-
-        # reinitialize objects
-        for component in compiled.keys():
-            component.done = False
-
         # the Experiment object is going to hold all the info
         experiment = Experiment(self)
 
@@ -474,7 +468,5 @@ class Protocol(object):
         finally:
             self.is_executing = False
             self.was_executed = True
-            for component in compiled.keys():
-                component.done = False
 
         return experiment
