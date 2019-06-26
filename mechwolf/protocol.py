@@ -371,7 +371,7 @@ class Protocol(object):
             pass
         return compiled_json
 
-    def dict(self):
+    def to_dict(self):
         compiled = deepcopy(self.compile(dry_run=True))
         for item in compiled.items():
             for procedure in item[1]:
@@ -391,7 +391,7 @@ class Protocol(object):
         Raises:
             Same as :meth:`Protocol.compile`.
         """
-        compiled_yaml = yaml.safe_dump(json.loads(str(self.json())))
+        compiled_yaml = yaml.safe_dump(self.to_dict(), default_flow_style=False)
 
         try:
             get_ipython
