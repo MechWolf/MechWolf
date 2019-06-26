@@ -1,9 +1,12 @@
 import time
-from uuid import uuid1
 from warnings import warn
 
+import ipywidgets as widgets
 from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
+from IPython.display import display
+from loguru import logger
+from xxhash import xxh32
 
 
 class Experiment(object):
@@ -12,7 +15,7 @@ class Experiment(object):
     """
 
     def __init__(self, protocol):
-        self.experiment_id = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{uuid1()}'
+        self.experiment_id = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{xxh32(str(protocol.yaml())).hexdigest()}'
 
         self.protocol = protocol
         self.start_time = None  # the experiment hasn't started until main() is called
@@ -31,8 +34,36 @@ class Experiment(object):
             ],
         }
 
-    def __repr__(self):
-        return f"<Experiment {self.experiment_id}>"
+    def _repr_html_(self):
+
+        # create a nice, pretty HTML string wth the metadata
+        data = {"Protocol name": self.protocol.name, "Start time": self.start_time}
+        metadata = "<ul>"
+        for k, v in data.items():
+            metadata += f"<li>{k}: {v}</li>"
+        metadata += "</ul>"
+
+        # create the output tab widget with its children
+        tab = widgets.Tab()
+        tab.children = [widgets.HTML(value=metadata), widgets.Output()]
+        tab.set_title(0, "Metadata")
+        tab.set_title(1, "Log")
+        output_widget = widgets.VBox(
+            [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), tab]
+        )
+
+        display(output_widget)
+
+        # route logging to go to the widget TODO: add support for saving to file as well
+        logger.remove()
+
+        def log(x):
+            with output_widget.children[1].children[1]:  # the log
+                print(x)
+
+        logger.add(lambda x: log(x), level="INFO")
+
+        return ""
 
     def __str__(self):
         return f"Experiment {self.experiment_id}"
