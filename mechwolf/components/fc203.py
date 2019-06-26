@@ -48,8 +48,7 @@ class GilsonFC203(ActiveComponent):
         else:
             self.goto(self.position)
 
-        print(self.position)
-        yield {"position": self.position}
+        return True
 
     def base_state(self):
         """We assume that the collector starts at the drain position.

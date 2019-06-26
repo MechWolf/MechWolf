@@ -92,7 +92,7 @@ class Experiment(object):
             # Register chart for continuous updating
             self._charts[device] = (target, r)
 
-    def update(self, device, datapoint):
+    def update(self, device: str, datapoint):
         # If a chart has been registered to the device, update it.
         if device not in self.data:
             self.data[device] = []
@@ -100,9 +100,9 @@ class Experiment(object):
 
         if device in self._transformed_data:
             target, r = self._charts[device]
-            self._transformed_data[device]["datapoints"].append(datapoint.datapoint)
+            self._transformed_data[device]["datapoints"].append(datapoint.data)
             self._transformed_data[device]["timestamps"].append(
-                datapoint.timestamp - self.start_time
+                datapoint.experiment_elapsed_time
             )
             r.data_source.data["datapoints"] = self._transformed_data[device][
                 "datapoints"

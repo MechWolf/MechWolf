@@ -1,5 +1,3 @@
-import time
-
 from . import ureg
 from .pump import Pump
 
@@ -59,8 +57,4 @@ class VarianPump(Pump):
     def update(self):
         new_rate = self.rate.to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
-        return {
-            "timestamp": time.time(),
-            "params": {"rate": str(new_rate)},
-            "device": self.name,
-        }
+        return True

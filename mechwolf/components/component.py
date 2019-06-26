@@ -103,7 +103,7 @@ class ActiveComponent(Component):
     def update(self):
         raise NotImplementedError(
             f"Please implement the update() method for {self}. "
-            "This method should return a dict."
+            "This method should return a True if the update was successful and False otherwise."
         )
 
     def validate(self, dry_run):
@@ -160,8 +160,10 @@ class ActiveComponent(Component):
         if not dry_run:
             self.update_from_params(self.base_state())
             with self:
-                if not isinstance(self.update(), dict):
-                    warn(f"Update method for {self} should return a dict.")
+                if not self.update():
+                    warn(
+                        f"Failed to set {self} to base state. Aborting before execution."
+                    )
                     return False
 
         return True

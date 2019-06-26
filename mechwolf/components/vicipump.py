@@ -1,5 +1,3 @@
-import time
-
 from . import ureg
 from .pump import Pump
 
@@ -58,8 +56,4 @@ class ViciPump(Pump):
 
     def update(self):
         self.set_flow(self.rate)
-        return {
-            "timestamp": time.time(),
-            "params": {"rate": str(self.rate)},
-            "device": self.name,
-        }
+        return True

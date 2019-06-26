@@ -87,21 +87,18 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
         procedure_record = {}
     else:
         logger.info(f"Executing: {procedure} on {component} at {time.time()}")
-        procedure_record = component.update()  # NOTE: This does!
+        success = component.update()  # NOTE: This does!
 
-    try:
-        timestamp = procedure_record["timestamp"]
-    except KeyError:
-        logger.trace(
-            f"No timestamp passed for {component}. Defaulting to current time."
-        )
-        timestamp = time.time()
-
-    procedure_record["params"] = procedure["params"]
-    procedure_record["type"] = (
-        "executed_procedure" if not dry_run else "simulated_procedure"
+    procedure_record = {
+        "timestamp": time.time(),
+        "params": procedure["params"],
+        "type": "executed_procedure" if not dry_run else "simulated_procedure",
+        "component": component,
+        "success": success,
+    }
+    procedure_record["experiment_elapsed_time"] = (
+        procedure_record["timestamp"] - experiment.start_time
     )
-    procedure_record["experiment_elapsed_time"] = timestamp - experiment.start_time
 
     experiment.executed_procedures.append(procedure_record)
 
@@ -111,7 +108,7 @@ async def monitor(component, experiment, dry_run):
         experiment.update(
             component.name,
             Datapoint(
-                data=result["datapoint"],
+                data=result["data"],
                 timestamp=result["timestamp"],
                 experiment_elapsed_time=result["timestamp"] - experiment.start_time,
             ),

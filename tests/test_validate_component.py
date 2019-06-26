@@ -14,23 +14,19 @@ def test_validate_component():
 
 
 def test_no_update_dict():
-    # base_state doesn't return a dictionary
+    # update doesn't return a dictionary
     class Test(mw.ActiveComponent):
         def __init__(self):
             super().__init__(name=None)
             self.active = True
 
-        def update(self):
-            pass
-
         def base_state(self):
             return dict(active=True)
 
-    with pytest.warns(UserWarning):
-        assert Test().validate(
-            dry_run=True
-        )  # this shouldn't be caught during a dry run
-        assert not Test().validate(dry_run=False)
+    assert Test().validate(dry_run=True)
+
+    with pytest.raises(NotImplementedError):
+        Test().validate(dry_run=False)
 
 
 def test_empty_base_state():
@@ -41,7 +37,7 @@ def test_empty_base_state():
             self.active = False
 
         def update(self):
-            pass
+            return True
 
         def base_state(self):
             return {}
@@ -58,7 +54,7 @@ def test_invalid_base_state():
             self.active = False
 
         def update(self):
-            pass
+            return True
 
         def base_state(self):
             return dict(rate="10 mL")
@@ -75,7 +71,7 @@ def test_wrong_base_state_dimensionality():
             self.rate = mw.ureg.parse_expression("10 mL/min")
 
         def update(self):
-            pass
+            return True
 
         def base_state(self):
             return dict(rate="10 mL")
@@ -92,7 +88,7 @@ def test_passing_class():
             self.serial_port = serial_port
 
         def update(self):
-            return {}
+            return True
 
         def base_state(self):
             return dict(active=False)
@@ -111,7 +107,7 @@ def test_base_state_type():
             self.serial_port = serial_port
 
         def update(self):
-            pass
+            return True
 
         def base_state(self):
             return dict(active="10 mL")
@@ -127,7 +123,7 @@ def test_base_state_type():
             self.serial_port = serial_port
 
         def update(self):
-            pass
+            return True
 
         def base_state(self):
             return "not a dict"
@@ -143,18 +139,22 @@ def test_validate_sensor_without_read():
             self.serial_port = serial_port
 
     with pytest.warns(UserWarning):
-        assert Test().validate(dry_run=True)  # should pass during a dry run
         assert not Test().validate(dry_run=False)
+    assert Test().validate(dry_run=True)  # should pass during a dry run
 
 
-def test_validate_sensor_with_read():
+def test_validate_sensor_with_failing_update():
     class Test(mw.Sensor):
         def __init__(self, serial_port=None):
             super().__init__(name=None)
             self.serial_port = serial_port
 
         def read(self):
-            pass
+            return True
 
+        def update(self):
+            return False
+
+    assert Test().validate(dry_run=True)
     with pytest.warns(UserWarning):
-        assert Test().validate(dry_run=False)
+        assert not Test().validate(dry_run=False)

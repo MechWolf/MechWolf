@@ -14,4 +14,4 @@ class Dummy(ActiveComponent):
             print("Active and async!")
         else:
             print("Inactive and async.")
-        yield dict(active=self.active)
+        yield True

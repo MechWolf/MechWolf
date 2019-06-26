@@ -40,4 +40,4 @@ class DummyPump(Pump):
         super().__init__(name=name)
 
     def update(self):
-        return {}
+        return True

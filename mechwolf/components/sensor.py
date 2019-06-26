@@ -36,17 +36,19 @@ class Sensor(ActiveComponent):
         """If data collection is off and needs to be turned on, turn it on.
            If data collection is on and needs to be turned off, turn off and return data."""
         while True:
-            if self.rate:
-                break
+
             frequency = self.rate.to_base_units().magnitude
-            if frequency != 0:
+
+            if not frequency:
+                await asyncio.sleep(
+                    0.1
+                )  # check back in 100 ms to see if the sensor is active again
+            else:
                 if not dry_run:
                     yield {"data": self.read(), "timestamp": time.time()}
                 else:
                     yield {"data": "simulated read", "timestamp": time.time()}
                 await asyncio.sleep(1 / frequency)
-            else:
-                await asyncio.sleep(frequency)
 
     def validate(self, dry_run):
         if not dry_run:
@@ -84,3 +86,6 @@ class DummySensor(Sensor):
         """Collect the data."""
         self.counter += 1
         return self.counter * sin(self.counter * 0.314)
+
+    def update(self):
+        return True
