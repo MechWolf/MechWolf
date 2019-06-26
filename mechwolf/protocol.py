@@ -362,7 +362,7 @@ class Protocol(object):
         Raises:
             Same as :meth:`Protocol.compile`.
         """
-        compiled_json = json.dumps(self.dict(), sort_keys=True, indent=4)
+        compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
 
         try:
             get_ipython
@@ -379,6 +379,15 @@ class Protocol(object):
         compiled = {k.name: v for (k, v) in compiled.items()}
         return compiled
 
+    def to_list(self):
+        output = []
+        for procedure in deepcopy(self.procedures):
+            procedure["start"] = procedure["start"].to_timedelta().total_seconds()
+            procedure["stop"] = procedure["stop"].to_timedelta().total_seconds()
+            procedure["component"] = procedure["component"].name
+            output.append(procedure)
+        return output
+
     def yaml(self):
         """Compiles protocol and outputs to YAML.
 
@@ -391,7 +400,7 @@ class Protocol(object):
         Raises:
             Same as :meth:`Protocol.compile`.
         """
-        compiled_yaml = yaml.safe_dump(self.to_dict(), default_flow_style=False)
+        compiled_yaml = yaml.safe_dump(self.to_list(), default_flow_style=False)
 
         try:
             get_ipython

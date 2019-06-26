@@ -193,16 +193,20 @@ def test_compile():
 def test_json():
     P = mw.Protocol(A, duration="auto")
     P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
-    assert json.loads(P.json()) == {
-        "pump1": [
-            {"params": {"rate": "10 mL/min"}, "time": 0.0},
-            {"params": {"rate": "0 mL/min"}, "time": 300.0},
-        ],
-        "pump2": [
-            {"params": {"rate": "10 mL/min"}, "time": 0.0},
-            {"params": {"rate": "0 mL/min"}, "time": 300.0},
-        ],
-    }
+    assert json.loads(P.json()) == [
+        {
+            "start": 0,
+            "stop": 300,
+            "component": "pump1",
+            "params": {"rate": "10 mL/min"},
+        },
+        {
+            "start": 0,
+            "stop": 300,
+            "component": "pump2",
+            "params": {"rate": "10 mL/min"},
+        },
+    ]
 
 
 def test_yaml():
