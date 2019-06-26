@@ -8,7 +8,9 @@ from loguru import logger
 
 from .components import Sensor
 
-Datapoint = namedtuple("Datapoint", ["datapoint", "timestamp"])
+Datapoint = namedtuple(
+    "Datapoint", ["datapoint", "timestamp", "experiment_elapsed_time"]
+)
 
 
 async def main(experiment, dry_run):
@@ -112,5 +114,9 @@ async def monitor(component, experiment, dry_run):
     async for result in component.monitor(dry_run=dry_run):
         experiment.update(
             component.name,
-            Datapoint(datapoint=result["datapoint"], timestamp=result["timestamp"]),
+            Datapoint(
+                datapoint=result["datapoint"],
+                timestamp=result["timestamp"],
+                experiment_elapsed_time=result["timestamp"] - experiment.start_time,
+            ),
         )

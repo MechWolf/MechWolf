@@ -23,7 +23,6 @@ class Sensor(ActiveComponent):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 Hz")
         self._visualization_shape = "ellipse"
-        self.done = False
 
     def base_state(self):
         """Default to being inactive."""
@@ -33,25 +32,18 @@ class Sensor(ActiveComponent):
         """Collect the data."""
         raise NotImplementedError
 
-    def update(self):
-        return {
-            "timestamp": time.time(),
-            "params": {"rate": str(self.rate.to_base_units())},
-            "device": self.name,
-        }
-
     async def monitor(self, dry_run=False):
         """If data collection is off and needs to be turned on, turn it on.
            If data collection is on and needs to be turned off, turn off and return data."""
         while True:
-            if self.done:
+            if self.rate:
                 break
             frequency = self.rate.to_base_units().magnitude
             if frequency != 0:
                 if not dry_run:
-                    yield {"datapoint": self.read(), "timestamp": time.time()}
+                    yield {"data": self.read(), "timestamp": time.time()}
                 else:
-                    yield {"datapoint": "simulated read", "timestamp": time.time()}
+                    yield {"data": "simulated read", "timestamp": time.time()}
                 await asyncio.sleep(1 / frequency)
             else:
                 await asyncio.sleep(frequency)
