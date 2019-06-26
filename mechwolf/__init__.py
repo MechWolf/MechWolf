@@ -23,21 +23,3 @@ try:
     stackprinter.set_excepthook(style="lightbg")
 except NameError:
     stackprinter.set_excepthook(style="darkbg2")
-
-import warnings
-from loguru import logger
-
-showwarning_ = warnings.showwarning
-
-
-def showwarning(message, *args, **kwargs):
-    logger.warning(message)
-    # showwarning_(message, *args, **kwargs)
-
-
-warnings.showwarning = showwarning
-
-import sys
-
-logger.remove()
-logger.add(sys.stdout, level="TRACE")
