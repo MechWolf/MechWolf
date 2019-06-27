@@ -25,8 +25,9 @@ class ArduinoSensor(Sensor):
             stopbits=1
             )
             
-        while self.ser.in_waiting:
-            self.ser.reset_input_buffer()
+        # Listen to sensor's self-introduction
+        # (gives it time for internal init)
+        intro = self.ser.readline()
 
         return self
 
@@ -37,7 +38,7 @@ class ArduinoSensor(Sensor):
     def read(self):
 
         # flush in buffer in case we have stale data
-        while self.ser.in_waiting:
+        if self.ser.in_waiting:
             self.ser.reset_input_buffer()
 
         # send the command
@@ -51,3 +52,4 @@ class ArduinoSensor(Sensor):
         except :
             # otherwise it is a float
             return float(data)
+
