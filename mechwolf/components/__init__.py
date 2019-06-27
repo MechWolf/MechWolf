@@ -17,3 +17,4 @@ from .vici import ViciValve
 from .fc203 import GilsonFC203
 from .vicipump import ViciPump
 from .labjack import LabJack
+from .arduino import ArduinoSensor
