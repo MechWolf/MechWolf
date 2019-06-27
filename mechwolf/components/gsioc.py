@@ -3,9 +3,6 @@ try:
 except ImportError:
     pass
 
-from time import sleep
-
-
 class GsiocComponent:
     def __init__(self, serial_port=None, unit_id=0):
         self.ser = serial.Serial(
@@ -22,16 +19,12 @@ class GsiocComponent:
     def reset(self):
         self.immediate_command("$")
 
-    def disconnect(self):
-        # disconnect all slaves
-        self.ser.write([0xFF])
-        # give slaves time to disconnect
-        sleep(0.02)
-        self.ser.reset_input_buffer()
-
     def connect(self):
 
-        self.disconnect()
+        # disconnect all slaves
+        self.ser.write([0xFF])
+        self.ser.reset_input_buffer()
+
         # connect slave with this ID
         max_try = 3
         for i in range(max_try):
