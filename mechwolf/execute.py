@@ -85,6 +85,7 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
             f"Simulating execution: {procedure} on {component} at {time.time()}"
         )
         procedure_record = {}
+        success = True
     else:
         logger.info(f"Executing: {procedure} on {component} at {time.time()}")
         success = component.update()  # NOTE: This does!
