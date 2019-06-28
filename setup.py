@@ -47,6 +47,7 @@ setup(
         "jupyter",
         "loguru",
         "stackprinter",
+        "xxhash",
     ],
     extras_require={
         "dev": [
