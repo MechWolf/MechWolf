@@ -25,6 +25,30 @@ class Experiment(object):
 
         self._charts = {}
         self._transformed_data = {}
+        # create a nice, pretty HTML string wth the metadata
+        data = {"Protocol name": self.protocol.name, "Start time": self.start_time}
+        metadata = "<ul>"
+        for k, v in data.items():
+            metadata += f"<li>{k}: {v}</li>"
+        metadata += "</ul>"
+
+        # create the output tab widget with its children
+        self._tab = widgets.Tab()
+        self._tab.children = [widgets.HTML(value=metadata), widgets.Output()]
+        self._tab.set_title(0, "Metadata")
+        self._tab.set_title(1, "Log")
+        self._output_widget = widgets.VBox(
+            [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), self._tab]
+        )
+
+        # route logging to go to the widget TODO: add support for saving to file as well
+        logger.remove()
+
+        def log(x):
+            with self._output_widget.children[1].children[1]:  # the log
+                print(x)
+
+        logger.add(lambda x: log(x), level="INFO")
 
     def _transform_data(self, device):
         return {
@@ -35,33 +59,7 @@ class Experiment(object):
         }
 
     def _repr_html_(self):
-
-        # create a nice, pretty HTML string wth the metadata
-        data = {"Protocol name": self.protocol.name, "Start time": self.start_time}
-        metadata = "<ul>"
-        for k, v in data.items():
-            metadata += f"<li>{k}: {v}</li>"
-        metadata += "</ul>"
-
-        # create the output tab widget with its children
-        tab = widgets.Tab()
-        tab.children = [widgets.HTML(value=metadata), widgets.Output()]
-        tab.set_title(0, "Metadata")
-        tab.set_title(1, "Log")
-        output_widget = widgets.VBox(
-            [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), tab]
-        )
-
-        # route logging to go to the widget TODO: add support for saving to file as well
-        logger.remove()
-
-        def log(x):
-            with output_widget.children[1].children[1]:  # the log
-                print(x)
-
-        logger.add(lambda x: log(x), level="INFO")
-
-        display(output_widget)
+        display(self._output_widget)
 
     def __str__(self):
         return f"Experiment {self.experiment_id}"

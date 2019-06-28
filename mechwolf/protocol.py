@@ -465,17 +465,17 @@ class Protocol(object):
             return
 
         # the Experiment object is going to hold all the info
-        experiment = Experiment(self)
+        E = Experiment(self)
 
         self.is_executing = True
 
         try:
             get_ipython()
-            asyncio.ensure_future(main(experiment=experiment, dry_run=dry_run))
+            asyncio.ensure_future(main(experiment=E, dry_run=dry_run))
         except NameError:
-            asyncio.run(main(experiment=experiment, dry_run=dry_run))
+            asyncio.run(main(experiment=E, dry_run=dry_run))
         finally:
             self.is_executing = False
             self.was_executed = True
 
-        return experiment
+        return E
