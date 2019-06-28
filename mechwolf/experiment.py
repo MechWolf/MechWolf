@@ -52,8 +52,6 @@ class Experiment(object):
             [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), tab]
         )
 
-        display(output_widget)
-
         # route logging to go to the widget TODO: add support for saving to file as well
         logger.remove()
 
@@ -63,7 +61,7 @@ class Experiment(object):
 
         logger.add(lambda x: log(x), level="INFO")
 
-        return ""
+        display(output_widget)
 
     def __str__(self):
         return f"Experiment {self.experiment_id}"
