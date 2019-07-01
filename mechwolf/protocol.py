@@ -1,3 +1,4 @@
+import asyncio
 import json
 import tempfile
 import webbrowser
@@ -10,9 +11,11 @@ import yaml
 from IPython.display import HTML, Code
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from . import term, ureg
+from . import ureg
 from .apparatus import Apparatus
 from .components import ActiveComponent, TempControl, Valve
+from .execute import main
+from .experiment import Experiment
 
 
 class Protocol(object):
@@ -51,9 +54,7 @@ class Protocol(object):
             duration = ureg.parse_expression(duration)
             if duration.dimensionality != ureg.hours.dimensionality:
                 raise ValueError(
-                    term.red(
-                        f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}"
-                    )
+                    f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}"
                 )
         self.duration = duration
         self.is_executing = False
@@ -73,7 +74,7 @@ class Protocol(object):
         # make sure that the component being added to the protocol is part of the apparatus
         if component not in self.apparatus.components:
             raise ValueError(
-                term.red(f"{component} is not a component of {self.apparatus.name}.")
+                f"{component} is not a component of {self.apparatus.name}."
             )
 
         # perform the mapping for valves
@@ -88,9 +89,7 @@ class Protocol(object):
         # don't let users give empty procedures
         if not kwargs:
             raise RuntimeError(
-                term.red(
-                    "No kwargs supplied. This will not manipulate the state of your sythesizer. Ensure your call to add() is valid."
-                )
+                "No kwargs supplied. This will not manipulate the state of your sythesizer. Ensure your call to add() is valid."
             )
 
         # make sure the component and keywords are valid
@@ -98,9 +97,7 @@ class Protocol(object):
 
             if not hasattr(component, kwarg):
                 raise ValueError(
-                    term.red(
-                        f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}."
-                    )
+                    f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}."
                 )
 
             if (
@@ -109,24 +106,18 @@ class Protocol(object):
                 != component.__dict__[kwarg].dimensionality
             ):
                 raise ValueError(
-                    term.red(
-                        f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}."
-                    )
+                    f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}."
                 )
 
             elif not isinstance(
                 component.__dict__[kwarg], type(value)
             ) and not isinstance(component.__dict__[kwarg], ureg.Quantity):
                 raise ValueError(
-                    term.red(
-                        f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}"
-                    )
+                    f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}"
                 )
 
         if stop is not None and duration is not None:
-            raise RuntimeError(
-                term.red("Must provide one of stop and duration, not both.")
-            )
+            raise RuntimeError("Must provide one of stop and duration, not both.")
 
         # parse the start time if given
         if isinstance(start, timedelta):
@@ -142,10 +133,8 @@ class Protocol(object):
         # determine stop time
         if not any([stop, self.duration, duration]):
             raise RuntimeError(
-                term.red(
-                    "Must specify protocol duration during instantiation in order to omit stop and duration. "
-                    f'To automatically set duration of protocol as end of last procedure in protocol, use duration="auto" when creating {self.name}.'
-                )
+                "Must specify protocol duration during instantiation in order to omit stop and duration. "
+                f'To automatically set duration of protocol as end of last procedure in protocol, use duration="auto" when creating {self.name}.'
             )
         elif stop is not None:
             if isinstance(stop, timedelta):
@@ -161,9 +150,7 @@ class Protocol(object):
                 kwargs["temp"] = "0 degC"
             elif kwargs["active"] and kwargs.get("temp") is None:
                 raise RuntimeError(
-                    term.red(
-                        f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add()."
-                    )
+                    f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add()."
                 )
 
         # add the procedure to the procedure list
@@ -206,12 +193,8 @@ class Protocol(object):
                 _component, start=start, stop=stop, duration=duration, **kwargs
             )
 
-    def compile(self, warnings=True, _visualization=False):
+    def compile(self, dry_run=True, _visualization=False):
         """Compile the protocol into a dict of devices and their procedures.
-
-        Args:
-            warnings (bool, optional): Whether to warn the user of automatic inferences and non-fatal issues.
-                Default (and *highly* recommended setting) is True.
 
         Returns:
             dict: A dict with the names of components as the values and lists of their procedures as the value.
@@ -233,9 +216,8 @@ class Protocol(object):
             )
             if all([x is None for x in self.duration]):
                 raise RuntimeError(
-                    term.red(
-                        'Unable to automatically infer duration of protocol. Must define stop for at least one procedure to use duration="auto".'
-                    )
+                    "Unable to automatically infer duration of protocol."
+                    ' Must define stop or duration for at least one procedure to use duration="auto".'
                 )
             self.duration = self.duration[-1]
 
@@ -245,24 +227,23 @@ class Protocol(object):
             for x in self.apparatus.components
             if issubclass(x.__class__, ActiveComponent)
         ]:
-            # make sure all active components are activated, raising warning if not
-            if component not in [x["component"] for x in self.procedures]:
-                if warnings:
-                    warn(
-                        term.yellow(
-                            f"{component} is an active component but was not used in this procedure. If this is intentional, ignore this warning. To suppress this warning, use warnings=False."
-                        )
-                    )
-
             # determine the procedures for each component
             component_procedures = sorted(
                 [x for x in self.procedures if x["component"] == component],
                 key=lambda x: x["start"],
             )
 
-            # skip compilation of components with no procedures added
+            # skip compiling components without procedures
             if not len(component_procedures):
+                warn(
+                    f"{component} is an active component but was not used in this procedure."
+                    " If this is intentional, ignore this warning."
+                )
                 continue
+
+            # make sure all active components are activated, raising warning if not
+            if not component.validate(dry_run=dry_run):
+                raise RuntimeError("Component is not valid.")
 
             # check for conflicting continuous procedures
             if (
@@ -276,13 +257,9 @@ class Protocol(object):
                 > 1
             ):
                 raise RuntimeError(
-                    term.red(
-                        (
-                            f"{component} cannot have two procedures for the entire duration of the protocol. "
-                            "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "
-                            "Otherwise, reduce ambiguity by defining start and stop times for each procedure."
-                        )
-                    )
+                    f"{component} cannot have two procedures for the entire duration of the protocol. "
+                    "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "
+                    "Otherwise, reduce ambiguity by defining start and stop times for each procedure."
                 )
 
             for i, procedure in enumerate(component_procedures):
@@ -292,7 +269,7 @@ class Protocol(object):
                     and procedure["start"] > procedure["stop"]
                 ):
                     raise RuntimeError(
-                        term.red("Start time must be less than or equal to stop time.")
+                        "Start time must be less than or equal to stop time."
                     )
 
                 # make sure that the start time isn't outside the duration
@@ -302,9 +279,7 @@ class Protocol(object):
                     and procedure["start"] > self.duration
                 ):
                     raise ValueError(
-                        term.red(
-                            f"Procedure cannot start at {procedure['start']}, which is outside the duration of the experiment ({self.duration})."
-                        )
+                        f"Procedure cannot start at {procedure['start']}, which is outside the duration of the experiment ({self.duration})."
                     )
 
                 # make sure that the end time isn't outside the duration
@@ -314,9 +289,7 @@ class Protocol(object):
                     and procedure["stop"] > self.duration
                 ):
                     raise ValueError(
-                        term.red(
-                            f"Procedure cannot end at {procedure['stop']}, which is outside the duration of the experiment ({self.duration})."
-                        )
+                        f"Procedure cannot end at {procedure['stop']}, which is outside the duration of the experiment ({self.duration})."
                     )
 
                 # automatically infer start and stop times
@@ -325,29 +298,21 @@ class Protocol(object):
                         "0 seconds"
                     ):
                         raise RuntimeError(
-                            term.red(
-                                f"Ambiguous start time for {procedure['component']}."
-                            )
+                            f"Ambiguous start time for {procedure['component']}."
                         )
                     elif (
                         component_procedures[i + 1]["start"] is not None
                         and procedure["stop"] is None
                     ):
-                        if warnings:
-                            warn(
-                                term.yellow(
-                                    f"Automatically inferring stop time for {procedure['component']} as beginning of {procedure['component']}'s next procedure. To suppress this warning, use warnings=False."
-                                )
-                            )
+                        warn(
+                            f"Automatically inferring stop time for {procedure['component']} as beginning of {procedure['component']}'s next procedure."
+                        )
                         procedure["stop"] = component_procedures[i + 1]["start"]
                 except IndexError:
                     if procedure["stop"] is None:
-                        if warnings:
-                            warn(
-                                term.yellow(
-                                    f"Automatically inferring stop for {procedure['component']} as the end of the protocol. To override, provide stop in your call to add(). To suppress this warning, use warnings=False."
-                                )
-                            )
+                        warn(
+                            f"Automatically inferring stop for {procedure['component']} as the end of the protocol. To override, provide stop in your call to add()."
+                        )
                         procedure["stop"] = self.duration
 
             # give the component instructions at all times
@@ -388,11 +353,8 @@ class Protocol(object):
             # raise warning if duration is explicitly given but not used?
         return output
 
-    def json(self, warnings=True):
+    def json(self):
         """Compiles protocol and outputs to JSON.
-
-        Args:
-            warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
 
         Returns:
             str: JSON of the compiled protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
@@ -400,12 +362,7 @@ class Protocol(object):
         Raises:
             Same as :meth:`Protocol.compile`.
         """
-        compiled = deepcopy(self.compile(warnings=warnings))
-        for item in compiled.items():
-            for procedure in item[1]:
-                procedure["time"] = procedure["time"].to_timedelta().total_seconds()
-        compiled = {k.name: v for (k, v) in compiled.items()}
-        compiled_json = json.dumps(compiled, sort_keys=True, indent=4)
+        compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
 
         try:
             get_ipython
@@ -414,22 +371,28 @@ class Protocol(object):
             pass
         return compiled_json
 
-    def dict(self, warnings=True):
-        compiled = deepcopy(self.compile(warnings=warnings))
+    def to_dict(self):
+        compiled = deepcopy(self.compile(dry_run=True))
         for item in compiled.items():
             for procedure in item[1]:
                 procedure["time"] = procedure["time"].to_timedelta().total_seconds()
         compiled = {k.name: v for (k, v) in compiled.items()}
         return compiled
 
-    def yaml(self, warnings=True):
+    def to_list(self):
+        output = []
+        for procedure in deepcopy(self.procedures):
+            procedure["start"] = procedure["start"].to_timedelta().total_seconds()
+            procedure["stop"] = procedure["stop"].to_timedelta().total_seconds()
+            procedure["component"] = procedure["component"].name
+            output.append(procedure)
+        return output
+
+    def yaml(self):
         """Compiles protocol and outputs to YAML.
 
         Internally, this is a conversion of the output of :meth:`Protocol.json`
         for the purpose of enhanced human readability.
-
-        Args:
-            warnings (bool, optional): See :meth:`Protocol.compile` for full explanation of this argument.
 
         Returns:
             str: YAML of the compiled protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
@@ -437,7 +400,7 @@ class Protocol(object):
         Raises:
             Same as :meth:`Protocol.compile`.
         """
-        compiled_yaml = yaml.safe_dump(json.loads(str(self.json(warnings=warnings))))
+        compiled_yaml = yaml.safe_dump(self.to_list(), default_flow_style=False)
 
         try:
             get_ipython
@@ -485,8 +448,22 @@ class Protocol(object):
 
         return visualization
 
-    def execute(self):
+    def execute(self, dry_run=False, verbosity="info"):
         """Executes the procedure.
+
+        Args:
+            dry_run (bool, optional): Whether to simulate the experiment or
+                actually perform it. Defaults to False, which means executing the
+                protocol on real hardware.
+
+            verbosity (str, optional): The level of logging verbosity. One of
+                ``"critical"``, ``"error"``, ``"warning"``, ``"success"``,
+                ``"info"``, ``"debug"``, or ``"trace"`` in descending order of
+                severity. ``"debug"`` and (especially) ``"trace"`` are not meant to
+                be used regularly, as they generate significant amounts of usually
+                useless information. However, these verbosity levels are useful for
+                tracing where exactly a bug was generated, especially if no error
+                message was thrown. Defaults to ``"info"``.
 
         Note:
             Must only contain :class:`~mechwolf.components.component.ActiveComponent` s that have an
@@ -496,29 +473,23 @@ class Protocol(object):
             RuntimeError: When attempting to execute a protocol on invalid components.
         """
 
-        # Ensure that execution isn't happening on invalid components
-        # if not all([validate_component(x["component"]) for x in self.procedures]):
-        #     raise RuntimeError(term.red(f"Attempting to execute protocol on invalid component {x['component']}. Aborted.")
-        #
-        # if confirmation:
-        #     confirm("Are you sure you want to execute this procedure?", abort=True, default=True)
-        #
-        # # subit the protocol to the hub
-        # try:
-        #     response = requests.post(f"{address}/submit_protocol", data=dict(protocol=self.json()), verify=False).text
-        #     if response == "protocol rejected: different protocol being executed":
-        #         raise RuntimeError(term.red("Protocol rejected because hub is currently executing a different protocol.")
-        #     elif response != "protocol rejected: invalid signature":
-        #         print(f"Protocol id: {response}")
-        # except BaseException:
-        #     pass
-        # warn("This functions has been temporarily deprecated", DeprecationWarning)
+        # If protocol is executing, return an error
+        if self.is_executing:
+            print("Protocol is currently running.")
+            return
+
+        # the Experiment object is going to hold all the info
+        E = Experiment(self, verbosity.upper())
+
+        self.is_executing = True
+
         try:
-            get_ipython
-            from .execute import jupyter_execute
-
-            return jupyter_execute(self)
+            get_ipython()
+            asyncio.ensure_future(main(experiment=E, dry_run=dry_run))
         except NameError:
-            from .execute import execute
+            asyncio.run(main(experiment=E, dry_run=dry_run))
+        finally:
+            self.is_executing = False
+            self.was_executed = True
 
-            return execute(self)
+        return E

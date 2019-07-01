@@ -1,278 +1,122 @@
 import asyncio
-import logging
 import time
 from collections import namedtuple
 from contextlib import ExitStack
 from datetime import datetime
-from uuid import uuid1
 
-from bokeh.io import output_notebook, push_notebook, show
-from bokeh.plotting import figure
+from loguru import logger
 
-from . import term
+from .components import Sensor
 
-Datapoint = namedtuple("Datapoint", ["datapoint", "timestamp"])
+Datapoint = namedtuple("Datapoint", ["data", "timestamp", "experiment_elapsed_time"])
 
 
-class Experiment(object):
-    """
-        Experiments contain all data from execution of a protocol.
-    """
-
-    def __init__(
-        self, experiment_id, protocol, apparatus, start_time, data, executed_procedures
-    ):
-        self.experiment_id = experiment_id
-        self.protocol = protocol
-        self.apparatus = apparatus
-        self.start_time = start_time
-        self.data = data
-        self.executed_procedures = executed_procedures
-
-        self._charts = {}
-        self._transformed_data = {}
-
-    def _transform_data(self, device):
-        data = self.data[device]
-        return {
-            "datapoints": [datapoint.datapoint for datapoint in data],
-            "timestamps": [datapoint.timestamp - self.start_time for datapoint in data],
-        }
-
-    def __repr__(self):
-        return f'Experiment started on {datetime.fromtimestamp(self.start_time).strftime("%a, %d %b %Y %H:%M:%S")}'
-
-    def visualize(self):
-        try:
-            get_ipython  # noqa
-        except NameError:
-            logging.warning(
-                term.yellow(
-                    "Visualization of Experiment objects is only supported inside Jupyter notebooks. Skipping..."
-                )
-            )
-            return False
-        output_notebook()
-
-        for device in self.data:
-            self._transformed_data[device] = self._transform_data(device)
-            p = figure(title=f"{device} data", plot_height=300, plot_width=600)
-            r = p.line(
-                source=self._transformed_data[device],
-                x="timestamps",
-                y="datapoints",
-                color="#2222aa",
-                line_width=3,
-            )
-            target = show(p, notebook_handle=True)
-            # Register chart for continuous updating
-            self._charts[device] = (target, r)
-
-    def update_chart(self, device, datapoint):
-        # If a chart has been registered to the device, update it.
-        if device not in self.data:
-            self.data[device] = []
-        self.data[device].append(datapoint)
-        if device in self._transformed_data:
-            target, r = self._charts[device]
-            self._transformed_data[device]["datapoints"].append(datapoint.datapoint)
-            self._transformed_data[device]["timestamps"].append(
-                datapoint.timestamp - self.start_time
-            )
-            r.data_source.data["datapoints"] = self._transformed_data[device][
-                "datapoints"
-            ]
-            r.data_source.data["timestamps"] = self._transformed_data[device][
-                "timestamps"
-            ]
-            push_notebook(handle=target)
-
-
-class DeviceNotFound(Exception):
-    """Raised if a device specified in the protocol is not in the apparatus."""
-
-    pass
-
-
-def jupyter_execute(protocol):
-    """
-        Executes the specified protocol in a jupyter notebook.
-
-        Args:
-            protocol: A protocol of the form mechwolf.Protocol
-
-        Returns:
-            mechwolf.Experiment object containing information about the running
-            protocol.
-
-        Raises:
-            DeviceNotFound: if a device in the protocol is not in the apparatus.
-    """
-    # If protocol is executing, return an error
-    if protocol.is_executing:
-        print("Protocol is currently running.")
-        return
-
-    # reinitialize objects
-    for component in protocol.compile().keys():
-        component.done = False
-    # Extract the protocol from the Protocol object (or protocol json)
-    apparatus = protocol.apparatus
-    experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
-
-    print(term.green_bold(f"Experiment {experiment_id} initiated"))
-    logging.info(f"Experiment {experiment_id} initiated")
-
-    start_time = time.time()
-    experiment = Experiment(
-        experiment_id, protocol, apparatus, start_time, data={}, executed_procedures=[]
-    )
-
-    try:
-        protocol.is_executing = True
-        asyncio.ensure_future(
-            main(protocol, apparatus, start_time, experiment_id, experiment)
-        )
-    finally:
-        protocol.is_executing = False
-    return experiment
-
-
-def execute(protocol):
-    """
-        Executes the specified protocol.
-
-        Args:
-            protocol: A protocol of the form mechwolf.Protocol
-            apparatus: An apparatus of the form mechwolf.Apparatus
-
-        Returns:
-            mechwolf.Experiment object containing information about the running
-            protocol.
-
-        Raises:
-            DeviceNotFound: if a device in the protocol is not in the apparatus.
-    """
-    if protocol.is_executing:
-        print("Protocol is currently running.")
-        return
-
-    # reinitialize objects
-    for component in protocol.compile().keys():
-        component.done = False
-    # Extract the protocol from the Protocol object (or protocol json)
-    apparatus = protocol.apparatus
-    experiment_id = f'{time.strftime("%Y_%m_%d")}_{uuid1()}'
-
-    print(term.green_bold(f"Experiment {experiment_id} initiated"))
-    logging.info(f"Experiment {experiment_id} initiated")
-
-    start_time = time.time()
-    experiment = Experiment(
-        experiment_id, protocol, apparatus, start_time, data={}, executed_procedures=[]
-    )
-    try:
-        protocol.is_executing = True
-        asyncio.run(main(protocol, apparatus, start_time, experiment_id, experiment))
-    finally:
-        protocol.is_executing = False
-        protocol.was_executed = True
-        for component in protocol.compile().keys():
-            component.done = False
-
-    return experiment
-
-
-async def main(protocol, apparatus, start_time, experiment_id, experiment):
-
-    if protocol.__class__.__name__ == "Protocol":
-        p = protocol.compile()
-    else:
-        raise TypeError("protocol not of type mechwolf.Protocol")
-        # TODO allow JSON protocol parsing
-
-    if apparatus.__class__.__name__ != "Apparatus":
-        raise TypeError("apparatus not of type mechwolf.Apparatus")
-        # Todo allow parsing of apparatus json
-
-    # Check that all devices in the protocol were passed to the executor.
-    for component in p.keys():
-        if component not in apparatus.components:
-            raise DeviceNotFound(f"Component {component} not in apparatus.")
+async def main(experiment, dry_run):
 
     tasks = []
+
+    logger.info(f"Compiling protocol with dry_run = {dry_run}")
+    compiled_protocol = experiment.protocol.compile(dry_run=dry_run)
 
     # Run protocol
     # Enter context managers for each component (initialize serial ports, etc.)
     # We can do this with contextlib.ExitStack on an arbitrary number of components
 
-    tasks += [log_start(protocol, start_time, experiment_id, experiment)]
     with ExitStack() as stack:
-        components = [stack.enter_context(component) for component in p.keys()]
+        components = [
+            stack.enter_context(component) for component in compiled_protocol.keys()
+        ]
         for component in components:
             # Find out when each component's monitoring should end
-            times = [procedure["time"] for procedure in p[component]]
-            end_time = max(times).magnitude
-            tasks += [
-                create_procedure(
-                    procedure, component, experiment_id, experiment, end_time
+            end_time = max(
+                [procedure["time"] for procedure in compiled_protocol[component]]
+            ).magnitude
+
+            logger.debug(f"Calculated {component} end time is {end_time}")
+
+            for procedure in compiled_protocol[component]:
+                tasks.append(
+                    create_procedure(
+                        procedure=procedure,
+                        component=component,
+                        experiment=experiment,
+                        end_time=end_time,
+                        dry_run=dry_run,
+                    )
                 )
-                for procedure in p[component]
-            ]
-            tasks += [monitor(component, end_time, experiment_id, experiment)]
 
-        completed_tasks = await asyncio.gather(*tasks)
-        print(term.green_bold(f"Experiment {experiment_id} completed."))
-        return completed_tasks
+            # for sensors, add the monitor task
+            if isinstance(component, Sensor):
+                logger.debug(f"Creating sensor monitoring task for {component}")
+                tasks.append(
+                    monitor(component=component, experiment=experiment, dry_run=dry_run)
+                )
+
+        experiment.start_time = time.time()
+
+        start_msg = (
+            f"{experiment} started at {datetime.fromtimestamp(experiment.start_time)}"
+            f" ({experiment.start_time} Unix time)"
+        )
+        logger.success(start_msg)
+        await asyncio.gather(*tasks)
+
+        # when this code block is reached, the tasks will have completed
+        experiment.end_time = time.time()
+        end_msg = (
+            f"{experiment} completed at {datetime.fromtimestamp(experiment.end_time)}"
+            f" ({experiment.end_time} Unix time)"
+        )
+        logger.success(end_msg)
 
 
-async def create_procedure(procedure, component, experiment_id, experiment, end_time):
+async def create_procedure(procedure, component, experiment, end_time, dry_run):
 
+    # wait for the right moment
     execution_time = procedure["time"].to("seconds").magnitude
     await asyncio.sleep(execution_time)
-    logging.info(term.green(f"Executing: {procedure} on {component} at {time.time()}"))
+
     component.update_from_params(
         procedure["params"]
     )  # NOTE: this doesn't actually call the update() method
-    procedure_record = component.update()  # NOTE: This does!
 
-    try:
-        timestamp = procedure_record["timestamp"]
-    except KeyError:
-        logging.debug(
-            f"No timestamp passed for {component}. Defaulting to current time."
+    if dry_run:
+        logger.info(
+            f"Simulating execution: {procedure} on {component} at {time.time()}"
         )
-        timestamp = time.time()
+        procedure_record = {}
+        success = True
+    else:
+        logger.info(f"Executing: {procedure} on {component} at {time.time()}")
+        success = component.update()  # NOTE: This does!
 
-    procedure_record["type"] = "executed_procedure"
-    procedure_record["experiment_elapsed_time"] = timestamp - experiment.start_time
-    if end_time == execution_time:
-        component.done = True
+    procedure_record = {
+        "timestamp": time.time(),
+        "params": procedure["params"],
+        "type": "executed_procedure" if not dry_run else "simulated_procedure",
+        "component": component,
+        "success": success,
+    }
+    procedure_record["experiment_elapsed_time"] = (
+        procedure_record["timestamp"] - experiment.start_time
+    )
 
     experiment.executed_procedures.append(procedure_record)
 
-    return procedure_record
 
-
-async def monitor(component, end_time, experiment_id, experiment):
-    device_id = component.name
-    async for result in component.monitor():
-        if result is None:
-            return
-        datapoint = Datapoint(
-            datapoint=result["datapoint"], timestamp=result["timestamp"]
-        )
-        experiment.update_chart(device_id, datapoint)
-    return {
-        "component_name": component.name,
-        "data": experiment.data[device_id],
-        "type": "data",
-    }
-
-
-async def log_start(protocol, start_time, experiment_id, experiment):
-    return {
-        "experiment_id": experiment_id,
-        "experiment_start_time": start_time,
-        "type": "experiment_start",
-    }
+async def monitor(component, experiment, dry_run):
+    logger.debug(f"Started monitoring {component.name}")
+    async for result in component.monitor(dry_run=dry_run):
+        logger.trace(f"Updating experiment with new data from {component.name}")
+        try:
+            experiment.update(
+                device=component.name,
+                datapoint=Datapoint(
+                    data=result["data"],
+                    timestamp=result["timestamp"],
+                    experiment_elapsed_time=result["timestamp"] - experiment.start_time,
+                ),
+            )
+            logger.trace("Update successful")
+        except Exception as e:
+            logger.error(f"Failed to updated experiment! Error message: {str(e)}")

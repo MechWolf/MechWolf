@@ -45,7 +45,9 @@ setup(
         "pyserial",
         "PyYAML",
         "jupyter",
+        "loguru",
         "stackprinter",
+        "xxhash",
     ],
     extras_require={
         "dev": [
