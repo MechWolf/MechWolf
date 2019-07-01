@@ -105,12 +105,18 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
 
 
 async def monitor(component, experiment, dry_run):
+    logger.debug(f"Started monitoring {component.name}")
     async for result in component.monitor(dry_run=dry_run):
-        experiment.update(
-            component.name,
-            Datapoint(
-                data=result["data"],
-                timestamp=result["timestamp"],
-                experiment_elapsed_time=result["timestamp"] - experiment.start_time,
-            ),
-        )
+        logger.trace(f"Updating experiment with new data from {component.name}")
+        try:
+            experiment.update(
+                device=component.name,
+                datapoint=Datapoint(
+                    data=result["data"],
+                    timestamp=result["timestamp"],
+                    experiment_elapsed_time=result["timestamp"] - experiment.start_time,
+                ),
+            )
+            logger.trace("Update successful")
+        except Exception as e:
+            logger.error(f"Failed to updated experiment! Error message: {str(e)}")

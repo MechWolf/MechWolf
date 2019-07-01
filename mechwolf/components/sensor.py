@@ -1,6 +1,6 @@
 import asyncio
+import random
 import time
-from math import sin
 from warnings import warn
 
 from . import ureg
@@ -23,6 +23,7 @@ class Sensor(ActiveComponent):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 Hz")
         self._visualization_shape = "ellipse"
+        self._unit = ""
 
     def base_state(self):
         """Default to being inactive."""
@@ -80,12 +81,13 @@ class DummySensor(Sensor):
 
     def __init__(self, name):
         super().__init__(name=name)
+        self._unit = "Dimensionless"
         self.counter = 0
 
     def read(self):
         """Collect the data."""
-        self.counter += 1
-        return self.counter * sin(self.counter * 0.314)
+        self.counter += (random.random() * 2) - 1
+        return self.counter
 
     def update(self):
         return True

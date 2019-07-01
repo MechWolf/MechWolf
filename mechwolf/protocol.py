@@ -448,8 +448,22 @@ class Protocol(object):
 
         return visualization
 
-    def execute(self, dry_run=False):
+    def execute(self, dry_run=False, verbosity="info"):
         """Executes the procedure.
+
+        Args:
+            dry_run (bool, optional): Whether to simulate the experiment or
+                actually perform it. Defaults to False, which means executing the
+                protocol on real hardware.
+
+            verbosity (str, optional): The level of logging verbosity. One of
+                ``"critical"``, ``"error"``, ``"warning"``, ``"success"``,
+                ``"info"``, ``"debug"``, or ``"trace"`` in descending order of
+                severity. ``"debug"`` and (especially) ``"trace"`` are not meant to
+                be used regularly, as they generate significant amounts of usually
+                useless information. However, these verbosity levels are useful for
+                tracing where exactly a bug was generated, especially if no error
+                message was thrown. Defaults to ``"info"``.
 
         Note:
             Must only contain :class:`~mechwolf.components.component.ActiveComponent` s that have an
@@ -465,7 +479,7 @@ class Protocol(object):
             return
 
         # the Experiment object is going to hold all the info
-        E = Experiment(self)
+        E = Experiment(self, verbosity.upper())
 
         self.is_executing = True
 
