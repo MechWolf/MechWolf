@@ -14,12 +14,3 @@ from .apparatus import Apparatus
 from .protocol import Protocol
 from .components import *
 from .experiment import Experiment
-
-import stackprinter
-
-# set the color coding based on whether in use in terminal
-try:
-    get_ipython()
-    stackprinter.set_excepthook(style="lightbg")
-except NameError:
-    stackprinter.set_excepthook(style="darkbg2")

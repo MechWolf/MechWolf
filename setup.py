@@ -36,9 +36,7 @@ setup(
         "terminaltables",
         "blessings",
         "networkx",
-        "Click",
         "bokeh",
-        "click_didyoumean",
         "Pint",
         "graphviz",
         "ipython>=7.0",
@@ -46,7 +44,6 @@ setup(
         "PyYAML",
         "jupyter",
         "loguru",
-        "stackprinter",
         "xxhash",
     ],
     extras_require={
@@ -59,8 +56,5 @@ setup(
             "pipreqs",
             "black",
         ]
-    },
-    entry_points={
-        "console_scripts": ["mechwolf=mechwolf.cli:cli", "mw=mechwolf.cli:cli"]
     },
 )
