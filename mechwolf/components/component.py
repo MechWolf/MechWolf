@@ -164,7 +164,7 @@ class ActiveComponent(Component):
         if not dry_run:
             self.update_from_params(self.base_state())
             logger.trace(
-                f"Attempting to call update() method for {self.name}. Entering context..."
+                f"Attempting to call update() method for {self}. Entering context..."
             )
             with self:
                 logger.trace("Context entered. Calling update()")
@@ -175,6 +175,6 @@ class ActiveComponent(Component):
                     return False
                 logger.trace("Update successful")
             logger.trace("Context exited successfully")
-        logger.debug(f"{self.name} is valid")
+        logger.debug(f"{self} is valid")
 
         return True

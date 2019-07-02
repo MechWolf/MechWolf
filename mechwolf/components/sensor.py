@@ -54,9 +54,9 @@ class Sensor(ActiveComponent):
                 await asyncio.sleep(1 / frequency)
 
     def validate(self, dry_run):
-        logger.debug(f"Validating {self.name}...")
+        logger.debug(f"Perfoming sensor specific checks for {self}...")
         if not dry_run:
-            logger.trace(f"Since is not a dry run, executing Sensor-specific checks...")
+            logger.trace(f"Executing Sensor-specific checks...")
             try:
                 logger.trace("Entering context...")
                 with self:
