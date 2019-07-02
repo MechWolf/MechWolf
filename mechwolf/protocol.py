@@ -362,7 +362,7 @@ class Protocol(object):
         Raises:
             Same as :meth:`Protocol.compile`.
         """
-        compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
+        compiled_json = json.dumps(self.to_dict(), sort_keys=True, indent=4)
 
         try:
             get_ipython
@@ -400,7 +400,7 @@ class Protocol(object):
         Raises:
             Same as :meth:`Protocol.compile`.
         """
-        compiled_yaml = yaml.safe_dump(self.to_list(), default_flow_style=False)
+        compiled_yaml = yaml.safe_dump(self.to_dict(), default_flow_style=False)
 
         try:
             get_ipython
