@@ -118,9 +118,7 @@ class Experiment(object):
             logger.trace("All graphs successfully initialized")
             self._graphs_shown = True
 
-        logger.trace(f"Checking to see if {device} is a known sensor")
         if device in self._transformed_data:
-            logger.trace(f"It is. Updating the transformed data.")
             target, r = self._charts[device]
             self._transformed_data[device]["datapoints"].append(datapoint.data)
             self._transformed_data[device]["timestamps"].append(
@@ -132,5 +130,4 @@ class Experiment(object):
             r.data_source.data["timestamps"] = self._transformed_data[device][
                 "timestamps"
             ]
-            logger.debug(f"Pushing update to the notebook.")
             push_notebook(handle=target)
