@@ -1,5 +1,7 @@
 from warnings import warn
 
+from loguru import logger
+
 from . import ureg
 
 
@@ -117,6 +119,8 @@ class ActiveComponent(Component):
             bool: True if valid, else False.
         """
 
+        logger.debug(f"Validating {self.name}...")
+
         # ensure is an ActiveComponent
         if not issubclass(self.__class__, ActiveComponent):
             warn(f"{self} is not an instance of ActiveComponent")
@@ -159,11 +163,18 @@ class ActiveComponent(Component):
         # once we've checked everything, it should be good
         if not dry_run:
             self.update_from_params(self.base_state())
+            logger.trace(
+                f"Attempting to call update() method for {self.name}. Entering context..."
+            )
             with self:
+                logger.trace("Context entered. Calling update()")
                 if not self.update():
                     warn(
                         f"Failed to set {self} to base state. Aborting before execution."
                     )
                     return False
+                logger.trace("Update successful")
+            logger.trace("Context exited successfully")
+        logger.debug(f"{self.name} is valid")
 
         return True

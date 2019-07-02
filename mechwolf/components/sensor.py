@@ -3,6 +3,8 @@ import random
 import time
 from warnings import warn
 
+from loguru import logger
+
 from . import ureg
 from .component import ActiveComponent
 
@@ -52,10 +54,15 @@ class Sensor(ActiveComponent):
                 await asyncio.sleep(1 / frequency)
 
     def validate(self, dry_run):
+        logger.debug(f"Validating {self.name}...")
         if not dry_run:
+            logger.trace(f"Since is not a dry run, executing Sensor-specific checks...")
             try:
+                logger.trace("Entering context...")
                 with self:
+                    logger.trace("Context entered")
                     res = self.read()
+                    logger.trace("Read successful")
             except NotImplementedError:
                 warn("Sensors must have a read method that returns the sensor's data")
                 return False
@@ -65,7 +72,7 @@ class Sensor(ActiveComponent):
                     "Sensor reads should probably return data. "
                     f"Currently, {self}.read() does not return anything."
                 )
-
+        logger.trace("Performing general component checks...")
         return super().validate(dry_run=dry_run)
 
 
