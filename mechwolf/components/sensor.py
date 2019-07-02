@@ -54,7 +54,8 @@ class Sensor(ActiveComponent):
     def validate(self, dry_run):
         if not dry_run:
             try:
-                res = self.read()
+                with self:
+                    res = self.read()
             except NotImplementedError:
                 warn("Sensors must have a read method that returns the sensor's data")
                 return False
