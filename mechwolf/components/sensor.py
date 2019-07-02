@@ -43,9 +43,7 @@ class Sensor(ActiveComponent):
             frequency = self.rate.to_base_units().magnitude
 
             if not frequency:
-                await asyncio.sleep(
-                    0.1
-                )  # check back in 100 ms to see if the sensor is active again
+                break
             else:
                 if not dry_run:
                     yield {"data": self.read(), "timestamp": time.time()}

@@ -106,6 +106,7 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
 
 async def monitor(component, experiment, dry_run):
     logger.debug(f"Started monitoring {component.name}")
+    await asyncio.sleep(0.01)
     async for result in component.monitor(dry_run=dry_run):
         try:
             experiment.update(
