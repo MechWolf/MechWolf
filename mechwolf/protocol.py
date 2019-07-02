@@ -353,24 +353,6 @@ class Protocol(object):
             # raise warning if duration is explicitly given but not used?
         return output
 
-    def json(self):
-        """Compiles protocol and outputs to JSON.
-
-        Returns:
-            str: JSON of the compiled protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
-
-        Raises:
-            Same as :meth:`Protocol.compile`.
-        """
-        compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
-
-        try:
-            get_ipython
-            return Code(compiled_json, language="json")
-        except NameError:
-            pass
-        return compiled_json
-
     def to_dict(self):
         compiled = deepcopy(self.compile(dry_run=True))
         for item in compiled.items():
@@ -389,16 +371,14 @@ class Protocol(object):
         return output
 
     def yaml(self):
-        """Compiles protocol and outputs to YAML.
+        """Outputs procedures to YAML.
 
         Internally, this is a conversion of the output of :meth:`Protocol.json`
         for the purpose of enhanced human readability.
 
         Returns:
-            str: YAML of the compiled protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
+            str: YAML of the procedure list. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
 
-        Raises:
-            Same as :meth:`Protocol.compile`.
         """
         compiled_yaml = yaml.safe_dump(self.to_list(), default_flow_style=False)
 
@@ -408,6 +388,21 @@ class Protocol(object):
         except NameError:
             pass
         return compiled_yaml
+
+    def json(self):
+        """Outputs procedures to JSON.
+
+        Returns:
+            str: JSON of the protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
+        """
+        compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
+
+        try:
+            get_ipython
+            return Code(compiled_json, language="json")
+        except NameError:
+            pass
+        return compiled_json
 
     def visualize(self, browser=True):
         """Generates a Gantt plot visualization of the protocol.
