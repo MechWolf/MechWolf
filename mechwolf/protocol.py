@@ -371,7 +371,9 @@ class Protocol(object):
         return output
 
     def yaml(self):
-        """Outputs procedures to YAML.
+        """Outputs
+
+         procedures to YAML.
 
         Internally, this is a conversion of the output of :meth:`Protocol.json`
         for the purpose of enhanced human readability.
