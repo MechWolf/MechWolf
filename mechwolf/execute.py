@@ -15,26 +15,27 @@ async def main(experiment, dry_run):
 
     tasks = []
 
-    logger.info(f"Compiling protocol with dry_run = {dry_run}")
-    compiled_protocol = experiment.protocol.compile(dry_run=dry_run)
-
     # Run protocol
     # Enter context managers for each component (initialize serial ports, etc.)
     # We can do this with contextlib.ExitStack on an arbitrary number of components
 
     with ExitStack() as stack:
         components = [
-            stack.enter_context(component) for component in compiled_protocol.keys()
+            stack.enter_context(component)
+            for component in experiment.compiled_protocol.keys()
         ]
         for component in components:
             # Find out when each component's monitoring should end
             end_time = max(
-                [procedure["time"] for procedure in compiled_protocol[component]]
+                [
+                    procedure["time"]
+                    for procedure in experiment.compiled_protocol[component]
+                ]
             ).magnitude
 
             logger.debug(f"Calculated {component} end time is {end_time}")
 
-            for procedure in compiled_protocol[component]:
+            for procedure in experiment.compiled_protocol[component]:
                 tasks.append(
                     create_procedure(
                         procedure=procedure,

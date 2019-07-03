@@ -10,6 +10,7 @@ from warnings import warn
 import yaml
 from IPython.display import HTML, Code
 from jinja2 import Environment, PackageLoader, select_autoescape
+from loguru import logger
 
 from . import ureg
 from .apparatus import Apparatus
@@ -475,8 +476,13 @@ class Protocol(object):
             print("Protocol is currently running.")
             return
 
+        logger.info(f"Compiling protocol with dry_run = {dry_run}")
+        compiled_protocol = self.compile(dry_run=dry_run)
+
         # the Experiment object is going to hold all the info
-        E = Experiment(self, verbosity.upper())
+        E = Experiment(
+            self, compiled_protocol=compiled_protocol, verbosity=verbosity.upper()
+        )
 
         self.is_executing = True
 

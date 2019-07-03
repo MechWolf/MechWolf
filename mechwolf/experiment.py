@@ -22,20 +22,23 @@ class Experiment(object):
         Experiments contain all data from execution of a protocol.
     """
 
-    def __init__(self, protocol, verbosity):
+    def __init__(self, protocol, compiled_protocol: dict, verbosity: str):
+        self.protocol = protocol
+        self.compiled_protocol = compiled_protocol
+
+        # computed values
         self.experiment_id = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{xxh32(str(protocol.yaml())).hexdigest()}'
 
-        self.protocol = protocol
+        # default values
         self.start_time = None  # the experiment hasn't started until main() is called
         self.end_time = None
         self.data = {}
         self.executed_procedures = []
 
+        # internal values (unstable!)
         self._charts = {}
         self._graphs_shown = False
-        self._sensors = [
-            c for c in protocol.apparatus.components if isinstance(c, Sensor)
-        ][
+        self._sensors = [c for c in self.compiled_protocol if isinstance(c, Sensor)][
             ::-1
         ]  # reverse the list so the accordion is in order
         self._device_name_to_unit = {c.name: c._unit for c in self._sensors}
@@ -65,7 +68,6 @@ class Experiment(object):
             self._tab.set_title(2, "Sensors")
             for i, sensor in enumerate(self._sensors):
                 self._tab.children[2].set_title(i, sensor.name)
-
         self._output_widget = widgets.VBox(
             [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), self._tab]
         )
