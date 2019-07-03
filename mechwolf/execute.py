@@ -33,7 +33,7 @@ async def main(experiment, dry_run):
                 ]
             ).magnitude
 
-            logger.debug(f"Calculated {component} end time is {end_time}")
+            logger.debug(f"Calculated {component} end time is {end_time}s")
 
             for procedure in experiment.compiled_protocol[component]:
                 tasks.append(
@@ -56,22 +56,20 @@ async def main(experiment, dry_run):
 
         experiment.start_time = time.time()
 
-        start_msg = (
-            f"{experiment} started at {datetime.fromtimestamp(experiment.start_time)}"
-            f" ({experiment.start_time} Unix time)"
-        )
+        start_msg = f"{experiment} started at {datetime.utcfromtimestamp(experiment.start_time)} UTC"
         logger.success(start_msg)
-        await asyncio.gather(*tasks)
+        try:
+            await asyncio.gather(*tasks)
 
-        # when this code block is reached, the tasks will have completed
-        experiment.end_time = time.time()
-        end_msg = (
-            f"{experiment} completed at {datetime.fromtimestamp(experiment.end_time)}"
-            f" ({experiment.end_time} Unix time)"
-        )
-        logger.success(end_msg)
-        experiment.protocol.is_executing = False
-        experiment.protocol.was_executed = True
+            # when this code block is reached, the tasks will have completed
+            experiment.end_time = time.time()
+            end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
+            logger.success(end_msg)
+        finally:
+            if experiment._bound_logger is not None:
+                logger.remove(experiment._bound_logger)
+            experiment.protocol.is_executing = False
+            experiment.protocol.was_executed = True
 
 
 async def create_procedure(procedure, component, experiment, end_time, dry_run):
@@ -86,12 +84,14 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
 
     if dry_run:
         logger.info(
-            f"Simulating execution: {procedure} on {component} at {time.time()}"
+            f"Simulating: {procedure['params']} on {component} at {procedure['time'].to_base_units().magnitude}s"
         )
         record = {}
         success = True
     else:
-        logger.info(f"Executing: {procedure} on {component} at {time.time()}")
+        logger.info(
+            f"Executing: {procedure['params']} on {component} at {procedure['time'].to_base_units().magnitude}s"
+        )
         success = component.update()  # NOTE: This does!
 
     record = {

@@ -14,3 +14,8 @@ from .apparatus import Apparatus
 from .protocol import Protocol
 from .components import *
 from .experiment import Experiment
+
+# deactivate logging (see https://loguru.readthedocs.io/en/stable/overview.html#suitable-for-scripts-and-libraries)
+from loguru import logger
+
+logger.remove()

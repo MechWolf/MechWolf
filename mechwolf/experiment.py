@@ -45,6 +45,7 @@ class Experiment(object):
         self._transformed_data = {
             s: {"datapoints": [], "timestamps": []} for s in self._sensor_names
         }
+        self._bound_logger = None
 
         # create a nice, pretty HTML string wth the metadata
         metadata = "<ul>"
@@ -71,16 +72,29 @@ class Experiment(object):
             [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), self._tab]
         )
 
-        # route logging to go to the widget TODO: add support for saving to file as well
-        logger.remove()
-
         def log(x):
             with self._output_widget.children[1].children[1]:  # the log
-                print(x)
+                if self.start_time is not None:
+                    print(
+                        f"({time.time() - self.start_time:0{len(str(int(self.protocol.duration.magnitude))) + 4}.3f}s) {x.rstrip()}"
+                    )
+                else:
+                    print("(setup) " + x.rstrip())
 
-        logger.add(lambda x: log(x), level=verbosity)
+        self._bound_logger = logger.add(
+            lambda x: log(x),
+            level=verbosity,
+            colorize=True,
+            format="{level.icon} {message}",
+        )
+        logger.level("SUCCESS", icon="✅")
+        logger.level("ERROR", icon="❌")
+        logger.level("TRACE", icon="🔬")
 
     def __str__(self):
+        return f"Experiment {self.experiment_id}"
+
+    def __repr__(self):
         return f"<Experiment {self.experiment_id}>"
 
     def update(self, device: str, datapoint):
