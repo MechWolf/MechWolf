@@ -74,12 +74,15 @@ class Experiment(object):
 
         def log(x):
             with self._output_widget.children[1].children[1]:  # the log
+                pad_length = (
+                    len(str(int(self.protocol.duration.magnitude))) + 4
+                )  # .xxx in floats
                 if self.start_time is not None:
                     print(
-                        f"({time.time() - self.start_time:0{len(str(int(self.protocol.duration.magnitude))) + 4}.3f}s) {x.rstrip()}"
+                        f"({time.time() - self.start_time:0{pad_length}.3f}s) {x.rstrip()}"
                     )
                 else:
-                    print("(setup) " + x.rstrip())
+                    print(f"({'setup': ^{pad_length+1}}) " + x.rstrip())
 
         self._bound_logger = logger.add(
             lambda x: log(x),
