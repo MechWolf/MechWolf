@@ -3,6 +3,7 @@ try:
 except ImportError:
     pass
 
+
 class GsiocComponent:
     def __init__(self, serial_port=None, unit_id=0):
         self.ser = serial.Serial(

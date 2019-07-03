@@ -1,7 +1,7 @@
-from . import term
+import serial
+
 from .sensor import Sensor
 
-import serial
 
 class ArduinoSensor(Sensor):
     """
@@ -12,22 +12,19 @@ class ArduinoSensor(Sensor):
     They spit out some data in ASCII in return.
     """
 
-    def __init__(self, name, serial_port=None, command='*'):
+    def __init__(self, name, serial_port=None, command="*"):
         super().__init__(name=name)
         self.serial_port = serial_port
-        self.command = command.encode(encoding='ASCII')
+        self.command = command.encode(encoding="ASCII")
 
     def __enter__(self):
         self.ser = serial.Serial(
-            self.serial_port,
-            115200,
-            parity=serial.PARITY_NONE,
-            stopbits=1
-            )
-            
+            self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1
+        )
+
         # Listen to sensor's self-introduction
         # (gives it time for internal init)
-        intro = self.ser.readline()
+        self.ser.readline()
 
         return self
 
@@ -44,12 +41,11 @@ class ArduinoSensor(Sensor):
         # send the command
         self.ser.write(self.command)
         # read the data and sanitize
-        data = self.ser.readline().decode(encoding='ASCII').strip()
+        data = self.ser.readline().decode(encoding="ASCII").strip()
 
-        try :
+        try:
             # maybe it is a nice integer (straight from ADC)
             return int(data)
-        except :
+        except ValueError:
             # otherwise it is a float
             return float(data)
-
