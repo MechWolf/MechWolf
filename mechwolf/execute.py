@@ -84,24 +84,22 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
         logger.info(
             f"Simulating execution: {procedure} on {component} at {time.time()}"
         )
-        procedure_record = {}
+        record = {}
         success = True
     else:
         logger.info(f"Executing: {procedure} on {component} at {time.time()}")
         success = component.update()  # NOTE: This does!
 
-    procedure_record = {
+    record = {
         "timestamp": time.time(),
         "params": procedure["params"],
         "type": "executed_procedure" if not dry_run else "simulated_procedure",
         "component": component,
         "success": success,
     }
-    procedure_record["experiment_elapsed_time"] = (
-        procedure_record["timestamp"] - experiment.start_time
-    )
+    record["experiment_elapsed_time"] = record["timestamp"] - experiment.start_time
 
-    experiment.executed_procedures.append(procedure_record)
+    experiment.executed_procedures.append(record)
 
 
 async def monitor(component, experiment, dry_run):
