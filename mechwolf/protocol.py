@@ -8,7 +8,7 @@ from math import isclose
 from warnings import warn
 
 import yaml
-from IPython.display import HTML, Code
+from IPython.display import HTML, Code, display
 from jinja2 import Environment, PackageLoader, select_autoescape
 from loguru import logger
 
@@ -483,6 +483,7 @@ class Protocol(object):
         E = Experiment(
             self, compiled_protocol=compiled_protocol, verbosity=verbosity.upper()
         )
+        display(E._output_widget)
 
         self.is_executing = True
 

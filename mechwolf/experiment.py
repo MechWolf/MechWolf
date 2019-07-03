@@ -4,7 +4,6 @@ import ipywidgets as widgets
 from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
-from IPython.display import display
 from loguru import logger
 from xxhash import xxh32
 
@@ -80,9 +79,6 @@ class Experiment(object):
                 print(x)
 
         logger.add(lambda x: log(x), level=verbosity)
-
-    def _repr_html_(self):
-        display(self._output_widget)
 
     def __str__(self):
         return f"<Experiment {self.experiment_id}>"
