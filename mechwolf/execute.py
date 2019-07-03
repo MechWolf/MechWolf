@@ -51,6 +51,7 @@ async def main(experiment, dry_run):
                 tasks.append(
                     monitor(component=component, experiment=experiment, dry_run=dry_run)
                 )
+                tasks.append(end_monitoring(component, end_time))
 
         experiment.start_time = time.time()
 
@@ -104,7 +105,6 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
 
 async def monitor(component, experiment, dry_run):
     logger.debug(f"Started monitoring {component.name}")
-    await asyncio.sleep(0.01)
     async for result in component.monitor(dry_run=dry_run):
         try:
             experiment.update(
@@ -117,3 +117,15 @@ async def monitor(component, experiment, dry_run):
             )
         except Exception as e:
             logger.error(f"Failed to updated experiment! Error message: {str(e)}")
+
+
+async def end_monitoring(component, end_time: float):
+    """Creates a new async task that ends the monitoring for a :class:`~mechwolf.components.sensor.Sensor` when it is done for the protocol.
+
+    Args:
+        component (:class:`~mechwolf.components.sensor.Sensor`): A :class:`~mechwolf.components.sensor.Sensor` to end monitoring for.
+        end_time (float): The end time for the sensor in EET.
+    """
+    await asyncio.sleep(end_time)
+    logger.debug(f"Setting {component}._done to True in order to stop monitoring")
+    component._done = True

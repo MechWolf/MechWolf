@@ -26,6 +26,7 @@ class Sensor(ActiveComponent):
         self.rate = ureg.parse_expression("0 Hz")
         self._visualization_shape = "ellipse"
         self._unit = ""
+        self._done = False
 
     def base_state(self):
         """Default to being inactive."""
@@ -40,16 +41,17 @@ class Sensor(ActiveComponent):
            If data collection is on and needs to be turned off, turn off and return data."""
         while True:
 
-            frequency = self.rate.to_base_units().magnitude
-
-            if not frequency:
+            if self._done:
+                logger.trace(f"Done monitoring {self}")
                 break
+            elif not self.rate:
+                await asyncio.sleep(0.1)  # try again in 100 ms
             else:
                 if not dry_run:
                     yield {"data": self.read(), "timestamp": time.time()}
                 else:
                     yield {"data": "simulated read", "timestamp": time.time()}
-                await asyncio.sleep(1 / frequency)
+                await asyncio.sleep(1 / self.rate.to_base_units().magnitude)
 
     def validate(self, dry_run):
         logger.debug(f"Perfoming sensor specific checks for {self}...")
