@@ -75,6 +75,10 @@ class Sensor(ActiveComponent):
         logger.trace("Performing general component checks...")
         return super().validate(dry_run=dry_run)
 
+    def update(self):
+        # sensors don't have an update method; they implement read
+        return True
+
 
 class DummySensor(Sensor):
     """A dummy sensor returning the number of times it has been read.
@@ -96,6 +100,3 @@ class DummySensor(Sensor):
         """Collect the data."""
         self.counter += (random.random() * 2) - 1
         return self.counter
-
-    def update(self):
-        return True
