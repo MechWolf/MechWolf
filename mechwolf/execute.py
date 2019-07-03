@@ -70,6 +70,8 @@ async def main(experiment, dry_run):
             f" ({experiment.end_time} Unix time)"
         )
         logger.success(end_msg)
+        experiment.protocol.is_executing = False
+        experiment.protocol.was_executed = True
 
 
 async def create_procedure(procedure, component, experiment, end_time, dry_run):

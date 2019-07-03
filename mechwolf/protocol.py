@@ -473,7 +473,7 @@ class Protocol(object):
 
         # If protocol is executing, return an error
         if self.is_executing:
-            print("Protocol is currently running.")
+            logger.error("Protocol is currently running.")
             return
 
         logger.info(f"Compiling protocol with dry_run = {dry_run}")
@@ -491,8 +491,5 @@ class Protocol(object):
             asyncio.ensure_future(main(experiment=E, dry_run=dry_run))
         except NameError:
             asyncio.run(main(experiment=E, dry_run=dry_run))
-        finally:
-            self.is_executing = False
-            self.was_executed = True
 
         return E
