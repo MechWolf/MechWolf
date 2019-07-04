@@ -1,5 +1,5 @@
 <h1 align ="center">
-<img src='https://github.com/Benjamin-Lee/MechWolf/raw/master/logo/wordmark3x.png' style="max-width: 150px;width: 100%;">
+<img src='https://github.com/Benjamin-Lee/MechWolf/raw/master/logo/wordmark3x.png' height="150">
 </h1>
 
 <div align="center">
