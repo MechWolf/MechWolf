@@ -4,7 +4,7 @@ ureg = _ureg
 term = _term
 
 from .component import Component, ActiveComponent
-from .dummy import Dummy
+from .dummy import Dummy, BrokenDummyComponent
 from .mixer import Mixer, TMixer, YMixer, CrossMixer
 from .pump import Pump, DummyPump
 from .sensor import Sensor, DummySensor

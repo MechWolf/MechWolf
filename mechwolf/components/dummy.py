@@ -15,3 +15,17 @@ class Dummy(ActiveComponent):
         else:
             print("Inactive and async.")
         yield True
+
+
+class BrokenDummyComponent(Dummy):
+    def __init__(self, name=None):
+        super().__init__(name=name)
+
+    def update(self):
+        if self.active:
+            return False
+        else:
+            return True
+
+    def validate(self, dry_run):
+        return True
