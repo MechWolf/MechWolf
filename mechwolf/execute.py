@@ -20,10 +20,13 @@ async def main(experiment, dry_run):
     # We can do this with contextlib.ExitStack on an arbitrary number of components
 
     with ExitStack() as stack:
-        components = [
-            stack.enter_context(component)
-            for component in experiment.compiled_protocol.keys()
-        ]
+        if not dry_run:
+            components = [
+                stack.enter_context(component)
+                for component in experiment.compiled_protocol.keys()
+            ]
+        else:
+            components = experiment.compiled_protocol.keys()
         for component in components:
             # Find out when each component's monitoring should end
             end_time = max(
