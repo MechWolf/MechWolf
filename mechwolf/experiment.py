@@ -92,7 +92,7 @@ class Experiment(object):
         )
         logger.level("SUCCESS", icon="✅")
         logger.level("ERROR", icon="❌")
-        logger.level("TRACE", icon="🔬")
+        logger.level("TRACE", icon="🔍")
 
     def __str__(self):
         return f"Experiment {self.experiment_id}"
