@@ -98,7 +98,7 @@ class Protocol(object):
 
             if not hasattr(component, kwarg):
                 raise ValueError(
-                    f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name']}."
+                    f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name' and not x.startswith('_')]}."
                 )
 
             if (
