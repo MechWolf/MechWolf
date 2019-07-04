@@ -1,4 +1,3 @@
-from . import term
 from .sensor import Sensor
 
 
@@ -15,9 +14,9 @@ class LabJack(Sensor):
             import u3  # noqa
         except ImportError:
             raise ImportError(
-                term.red(
-                    "Unable to create LabJack. No u3 module installed. Try getting it here: https://github.com/labjack/LabJackPython/blob/master/src/u3.py."
-                )
+                "Unable to create LabJack."
+                " No u3 module installed."
+                " Try getting it here: https://github.com/labjack/LabJackPython/blob/master/src/u3.py."
             )
 
     def __enter__(self):

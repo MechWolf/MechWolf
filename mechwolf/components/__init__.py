@@ -1,7 +1,6 @@
-from mechwolf import ureg as _ureg, term as _term
+from mechwolf import ureg as _ureg
 
 ureg = _ureg
-term = _term
 
 from .component import Component, ActiveComponent
 from .dummy import Dummy, BrokenDummyComponent

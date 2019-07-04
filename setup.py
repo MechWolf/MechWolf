@@ -34,7 +34,6 @@ setup(
         "Jinja2",
         "mistune",
         "terminaltables",
-        "blessings",
         "networkx",
         "bokeh",
         "Pint",

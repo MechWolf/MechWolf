@@ -1,12 +1,10 @@
-import sys
-
 import networkx as nx
 from graphviz import Digraph
 from IPython.display import HTML, Markdown
 from mistune import markdown
 from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 
-from . import term, ureg
+from . import ureg
 from .components import Component, Tube, Valve, Vessel
 
 
@@ -44,11 +42,11 @@ class Apparatus(object):
         For args, see add().
         """
         if not issubclass(from_component.__class__, Component):
-            raise ValueError(term.red("From component must be a subclass of Component"))
+            raise ValueError("From component must be a subclass of Component")
         if not issubclass(to_component.__class__, Component):
-            raise ValueError(term.red("To component must be a subclass of Component"))
+            raise ValueError("To component must be a subclass of Component")
         if not issubclass(tube.__class__, Tube):
-            raise ValueError(term.red("Tube must be an instance of Tube"))
+            raise ValueError("Tube must be an instance of Tube")
 
         self.network.append((from_component, to_component, tube))
         self.components.update([from_component, to_component])
@@ -108,14 +106,6 @@ class Apparatus(object):
         Raises:
             ImportError: When the visualization package is not installed.
         """
-
-        if "graphviz" not in sys.modules:
-            raise ImportError(
-                term.red(
-                    "Visualization package not installed. Install mechwolf with the [vis] extra enabled. Try this command: pip install mechwolf[vis]"
-                )
-            )
-
         self.validate()  # ensure apparatus is valid
         f = Digraph(
             name=self.name,
@@ -168,10 +158,13 @@ class Apparatus(object):
         """Prints a summary table of the apparatus.
 
         Args:
-            style (str, optional): Either `gfm`` for GitHub-flavored Markdown or ``ascii``. If equal to ``gfm`` and in a Jupyter notebook, returns a rendered HTML version of the GFM table.
+            style (str, optional): Either `gfm`` for GitHub-flavored Markdown or
+                ``ascii``. If equal to ``gfm`` and in a Jupyter notebook, returns a
+                rendered HTML version of the GFM table.
 
         Returns:
-            IPython.display.HTML: In Jupyter, a nice HTML table. Otherwise, the output is printed to the terminal.
+            IPython.display.HTML: In Jupyter, a nice HTML table. Otherwise, the
+                output is printed to the terminal.
         """
 
         if style == "ascii":
@@ -243,7 +236,11 @@ class Apparatus(object):
         try:
             get_ipython
             if style == "gfm":
-                html = f"<h3>{components_table.title}</h3>{markdown(components_table.table)}<h3>{tubing_table.title}</h3>{markdown(tubing_table.table)}"
+                html = (
+                    f"<h3>{components_table.title}</h3>"
+                    f"{markdown(components_table.table)}"
+                    f"<h3>{tubing_table.title}</h3>{markdown(tubing_table.table)}"
+                )
                 return HTML(html)
         except NameError:
             pass
@@ -256,8 +253,8 @@ class Apparatus(object):
         """Ensures that the apparatus is valid.
 
         Note:
-            Calling this function yourself is likely unnecessary because the :class:`Protocol` class calls it upon
-            instantiation.
+            Calling this function yourself is likely unnecessary because the
+            :class:`Protocol` class calls it upon instantiation.
 
         Returns:
             bool: True if valid.
@@ -268,9 +265,7 @@ class Apparatus(object):
         G = nx.Graph()  # convert the network to an undirected NetworkX graph
         G.add_edges_from([(x[0], x[1]) for x in self.network])
         if not nx.is_connected(G):  # make sure that all of the components are connected
-            raise RuntimeError(
-                term.red("Unable to validate: not all components connected")
-            )
+            raise RuntimeError("Unable to validate: not all components connected")
 
         # valve checking
         for valve in list(
@@ -280,13 +275,12 @@ class Apparatus(object):
                 # ensure that valve's mapping components are part of apparatus
                 if name not in [x.name for x in list(self.components)]:
                     raise RuntimeError(
-                        term.red(
-                            f"Invalid mapping for Valve {valve}. No component named {name} exists."
-                        )
+                        f"Invalid mapping for Valve {valve}."
+                        f" No component named {name} exists."
                     )
             # no more than one output from a valve (might have to change this)
             if len([x for x in self.network if x[0] == valve]) != 1:
-                raise RuntimeError(term.red(f"Valve {valve} has multiple outputs."))
+                raise RuntimeError(f"Valve {valve} has multiple outputs.")
 
             # make sure valve's mapping is complete
             non_mapped_components = [
@@ -296,9 +290,8 @@ class Apparatus(object):
             ]
             if non_mapped_components:
                 raise RuntimeError(
-                    term.red(
-                        f"Valve {valve} has incomplete mapping. No mapping for {non_mapped_components}"
-                    )
+                    f"Valve {valve} has incomplete mapping."
+                    f" No mapping for {non_mapped_components}"
                 )
 
         return True
@@ -307,7 +300,9 @@ class Apparatus(object):
         """Generates a human-readable description of the apparatus.
 
         Returns:
-            str: A description of apparatus. When in Jupyter, this string is wrapped in a :class:`IPython.display.Markdown` object for nicer display.
+            str: A description of apparatus. When in Jupyter, this string is
+                wrapped in a :class:`IPython.display.Markdown` object for nicer
+                display.
 
         Raises:
             RuntimeError: When a component cannot be described.
@@ -321,9 +316,8 @@ class Apparatus(object):
                 return element.__class__.__name__ + " " + element.name
             else:
                 raise RuntimeError(
-                    term.red(
-                        f"{element} cannot be described. If you're seeing this message, something *very* wrong has happened."
-                    )
+                    f"{element} cannot be described."
+                    " If you're seeing this message, something *very* wrong has happened."
                 )
 
         result = ""
@@ -335,7 +329,11 @@ class Apparatus(object):
                 _description(element[1]),
                 element[2],
             )
-            result += f"{from_component} was connected to {to_component} using {element[2].material} tubing (length {tube.length}, ID {element[2].ID}, OD {element[2].OD}). "
+            result += (
+                f"{from_component} was connected to"
+                f" {to_component} using {element[2].material}"
+                f" tubing (length {tube.length}, ID {element[2].ID}, OD {element[2].OD}). "
+            )
         try:
             get_ipython
             return Markdown(result)

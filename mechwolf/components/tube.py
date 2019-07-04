@@ -1,7 +1,7 @@
 from math import pi
 from warnings import warn
 
-from . import term, ureg
+from . import ureg
 
 
 class Tube(object):
@@ -27,23 +27,18 @@ class Tube(object):
         for measurement in [self.length, self.ID, self.OD]:
             if measurement.dimensionality != ureg.mm.dimensionality:
                 raise ValueError(
-                    term.red(
-                        f"{measurement.units} is an invalid unit of measurement for length."
-                    )
+                    f"{measurement.units} is an invalid unit of measurement for length."
                 )
 
         # ensure diameters are valid
         if self.OD <= self.ID:
             raise ValueError(
-                term.red(
-                    f"Outer diameter {OD} must be greater than inner diameter {ID}"
-                )
+                f"Outer diameter {OD} must be greater than inner diameter {ID}"
             )
         if self.length < self.OD or self.length < self.ID:
             warn(
-                term.yellow(
-                    f"Tube length ({self.length}) is less than diameter. Make sure that this is not in error."
-                )
+                f"Tube length ({self.length}) is less than diameter."
+                " Make sure that this is not in error."
             )
 
         self.material = material

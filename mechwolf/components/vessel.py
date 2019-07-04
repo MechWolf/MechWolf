@@ -5,7 +5,6 @@ from warnings import warn
 from cirpy import Molecule
 from terminaltables import SingleTable
 
-from . import term
 from .component import Component
 
 # ignore annoying CIRpy warnings
@@ -39,11 +38,7 @@ class Vessel(Component):
                         else hit,
                     )
                 except BaseException:
-                    warn(
-                        term.yellow(
-                            f"Failed to resolve {hit}. Continuing without resolving."
-                        )
-                    )
+                    warn(f"Failed to resolve {hit}." " Continuing without resolving.")
                     continue
                 # show a warning table
                 if warnings:
