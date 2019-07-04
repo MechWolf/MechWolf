@@ -7,5 +7,6 @@ install:
     - pip install pytest
 script:
     - pytest
-    - black --check
+    - black --check mechwolf
+    - flake8
 cache: pip
