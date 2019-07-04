@@ -18,61 +18,65 @@ async def main(experiment, dry_run):
     # Run protocol
     # Enter context managers for each component (initialize serial ports, etc.)
     # We can do this with contextlib.ExitStack on an arbitrary number of components
-
-    with ExitStack() as stack:
-        if not dry_run:
-            components = [
-                stack.enter_context(component)
-                for component in experiment.compiled_protocol.keys()
-            ]
-        else:
-            components = experiment.compiled_protocol.keys()
-        for component in components:
-            # Find out when each component's monitoring should end
-            end_time = max(
-                [
-                    procedure["time"]
-                    for procedure in experiment.compiled_protocol[component]
+    try:
+        with ExitStack() as stack:
+            if not dry_run:
+                components = [
+                    stack.enter_context(component)
+                    for component in experiment.compiled_protocol.keys()
                 ]
-            ).magnitude
+            else:
+                components = experiment.compiled_protocol.keys()
+            for component in components:
+                # Find out when each component's monitoring should end
+                end_time = max(
+                    [
+                        procedure["time"]
+                        for procedure in experiment.compiled_protocol[component]
+                    ]
+                ).magnitude
 
-            logger.debug(f"Calculated {component} end time is {end_time}s")
+                logger.debug(f"Calculated {component} end time is {end_time}s")
 
-            for procedure in experiment.compiled_protocol[component]:
-                tasks.append(
-                    create_procedure(
-                        procedure=procedure,
-                        component=component,
-                        experiment=experiment,
-                        end_time=end_time,
-                        dry_run=dry_run,
+                for procedure in experiment.compiled_protocol[component]:
+                    tasks.append(
+                        create_procedure(
+                            procedure=procedure,
+                            component=component,
+                            experiment=experiment,
+                            end_time=end_time,
+                            dry_run=dry_run,
+                        )
                     )
-                )
 
-            # for sensors, add the monitor task
-            if isinstance(component, Sensor):
-                logger.debug(f"Creating sensor monitoring task for {component}")
-                tasks.append(
-                    monitor(component=component, experiment=experiment, dry_run=dry_run)
-                )
-                tasks.append(end_monitoring(component, end_time))
+                # for sensors, add the monitor task
+                if isinstance(component, Sensor):
+                    logger.debug(f"Creating sensor monitoring task for {component}")
+                    tasks.append(
+                        monitor(
+                            component=component, experiment=experiment, dry_run=dry_run
+                        )
+                    )
+                    tasks.append(end_monitoring(component, end_time))
 
-        experiment.start_time = time.time()
+            experiment.start_time = time.time()
 
-        start_msg = f"{experiment} started at {datetime.utcfromtimestamp(experiment.start_time)} UTC"
-        logger.success(start_msg)
-        try:
-            await asyncio.gather(*tasks)
+            start_msg = f"{experiment} started at {datetime.utcfromtimestamp(experiment.start_time)} UTC"
+            logger.success(start_msg)
+            try:
+                await asyncio.gather(*tasks)
 
-            # when this code block is reached, the tasks will have completed
-            experiment.end_time = time.time()
-            end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
-            logger.success(end_msg)
-        finally:
-            if experiment._bound_logger is not None:
-                logger.remove(experiment._bound_logger)
-            experiment.protocol.is_executing = False
-            experiment.protocol.was_executed = True
+                # when this code block is reached, the tasks will have completed
+                experiment.end_time = time.time()
+                end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
+                logger.success(end_msg)
+            except:  # noqa
+                logger.exception("Failed to execute protocol")
+    finally:
+        if experiment._bound_logger is not None:
+            logger.remove(experiment._bound_logger)
+        experiment.protocol.is_executing = False
+        experiment.protocol.was_executed = True
 
 
 async def create_procedure(procedure, component, experiment, end_time, dry_run):
@@ -87,15 +91,20 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
 
     if dry_run:
         logger.info(
-            f"Simulating: {procedure['params']} on {component} at {procedure['time'].to_base_units().magnitude}s"
+            f"Simulating: {procedure['params']} on {component}"
+            f" at {procedure['time'].to_base_units().magnitude}s"
         )
         record = {}
         success = True
     else:
         logger.info(
-            f"Executing: {procedure['params']} on {component} at {procedure['time'].to_base_units().magnitude}s"
+            f"Executing: {procedure['params']} on {component}"
+            f" at {procedure['time'].to_base_units().magnitude}s"
         )
         success = component.update()  # NOTE: This does!
+
+    if not success:
+        logger.error(f"Failed to update {component}!")
 
     record = {
         "timestamp": time.time(),

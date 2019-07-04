@@ -38,9 +38,11 @@ class Component(object):
         return f"{self.__class__.__name__} {self.name}"
 
     def __enter__(self):
+        logger.trace(f"Entering context for {self}")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        logger.trace(f"Exiting context for {self}")
         pass
 
     def validate(self, dry_run):
