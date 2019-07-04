@@ -1,5 +1,5 @@
 <h1 align ="center">
-<img src='https://github.com/Benjamin-Lee/MechWolf/raw/master/logo/wordmark3x.png' height="150">
+<img src='https://github.com/Benjamin-Lee/MechWolf/raw/master/logo/wordmark3x.png' style="max-width: 150px;width: 100%;">
 </h1>
 
 <div align="center">
@@ -11,8 +11,7 @@
 <a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square"></a>
 
 </div>
-
->Continuous flow process description, analysis, and automation
+<br>
 
 MechWolf is a Python framework for automating continuous flow processes.
 It was developed as a collaboration between computer scientists, chemists, and complete novices to be used by anyone wanting to do better, faster, more reproducible flow-based science.
