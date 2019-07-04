@@ -35,7 +35,7 @@ def test_add_multiple():
 def test_validate():
     # test network connectivity checking
     assert A.validate()
-    with pytest.raises(Exception):
+    with pytest.warns(UserWarning, match="connect"):
         A.add(a, b, t)
         A.add(c, d, t)
         A.validate()  # not fully connected

@@ -40,9 +40,17 @@ class Protocol(object):
     _id_counter = 0
 
     def __init__(self, apparatus, duration=None, name=None):
-        assert isinstance(apparatus, Apparatus)
-        if apparatus.validate():  # ensure apparatus is valid
-            self.apparatus = apparatus
+        if not isinstance(apparatus, Apparatus):
+            raise TypeError(
+                f"Must pass an Apparatus object. Got {type(apparatus)}, "
+                "which is not an instance of mechwolf.Apparatus."
+            )
+
+        # ensure apparatus is valid
+        if not apparatus.validate():
+            raise ValueError("Apparaus is not valid.")
+
+        self.apparatus = apparatus
         self.procedures = []
         if name is not None:
             self.name = name
@@ -55,7 +63,8 @@ class Protocol(object):
             duration = ureg.parse_expression(duration)
             if duration.dimensionality != ureg.hours.dimensionality:
                 raise ValueError(
-                    f"{duration.dimensionality} is an invalid unit of measurement for duration. Must be {ureg.hours.dimensionality}"
+                    f"{duration.dimensionality} is an invalid unit "
+                    f"of measurement for duration. Must be {ureg.hours.dimensionality}."
                 )
         self.duration = duration
         self.is_executing = False
@@ -98,7 +107,8 @@ class Protocol(object):
 
             if not hasattr(component, kwarg):
                 raise ValueError(
-                    f"Invalid attribute {kwarg} for {component}. Valid attributes are {[x for x in vars(component).keys() if x != 'name' and not x.startswith('_')]}."
+                    f"Invalid attribute {kwarg} for {component}."
+                    f" Valid attributes are {[x for x in vars(component).keys() if x != 'name' and not x.startswith('_')]}."
                 )
 
             if (
@@ -107,14 +117,17 @@ class Protocol(object):
                 != component.__dict__[kwarg].dimensionality
             ):
                 raise ValueError(
-                    f"Bad dimensionality of {kwarg} for {component}. Expected dimensionality of {component.__dict__[kwarg].dimensionality} but got {ureg.parse_expression(value).dimensionality}."
+                    f"Bad dimensionality of {kwarg} for {component}. "
+                    f"Expected dimensionality of {component.__dict__[kwarg].dimensionality} "
+                    f"but got {ureg.parse_expression(value).dimensionality}."
                 )
 
             elif not isinstance(
                 component.__dict__[kwarg], type(value)
             ) and not isinstance(component.__dict__[kwarg], ureg.Quantity):
                 raise ValueError(
-                    f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} but got {value}, which is of type {type(value)}"
+                    f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} "
+                    f"but got {value}, which is of type {type(value)}"
                 )
 
         if stop is not None and duration is not None:
@@ -134,8 +147,10 @@ class Protocol(object):
         # determine stop time
         if not any([stop, self.duration, duration]):
             raise RuntimeError(
-                "Must specify protocol duration during instantiation in order to omit stop and duration. "
-                f'To automatically set duration of protocol as end of last procedure in protocol, use duration="auto" when creating {self.name}.'
+                "Must specify protocol duration during "
+                "instantiation in order to omit stop and duration. "
+                "To automatically set duration of protocol "
+                f'as end of last procedure in protocol, use duration="auto" when creating {self.name}.'
             )
         elif stop is not None:
             if isinstance(stop, timedelta):
@@ -151,7 +166,8 @@ class Protocol(object):
                 kwargs["temp"] = "0 degC"
             elif kwargs["active"] and kwargs.get("temp") is None:
                 raise RuntimeError(
-                    f"TempControl {component} is activated but temperature setting is not given. Specify 'temp' in your call to add()."
+                    f"TempControl {component} is activated but temperature "
+                    "setting is not given. Specify 'temp' in your call to add()."
                 )
 
         # add the procedure to the procedure list
@@ -217,8 +233,8 @@ class Protocol(object):
             )
             if all([x is None for x in self.duration]):
                 raise RuntimeError(
-                    "Unable to automatically infer duration of protocol."
-                    ' Must define stop or duration for at least one procedure to use duration="auto".'
+                    "Unable to automatically infer duration of protocol. "
+                    'Must define stop or duration for at least one procedure to use duration="auto".'
                 )
             self.duration = self.duration[-1]
 
@@ -259,8 +275,9 @@ class Protocol(object):
             ):
                 raise RuntimeError(
                     f"{component} cannot have two procedures for the entire duration of the protocol. "
-                    "If each procedure defines a different attribute to be set for the entire duration, combine them into one call to add(). "
-                    "Otherwise, reduce ambiguity by defining start and stop times for each procedure."
+                    "If each procedure defines a different attribute to be set for the entire duration, "
+                    "combine them into one call to add(). Otherwise, reduce ambiguity by defining start "
+                    "and stop times for each procedure."
                 )
 
             for i, procedure in enumerate(component_procedures):
@@ -280,7 +297,8 @@ class Protocol(object):
                     and procedure["start"] > self.duration
                 ):
                     raise ValueError(
-                        f"Procedure cannot start at {procedure['start']}, which is outside the duration of the experiment ({self.duration})."
+                        f"Procedure cannot start at {procedure['start']}, "
+                        f"which is outside the duration of the experiment ({self.duration})."
                     )
 
                 # make sure that the end time isn't outside the duration
@@ -290,7 +308,8 @@ class Protocol(object):
                     and procedure["stop"] > self.duration
                 ):
                     raise ValueError(
-                        f"Procedure cannot end at {procedure['stop']}, which is outside the duration of the experiment ({self.duration})."
+                        f"Procedure cannot end at {procedure['stop']}, "
+                        f"which is outside the duration of the experiment ({self.duration})."
                     )
 
                 # automatically infer start and stop times
@@ -306,13 +325,15 @@ class Protocol(object):
                         and procedure["stop"] is None
                     ):
                         warn(
-                            f"Automatically inferring stop time for {procedure['component']} as beginning of {procedure['component']}'s next procedure."
+                            f"Automatically inferring stop time for {procedure['component']} "
+                            f"as beginning of {procedure['component']}'s next procedure."
                         )
                         procedure["stop"] = component_procedures[i + 1]["start"]
                 except IndexError:
                     if procedure["stop"] is None:
                         warn(
-                            f"Automatically inferring stop for {procedure['component']} as the end of the protocol. To override, provide stop in your call to add()."
+                            f"Automatically inferring stop for {procedure['component']} as "
+                            f"the end of the protocol. To override, provide stop in your call to add()."
                         )
                         procedure["stop"] = self.duration
 
@@ -332,7 +353,8 @@ class Protocol(object):
                         dict(time=procedure["start"], params=procedure["params"])
                     )
 
-                    # if the procedure is over at the same time as the next procedure begins, don't go back to the base state
+                    # if the procedure is over at the same time as the next
+                    # procedure begins, don't go back to the base state
                     try:
                         if isclose(
                             component_procedures[i + 1]["start"]
