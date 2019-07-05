@@ -15,7 +15,16 @@
 import os
 import sys
 
+# embed the widgets for interactivity
+from ipywidgets.embed import DEFAULT_EMBED_REQUIREJS_URL
+
 sys.path.insert(0, os.path.abspath("../.."))
+
+
+html_js_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js",
+    DEFAULT_EMBED_REQUIREJS_URL,
+]
 
 
 # -- Project information -----------------------------------------------------
@@ -28,7 +37,6 @@ author = "Benjamin Lee, Alex Mijalis, Myles Ingram, and Nicola Pohl"
 version = ""
 # The full version, including alpha/beta/rc tags
 release = ""
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -101,8 +109,8 @@ html_theme_options = {
     # "github_type": "star",
     "show_relbar_bottom": True,
     "show_related": True,
-    "logo_name": False,
-    "logo": "wordmark.pdf",
+    "logo_name": True,
+    "logo": "head.pdf",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
