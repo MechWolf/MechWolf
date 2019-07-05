@@ -130,7 +130,6 @@ class Apparatus(object):
         Raises:
             ImportError: When the visualization package is not installed.
         """
-        self.validate()  # ensure apparatus is valid
         f = Digraph(
             name=self.name,
             node_attr=node_attr,
@@ -311,10 +310,7 @@ class Apparatus(object):
                     return False
 
             # no more than one output from a valve (might have to change this)
-            if (
-                len([x for x in self.network if isinstance(x.from_component, Valve)])
-                != 1
-            ):
+            if len([x for x in self.network if x.from_component is valve]) != 1:
                 warn(f"Valve {valve} has multiple outputs.")
                 return False
 
