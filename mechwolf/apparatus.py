@@ -46,7 +46,7 @@ class Apparatus(object):
 
     @property
     def _active_components(self):
-        return [x for x in self.components if isinstance(x, ActiveComponent)]
+        return {x for x in self.components if isinstance(x, ActiveComponent)}
 
     def _add_single(self, from_component, to_component, tube):
         """Adds a single connection to the apparatus.
