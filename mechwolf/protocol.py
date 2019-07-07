@@ -153,8 +153,12 @@ class Protocol(object):
         # add the procedure to the procedure list
         self.procedures.append(
             dict(
-                start=start.to_base_units().magnitude if start is not None else start,
-                stop=stop.to_base_units().magnitude if stop is not None else stop,
+                start=float(start.to_base_units().magnitude)
+                if start is not None
+                else start,
+                stop=float(stop.to_base_units().magnitude)
+                if stop is not None
+                else stop,
                 component=component,
                 params=kwargs,
             )
