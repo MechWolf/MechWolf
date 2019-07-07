@@ -33,13 +33,13 @@ class Protocol(object):
             If None, every step will require an explicit start and stop time.
             If "auto", the duration will be inferred, if possible, during compilation as the end of last procedure in
             protocol.
-            If a string, such as "3 minutes", the duration will be explicitly defined. Defaults to None.
+            If a string, such as "3 minutes", the duration will be explicitly defined. Defaults to "auto".
         name (str, optional): The name of the protocol. Defaults to "Protocol_X" where *X* is protocol count.
     """
 
     _id_counter = 0
 
-    def __init__(self, apparatus, duration=None, name=None):
+    def __init__(self, apparatus, duration="auto", name=None):
         if not isinstance(apparatus, Apparatus):
             raise TypeError(
                 f"Must pass an Apparatus object. Got {type(apparatus)}, "

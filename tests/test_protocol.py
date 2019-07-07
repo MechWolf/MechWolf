@@ -56,7 +56,7 @@ def test_add():
     P.add(pump1, rate="10 mL/min", duration=timedelta(minutes=5))
     assert P.procedures[0] == procedure
 
-    P = mw.Protocol(A)
+    P = mw.Protocol(A, duration=None)
     with pytest.raises(ValueError):
         P.add(mw.Pump("not in apparatus"), rate="10 mL/min", duration="5 min")
 
