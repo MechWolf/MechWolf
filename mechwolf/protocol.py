@@ -251,7 +251,6 @@ class Protocol(object):
             # now to convert durations to start times
             start_time = 0
             compiled_procedures = []
-
             for procedure in procedures:
                 # we start off at t=0
                 compiled_procedures.append(
@@ -262,10 +261,18 @@ class Protocol(object):
                     start_time += procedure.duration
                 # in case of a failure, we'll handle it right away
                 except TypeError:
-                    compiled_procedures.append(
-                        CompiledProcedure(start=duration, params=component.base_state)
-                    )
                     break
+
+            # be sure to execute the final procedure for the right duration
+            if procedures[-1].duration is not None:
+                compiled_procedures.append(
+                    CompiledProcedure(start=start_time, params=component.base_state())
+                )
+
+            # finally, turn off the component
+            compiled_procedures.append(
+                CompiledProcedure(start=duration, params=component.base_state())
+            )
 
             # now we have the fully compiled procedures
             compiled[component] = compiled_procedures
@@ -344,7 +351,7 @@ class Protocol(object):
             loader=PackageLoader("mechwolf", "templates"),
         )
         visualization = env.get_template("viz_div.html").render(
-            procedures=self.procedures
+            compiled=self.compile(dry_run=True)
         )
 
         # show it in Jupyter, if possible
