@@ -281,20 +281,10 @@ class Protocol(object):
 
     def to_dict(self):
         compiled = deepcopy(self.compile(dry_run=True))
-        for item in compiled.items():
-            for procedure in item[1]:
-                procedure["time"] = procedure["time"].to_timedelta().total_seconds()
-        compiled = {k.name: v for (k, v) in compiled.items()}
+        compiled = {
+            k.name: [dict(_v._asdict()) for _v in v] for k, v in compiled.items()
+        }
         return compiled
-
-    def to_list(self):
-        output = []
-        for procedure in deepcopy(self.procedures):
-            procedure["start"] = procedure["start"].to_timedelta().total_seconds()
-            procedure["stop"] = procedure["stop"].to_timedelta().total_seconds()
-            procedure["component"] = procedure["component"].name
-            output.append(procedure)
-        return output
 
     def yaml(self):
         """Outputs
@@ -308,7 +298,7 @@ class Protocol(object):
             str: YAML of the procedure list. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
 
         """
-        compiled_yaml = yaml.safe_dump(self.to_list(), default_flow_style=False)
+        compiled_yaml = yaml.safe_dump(self.to_dict(), default_flow_style=False)
 
         try:
             get_ipython
@@ -323,7 +313,7 @@ class Protocol(object):
         Returns:
             str: JSON of the protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
         """
-        compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
+        compiled_json = json.dumps(self.to_dict(), sort_keys=True, indent=4)
 
         try:
             get_ipython
