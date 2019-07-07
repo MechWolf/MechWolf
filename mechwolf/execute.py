@@ -34,7 +34,7 @@ async def main(experiment, dry_run):
                         procedure["time"]
                         for procedure in experiment.compiled_protocol[component]
                     ]
-                ).magnitude
+                )
 
                 logger.debug(f"Calculated {component} end time is {end_time}s")
 
@@ -81,7 +81,7 @@ async def main(experiment, dry_run):
 async def create_procedure(procedure, component, experiment, dry_run):
 
     # wait for the right moment
-    execution_time = procedure["time"].to("seconds").magnitude
+    execution_time = procedure["time"]
     await asyncio.sleep(execution_time)
 
     component.update_from_params(
@@ -91,14 +91,14 @@ async def create_procedure(procedure, component, experiment, dry_run):
     if dry_run:
         logger.info(
             f"Simulating: {procedure['params']} on {component}"
-            f" at {procedure['time'].to_base_units().magnitude}s"
+            f" at {procedure['time']}s"
         )
         record = {}
         success = True
     else:
         logger.info(
             f"Executing: {procedure['params']} on {component}"
-            f" at {procedure['time'].to_base_units().magnitude}s"
+            f" at {procedure['time']}s"
         )
         success = component.update()  # NOTE: This does!
 
