@@ -8,7 +8,7 @@ from mistune import markdown
 from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 
 from . import ureg
-from .components import Component, Tube, Valve, Vessel
+from .components import ActiveComponent, Component, Tube, Valve, Vessel
 
 Connection = namedtuple("Connection", ["from_component", "to_component", "tube"])
 
@@ -43,6 +43,10 @@ class Apparatus(object):
 
     def __str__(self):
         return f"Apparatus {self.name}"
+
+    @property
+    def _active_components(self):
+        return {x for x in self.components if isinstance(x, ActiveComponent)}
 
     def _add_single(self, from_component, to_component, tube):
         """Adds a single connection to the apparatus.
