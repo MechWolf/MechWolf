@@ -152,7 +152,12 @@ class Protocol(object):
 
         # add the procedure to the procedure list
         self.procedures.append(
-            dict(start=start, stop=stop, component=component, params=kwargs)
+            dict(
+                start=start.to_base_units().magnitude if start is not None else start,
+                stop=stop.to_base_units().magnitude if stop is not None else stop,
+                component=component,
+                params=kwargs,
+            )
         )
 
     def add(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
@@ -195,9 +200,7 @@ class Protocol(object):
         # infer the duration of the protocol
         computed_durations = sorted(
             [x["stop"] for x in self.procedures],
-            key=lambda z: z.to_base_units().magnitude
-            if isinstance(z, ureg.Quantity)
-            else 0,
+            key=lambda z: z if z is not None else 0,
         )
         if all([x is None for x in computed_durations]):
             raise RuntimeError(
@@ -261,9 +264,7 @@ class Protocol(object):
 
                 # automatically infer start and stop times
                 try:
-                    if component_procedures[i + 1]["start"] == ureg.parse_expression(
-                        "0 seconds"
-                    ):
+                    if component_procedures[i + 1]["start"] == 0:
                         raise RuntimeError(
                             f"Ambiguous start time for {procedure['component']}."
                         )
@@ -304,10 +305,7 @@ class Protocol(object):
                     # procedure begins, don't go back to the base state
                     try:
                         if isclose(
-                            component_procedures[i + 1]["start"]
-                            .to_base_units()
-                            .magnitude,
-                            procedure["stop"].to_base_units().magnitude,
+                            component_procedures[i + 1]["start"], procedure["stop"]
                         ):
                             continue
                     except IndexError:
@@ -325,17 +323,12 @@ class Protocol(object):
 
     def to_dict(self):
         compiled = deepcopy(self.compile(dry_run=True))
-        for item in compiled.items():
-            for procedure in item[1]:
-                procedure["time"] = procedure["time"].to_timedelta().total_seconds()
         compiled = {k.name: v for (k, v) in compiled.items()}
         return compiled
 
     def to_list(self):
         output = []
         for procedure in deepcopy(self.procedures):
-            procedure["start"] = procedure["start"].to_timedelta().total_seconds()
-            procedure["stop"] = procedure["stop"].to_timedelta().total_seconds()
             procedure["component"] = procedure["component"].name
             output.append(procedure)
         return output

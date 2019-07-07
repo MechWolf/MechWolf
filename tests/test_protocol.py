@@ -25,8 +25,8 @@ def test_add():
     procedure = {
         "component": pump1,
         "params": {"rate": "10 mL/min"},
-        "start": mw.ureg.parse_expression("0 seconds"),
-        "stop": mw.ureg.parse_expression("5 minutes"),
+        "start": 0,
+        "stop": 300,
     }
 
     # test using duration
@@ -84,18 +84,15 @@ def test_compile():
     P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
     assert P.compile() == {
         pump1: [
-            {
-                "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
-            },
-            {"params": {"rate": "0 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
+            {"params": {"rate": "10 mL/min"}, "time": 0},
+            {"params": {"rate": "0 mL/min"}, "time": 300},
         ],
         pump2: [
             {
                 "params": {"rate": "10 mL/min"},
                 "time": mw.ureg.parse_expression("0 seconds"),
             },
-            {"params": {"rate": "0 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
+            {"params": {"rate": "0 mL/min"}, "time": 300},
         ],
     }
 
@@ -117,22 +114,13 @@ def test_compile():
     P.add(pump1, rate="5 mL/min", start="5 min", stop="10 min")
     assert P.compile() == {
         pump1: [
-            {
-                "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
-            },
-            {"params": {"rate": "5 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
-            {
-                "params": {"rate": "0 mL/min"},
-                "time": mw.ureg.parse_expression("10 min"),
-            },
+            {"params": {"rate": "10 mL/min"}, "time": 0},
+            {"params": {"rate": "5 mL/min"}, "time": 300},
+            {"params": {"rate": "0 mL/min"}, "time": 600},
         ],
         pump2: [
-            {
-                "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
-            },
-            {"params": {"rate": "0 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
+            {"params": {"rate": "10 mL/min"}, "time": 0},
+            {"params": {"rate": "0 mL/min"}, "time": 300},
         ],
     }
 
