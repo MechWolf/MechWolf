@@ -240,9 +240,7 @@ class Protocol(object):
 
         # deal only with compiling active components
         for component in [
-            x
-            for x in self.apparatus.components
-            if issubclass(x.__class__, ActiveComponent)
+            x for x in self.apparatus.components if isinstance(x, ActiveComponent)
         ]:
             # determine the procedures for each component
             component_procedures = sorted(
