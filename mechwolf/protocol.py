@@ -5,7 +5,6 @@ import webbrowser
 from collections import defaultdict
 from copy import deepcopy
 from datetime import timedelta
-from math import isclose
 from typing import NamedTuple, Union
 from warnings import warn
 
@@ -91,7 +90,7 @@ class Protocol(object):
         """
 
         # make sure that the component being added to the protocol is part of the apparatus
-        if component not in self.apparatus.components:
+        if component not in self.apparatus._active_components:
             raise ValueError(
                 f"{component} is not a component of {self.apparatus.name}."
             )
@@ -105,11 +104,12 @@ class Protocol(object):
                 if isinstance(kwargs["setting"], int):
                     pass
 
-        # don't let users give empty procedures
         if not kwargs:
-            raise RuntimeError(
-                "No kwargs supplied. This will not manipulate the state of your sythesizer. Ensure your call to add() is valid."
+            warn(
+                "No kwargs supplied. "
+                f"Assuming {component.base_state()}, which is {component}'s base state."
             )
+            kwargs = component.base_state()
 
         # make sure the component and keywords are valid
         for kwarg, value in kwargs.items():
@@ -155,6 +155,13 @@ class Protocol(object):
                     "setting is not given. Specify 'temp' in your call to add()."
                 )
 
+        # quick check to prevent ambiguity
+        if self.procedures[component]:
+            if self.procedures[component][-1].duration is None:
+                raise ValueError(
+                    f"Only the last procedure for {component} may have no provided duration."
+                )
+
         self.procedures[component].append(Procedure(duration=duration, params=kwargs))
 
     def add(self, component, duration=None, **kwargs):
@@ -195,156 +202,75 @@ class Protocol(object):
         Raises:
             RuntimeError: When compilation fails.
         """
-        output = {}
-
-        # infer the duration of the protocol
-        if self.duration == "auto":
-            self.duration = sorted(
-                [x["stop"] for x in self.procedures],
-                key=lambda z: z.to_base_units().magnitude
-                if isinstance(z, ureg.Quantity)
-                else 0,
-            )
-            if all([x is None for x in self.duration]):
-                raise RuntimeError(
-                    "Unable to automatically infer duration of protocol. "
-                    'Must define stop or duration for at least one procedure to use duration="auto".'
-                )
-            self.duration = self.duration[-1]
-
-        # deal only with compiling active components
-        for component in self.apparatus._active_components:
-            # determine the procedures for each component
-            component_procedures = sorted(
-                [x for x in self.procedures if x["component"] == component],
-                key=lambda x: x["start"],
-            )
-
-            # skip compiling components without procedures
-            if not len(component_procedures):
+        # perform check that all ActiveComponents are used
+        logger.trace("Performing check that all given ActiveComponents are used...")
+        unused_active_components = self.apparatus._active_components - set(
+            self.procedures.keys()
+        )
+        if unused_active_components:
+            if len(unused_active_components) == 1:
                 warn(
-                    f"{component} is an active component but was not used in this procedure."
-                    " If this is intentional, ignore this warning."
+                    f"{list(unused_active_components)[0]} is an ActiveComponent "
+                    "but was not used in this procedure. If this is intentional, "
+                    "ignore this warning."
                 )
-                continue
+            else:
+                warn(
+                    f"{list(unused_active_components)} are ActiveComponents but "
+                    "were not used in this procedure. If this is intentional, "
+                    "ignore this warning."
+                )
+
+        # infer the overall duration of the protocol
+        duration = 0
+        for k, v in self.procedures.items():
+            if v[-1].duration is not None:
+                c_duration = sum(procedure.duration for procedure in v)
+                if c_duration > duration:
+                    duration = c_duration
+            else:
+                c_duration = sum(procedure.duration for procedure in v[:-1])
+                if c_duration > duration:
+                    duration = c_duration
+
+        if duration == 0:
+            raise RuntimeError(
+                "Unable to automatically infer duration of protocol "
+                "or the duration of the protocol would be 0."
+            )
+
+        # this will be the final result
+        compiled = {}
+
+        for component, procedures in self.procedures.items():
 
             # make sure all active components are activated, raising warning if not
             if not component.validate(dry_run=dry_run):
                 raise RuntimeError("Component is not valid.")
 
-            # check for conflicting continuous procedures
-            if (
-                len(
-                    [
-                        x
-                        for x in component_procedures
-                        if x["start"] is None and x["stop"] is None
-                    ]
+            # now to convert durations to start times
+            start_time = 0
+            compiled_procedures = []
+
+            for procedure in procedures:
+                # we start off at t=0
+                compiled_procedures.append(
+                    CompiledProcedure(start=start_time, params=procedure.params)
                 )
-                > 1
-            ):
-                raise RuntimeError(
-                    f"{component} cannot have two procedures for the entire duration of the protocol. "
-                    "If each procedure defines a different attribute to be set for the entire duration, "
-                    "combine them into one call to add(). Otherwise, reduce ambiguity by defining start "
-                    "and stop times for each procedure."
-                )
-
-            for i, procedure in enumerate(component_procedures):
-                # ensure that the start time is before the stop time if given
-                if (
-                    procedure["stop"] is not None
-                    and procedure["start"] > procedure["stop"]
-                ):
-                    raise RuntimeError(
-                        "Start time must be less than or equal to stop time."
-                    )
-
-                # make sure that the start time isn't outside the duration
-                if (
-                    self.duration is not None
-                    and procedure["start"] is not None
-                    and procedure["start"] > self.duration
-                ):
-                    raise ValueError(
-                        f"Procedure cannot start at {procedure['start']}, "
-                        f"which is outside the duration of the experiment ({self.duration})."
-                    )
-
-                # make sure that the end time isn't outside the duration
-                if (
-                    self.duration is not None
-                    and procedure["stop"] is not None
-                    and procedure["stop"] > self.duration
-                ):
-                    raise ValueError(
-                        f"Procedure cannot end at {procedure['stop']}, "
-                        f"which is outside the duration of the experiment ({self.duration})."
-                    )
-
-                # automatically infer start and stop times
+                # and then add the duration (in seconds)
                 try:
-                    if component_procedures[i + 1]["start"] == ureg.parse_expression(
-                        "0 seconds"
-                    ):
-                        raise RuntimeError(
-                            f"Ambiguous start time for {procedure['component']}."
-                        )
-                    elif (
-                        component_procedures[i + 1]["start"] is not None
-                        and procedure["stop"] is None
-                    ):
-                        warn(
-                            f"Automatically inferring stop time for {procedure['component']} "
-                            f"as beginning of {procedure['component']}'s next procedure."
-                        )
-                        procedure["stop"] = component_procedures[i + 1]["start"]
-                except IndexError:
-                    if procedure["stop"] is None:
-                        warn(
-                            f"Automatically inferring stop for {procedure['component']} as "
-                            f"the end of the protocol. To override, provide stop in your call to add()."
-                        )
-                        procedure["stop"] = self.duration
-
-            # give the component instructions at all times
-            compiled = []
-            for i, procedure in enumerate(component_procedures):
-                if _visualization:
-                    compiled.append(
-                        dict(
-                            start=procedure["start"],
-                            stop=procedure["stop"],
-                            params=procedure["params"],
-                        )
+                    start_time += procedure.duration
+                # in case of a failure, we'll handle it right away
+                except TypeError:
+                    compiled_procedures.append(
+                        CompiledProcedure(start=duration, params=component.base_state)
                     )
-                else:
-                    compiled.append(
-                        dict(time=procedure["start"], params=procedure["params"])
-                    )
+                    break
 
-                    # if the procedure is over at the same time as the next
-                    # procedure begins, don't go back to the base state
-                    try:
-                        if isclose(
-                            component_procedures[i + 1]["start"]
-                            .to_base_units()
-                            .magnitude,
-                            procedure["stop"].to_base_units().magnitude,
-                        ):
-                            continue
-                    except IndexError:
-                        pass
+            # now we have the fully compiled procedures
+            compiled[component] = compiled_procedures
 
-                    # otherwise, go back to base state
-                    compiled.append(
-                        dict(time=procedure["stop"], params=component.base_state())
-                    )
-
-            output[component] = compiled
-
-            # raise warning if duration is explicitly given but not used?
-        return output
+        return compiled
 
     def to_dict(self):
         compiled = deepcopy(self.compile(dry_run=True))
