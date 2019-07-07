@@ -31,10 +31,10 @@ async def main(experiment, dry_run):
                 # Find out when each component's monitoring should end
                 end_time = max(
                     [
-                        procedure["time"]
+                        procedure.start
                         for procedure in experiment.compiled_protocol[component]
                     ]
-                ).magnitude
+                )
 
                 logger.debug(f"Calculated {component} end time is {end_time}s")
 
@@ -44,7 +44,6 @@ async def main(experiment, dry_run):
                             procedure=procedure,
                             component=component,
                             experiment=experiment,
-                            end_time=end_time,
                             dry_run=dry_run,
                         )
                     )
@@ -79,27 +78,25 @@ async def main(experiment, dry_run):
         experiment.protocol.was_executed = True
 
 
-async def create_procedure(procedure, component, experiment, end_time, dry_run):
+async def create_procedure(procedure, component, experiment, dry_run):
 
     # wait for the right moment
-    execution_time = procedure["time"].to("seconds").magnitude
+    execution_time = procedure.start
     await asyncio.sleep(execution_time)
 
     component.update_from_params(
-        procedure["params"]
+        procedure.params
     )  # NOTE: this doesn't actually call the update() method
 
     if dry_run:
         logger.info(
-            f"Simulating: {procedure['params']} on {component}"
-            f" at {procedure['time'].to_base_units().magnitude}s"
+            f"Simulating: {procedure.params} on {component}" f" at {procedure.start}s"
         )
         record = {}
         success = True
     else:
         logger.info(
-            f"Executing: {procedure['params']} on {component}"
-            f" at {procedure['time'].to_base_units().magnitude}s"
+            f"Executing: {procedure.params} on {component}" f" at {procedure.start}s"
         )
         success = component.update()  # NOTE: This does!
 
@@ -108,7 +105,7 @@ async def create_procedure(procedure, component, experiment, end_time, dry_run):
 
     record = {
         "timestamp": time.time(),
-        "params": procedure["params"],
+        "params": procedure.params,
         "type": "executed_procedure" if not dry_run else "simulated_procedure",
         "component": component,
         "success": success,

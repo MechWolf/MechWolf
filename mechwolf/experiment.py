@@ -75,7 +75,7 @@ class Experiment(object):
         def log(x):
             with self._output_widget.children[1].children[1]:  # the log
                 pad_length = (
-                    len(str(int(self.protocol.duration.magnitude))) + 4
+                    len(str(int(self.protocol._duration))) + 4
                 )  # .xxx in floats
                 if self.start_time is not None:
                     print(

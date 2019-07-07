@@ -83,6 +83,14 @@ class Protocol(object):
             return ureg.parse_expression(user_provided_time).to_base_units().magnitude
         raise ValueError("Unable to parse time")
 
+    @property
+    def _duration(self):
+        duration = 0
+        for component, procedures in self.compile(dry_run=True).items():
+            if procedures[-1].start > duration:
+                duration = procedures[-1].start
+        return duration
+
     def _add_single(self, component, duration=None, **kwargs):
         """Adds a single procedure to the protocol.
 
@@ -95,6 +103,12 @@ class Protocol(object):
                 f"{component} is not a component of {self.apparatus.name}."
             )
 
+        if not kwargs:
+            raise RuntimeError(
+                "No kwargs supplied in call to add(). "
+                "This would result in undefined behavior."
+            )
+
         # perform the mapping for valves
         if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
             try:
@@ -103,13 +117,6 @@ class Protocol(object):
                 # allow direct specification of valve settings
                 if isinstance(kwargs["setting"], int):
                     pass
-
-        if not kwargs:
-            warn(
-                "No kwargs supplied. "
-                f"Assuming {component.base_state()}, which is {component}'s base state."
-            )
-            kwargs = component.base_state()
 
         # make sure the component and keywords are valid
         for kwarg, value in kwargs.items():
