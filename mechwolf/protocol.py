@@ -2,9 +2,11 @@ import asyncio
 import json
 import tempfile
 import webbrowser
+from collections import defaultdict
 from copy import deepcopy
 from datetime import timedelta
 from math import isclose
+from typing import NamedTuple, Union
 from warnings import warn
 
 import yaml
@@ -14,9 +16,19 @@ from loguru import logger
 
 from . import ureg
 from .apparatus import Apparatus
-from .components import ActiveComponent, TempControl, Valve
+from .components import TempControl, Valve
 from .execute import main
 from .experiment import Experiment
+
+
+class Procedure(NamedTuple):
+    duration: Union[float, None]
+    params: dict
+
+
+class CompiledProcedure(NamedTuple):
+    start: float
+    params: dict
 
 
 class Protocol(object):
@@ -29,17 +41,12 @@ class Protocol(object):
 
     Attributes:
         apparatus (Apparatus): The apparatus for which the protocol is being defined.
-        duration (str, optional): The duration of the protocol.
-            If None, every step will require an explicit start and stop time.
-            If "auto", the duration will be inferred, if possible, during compilation as the end of last procedure in
-            protocol.
-            If a string, such as "3 minutes", the duration will be explicitly defined. Defaults to None.
         name (str, optional): The name of the protocol. Defaults to "Protocol_X" where *X* is protocol count.
     """
 
     _id_counter = 0
 
-    def __init__(self, apparatus, duration=None, name=None):
+    def __init__(self, apparatus, name=None):
         if not isinstance(apparatus, Apparatus):
             raise TypeError(
                 f"Must pass an Apparatus object. Got {type(apparatus)}, "
@@ -51,31 +58,33 @@ class Protocol(object):
             raise ValueError("Apparaus is not valid.")
 
         self.apparatus = apparatus
-        self.procedures = []
+        self.procedures = defaultdict(list)
         if name is not None:
             self.name = name
         else:
             self.name = "Protocol_" + str(Protocol._id_counter)
             Protocol._id_counter += 1
 
-        # check duration, if given
-        if duration not in [None, "auto"]:
-            duration = ureg.parse_expression(duration)
-            if duration.dimensionality != ureg.hours.dimensionality:
-                raise ValueError(
-                    f"{duration.dimensionality} is an invalid unit "
-                    f"of measurement for duration. Must be {ureg.hours.dimensionality}."
-                )
-        self.duration = duration
         self.is_executing = False
         self.was_executed = False
 
     def __repr__(self):
         return f"MechWolf protocol for Apparatus {self.apparatus}"
 
-    def _add_single(
-        self, component, start="0 seconds", stop=None, duration=None, **kwargs
-    ):
+    @staticmethod
+    def _user_provided_time_to_float(user_provided_time):
+        if isinstance(user_provided_time, (int, float)):
+            warn(
+                f"Given time as {type(user_provided_time)} without unit. Assuming seconds."
+            )
+            return float(user_provided_time)
+        if isinstance(user_provided_time, timedelta):
+            user_provided_time = str(user_provided_time.total_seconds()) + " seconds"
+        if isinstance(user_provided_time, str):
+            return ureg.parse_expression(user_provided_time).to_base_units().magnitude
+        raise ValueError("Unable to parse time")
+
+    def _add_single(self, component, duration=None, **kwargs):
         """Adds a single procedure to the protocol.
 
         See add() for full documentation.
@@ -130,33 +139,9 @@ class Protocol(object):
                     f"but got {value}, which is of type {type(value)}"
                 )
 
-        if stop is not None and duration is not None:
-            raise RuntimeError("Must provide one of stop and duration, not both.")
-
-        # parse the start time if given
-        if isinstance(start, timedelta):
-            start = str(start.total_seconds()) + " seconds"
-        start = ureg.parse_expression(start)
-
-        # parse duration if given
+        # parse the time, if given
         if duration is not None:
-            if isinstance(duration, timedelta):
-                duration = str(duration.total_seconds()) + " seconds"
-            stop = start + ureg.parse_expression(duration)
-
-        # determine stop time
-        if not any([stop, self.duration, duration]):
-            raise RuntimeError(
-                "Must specify protocol duration during "
-                "instantiation in order to omit stop and duration. "
-                "To automatically set duration of protocol "
-                f'as end of last procedure in protocol, use duration="auto" when creating {self.name}.'
-            )
-        elif stop is not None:
-            if isinstance(stop, timedelta):
-                stop = str(stop.total_seconds()) + " seconds"
-            if isinstance(stop, str):
-                stop = ureg.parse_expression(stop)
+            duration = self._user_provided_time_to_float(duration)
 
         # a little magic for temperature controllers
         if issubclass(component.__class__, TempControl):
@@ -170,26 +155,17 @@ class Protocol(object):
                     "setting is not given. Specify 'temp' in your call to add()."
                 )
 
-        # add the procedure to the procedure list
-        self.procedures.append(
-            dict(start=start, stop=stop, component=component, params=kwargs)
-        )
+        self.procedures[component].append(Procedure(duration=duration, params=kwargs))
 
-    def add(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
+    def add(self, component, duration=None, **kwargs):
         """Adds a procedure to the protocol.
 
-        Warning:
-            If stop and duration are both None, the procedure's stop time will be inferred as the end of the protocol.
+        Note:
+            You may only call this function once per component with ``duration=None``.
 
         Args:
-            component_added (ActiveComponent or Iterable): The component(s) for which the procedure being added. If an
+            component (ActiveComponent or Iterable): The component(s) for which the procedure being added. If an
                 interable, all components will have the same parameters.
-            start (str, optional): The start time of the procedure relative to the start of the protocol, such as
-                ``"5 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to ``"0 seconds"``, *i.e.* the
-                beginning of the protocol.
-            stop (str, optional): The stop time of the procedure relative to the start of the protocol, such as
-                ``"30 seconds"``. May also be a :class:`datetime.timedelta`. May not be given if ``duration`` is
-                used. Defaults to None.
             duration (str, optional): The duration of the procedure, such as "1 hour". May also be a
                 :class:`datetime.timedelta`. May not be used if ``stop`` is used. Defaults to None.
             **kwargs: The state of the component for the procedure.
@@ -206,9 +182,7 @@ class Protocol(object):
             component = [component]
 
         for _component in component:
-            self._add_single(
-                _component, start=start, stop=stop, duration=duration, **kwargs
-            )
+            self._add_single(_component, duration=duration, **kwargs)
 
     def compile(self, dry_run=True, _visualization=False):
         """Compile the protocol into a dict of devices and their procedures.
@@ -239,11 +213,7 @@ class Protocol(object):
             self.duration = self.duration[-1]
 
         # deal only with compiling active components
-        for component in [
-            x
-            for x in self.apparatus.components
-            if issubclass(x.__class__, ActiveComponent)
-        ]:
+        for component in self.apparatus._active_components:
             # determine the procedures for each component
             component_procedures = sorted(
                 [x for x in self.procedures if x["component"] == component],
