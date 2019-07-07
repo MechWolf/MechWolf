@@ -276,10 +276,11 @@ class Protocol(object):
                     CompiledProcedure(start=start_time, params=component.base_state())
                 )
 
-            # finally, turn off the component
-            compiled_procedures.append(
-                CompiledProcedure(start=duration, params=component.base_state())
-            )
+            # if we weren't given the duration, default to the overall duration
+            else:
+                compiled_procedures.append(
+                    CompiledProcedure(start=duration, params=component.base_state())
+                )
 
             # now we have the fully compiled procedures
             compiled[component] = compiled_procedures

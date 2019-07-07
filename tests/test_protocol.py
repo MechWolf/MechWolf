@@ -19,42 +19,18 @@ def test_create_protocol():
     assert mw.Protocol(A).name == "Protocol_1"
 
 
-def test_protocol_duration():
-    assert str(mw.Protocol(A, duration="1 hour").duration) == "1 hour"
-    with pytest.raises(ValueError):
-        mw.Protocol(A, duration="1 mL")
-
-
 def test_add():
-    P = mw.Protocol(A, duration="auto")
+    P = mw.Protocol(A)
 
-    procedure = {
-        "component": pump1,
-        "params": {"rate": "10 mL/min"},
-        "start": mw.ureg.parse_expression("0 seconds"),
-        "stop": mw.ureg.parse_expression("5 minutes"),
-    }
+    procedure = {"params": {"rate": "10 mL/min"}, "duration": 300}
 
     # test using duration
     P.add(pump1, rate="10 mL/min", duration="5 min")
-    assert P.procedures[0] == procedure
-
-    # test adding with start and stop
-    P.procedures = []
-    P.add(pump1, rate="10 mL/min", start="0 min", stop="5 min")
-    assert P.procedures[0] == procedure
-
-    # test adding with start and stop as timedeltas
-    P.procedures = []
-    P.add(
-        pump1, rate="10 mL/min", start=timedelta(seconds=0), stop=timedelta(minutes=5)
-    )
-    assert P.procedures[0] == procedure
+    assert dict(P.procedures[pump1][0]._asdict()) == procedure
 
     # test adding with duration as timedelta
-    P.procedures = []
     P.add(pump1, rate="10 mL/min", duration=timedelta(minutes=5))
-    assert P.procedures[0] == procedure
+    assert dict(P.procedures[pump1][1]._asdict()) == procedure
 
     P = mw.Protocol(A)
     with pytest.raises(ValueError):
@@ -76,13 +52,10 @@ def test_add():
     with pytest.raises(ValueError):
         P.add(pump1, rate="5 mL", duration="5 min")
 
-    # Providing stop and duration should raise error
-    with pytest.raises(RuntimeError):
-        P.add(pump1, rate="5 mL/min", stop="5 min", duration="5 min")
-
+    P.add(pump1, rate="5 mL/min")
     # don't know when the protocol will be over, so should raise error if stop
-    # time/duration isn't provided
-    with pytest.raises(RuntimeError):
+    # duration isn't provided a second time
+    with pytest.raises(ValueError):
         P.add(pump1, rate="5 mL/min")
 
 
@@ -91,49 +64,23 @@ def test_compile():
     P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
     assert P.compile() == {
         pump1: [
-            {
-                "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
-            },
-            {"params": {"rate": "0 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
+            mw.protocol.CompiledProcedure(params={"rate": "10 mL/min"}, start=0),
+            mw.protocol.CompiledProcedure(params=pump1.base_state(), start=300),
         ],
         pump2: [
-            {
-                "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
-            },
-            {"params": {"rate": "0 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
-        ],
-    }
-
-    # auto duration parsing shouldn't change anything
-    P = mw.Protocol(A, duration="auto")
-    P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
-    assert P.compile() == {
-        pump1: [
-            {
-                "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
-            },
-            {"params": {"rate": "0 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
-        ],
-        pump2: [
-            {
-                "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
-            },
-            {"params": {"rate": "0 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
+            mw.protocol.CompiledProcedure(params={"rate": "10 mL/min"}, start=0),
+            mw.protocol.CompiledProcedure(params=pump2.base_state(), start=300),
         ],
     }
 
     # if no stop times are given, auto duration should fail
-    P = mw.Protocol(A, duration="auto")
+    P = mw.Protocol(A)
     P.add([pump1, pump2], rate="10 mL/min")
     with pytest.raises(RuntimeError):
         P.compile()
 
     # raise warning if component not used
-    P = mw.Protocol(A, duration="auto")
+    P = mw.Protocol(A)
     P.add(pump1, rate="10 mL/min", duration="5 min")
     with pytest.warns(UserWarning, match="not used"):
         P.compile()
@@ -141,75 +88,36 @@ def test_compile():
     # check switching between rates
     P = mw.Protocol(A)
     P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
-    P.add(pump1, rate="5 mL/min", start="5 min", stop="10 min")
+    P.add(pump1, rate="5 mL/min", duration="5 min")
     assert P.compile() == {
         pump1: [
-            {
-                "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
-            },
-            {"params": {"rate": "5 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
-            {
-                "params": {"rate": "0 mL/min"},
-                "time": mw.ureg.parse_expression("10 min"),
-            },
+            mw.protocol.CompiledProcedure(params={"rate": "10 mL/min"}, start=0),
+            mw.protocol.CompiledProcedure(params={"rate": "5 mL/min"}, start=300),
+            mw.protocol.CompiledProcedure(params=pump1.base_state(), start=600),
         ],
         pump2: [
-            {
-                "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
-            },
-            {"params": {"rate": "0 mL/min"}, "time": mw.ureg.parse_expression("5 min")},
+            mw.protocol.CompiledProcedure(params={"rate": "10 mL/min"}, start=0),
+            mw.protocol.CompiledProcedure(params=pump2.base_state(), start=300),
         ],
     }
 
-    # stop time before start time
-    P = mw.Protocol(A)
-    P.add([pump1, pump2], rate="10 mL/min", start="5 min", stop="4 min")
-    with pytest.raises(RuntimeError):
-        P.compile()
-
-    # procedure duration longer than protocol duration
-    P = mw.Protocol(A, duration="1 min")
-    P.add([pump1, pump2], rate="10 mL/min", stop="4 min")
-    with pytest.raises(ValueError):
-        P.compile()
-
-    # procedure start not in protocol duration
-    P = mw.Protocol(A, duration="1 min")
-    P.add([pump1, pump2], rate="10 mL/min", start="4 min")
-    with pytest.raises(ValueError):
-        P.compile()
-
-    # raise inferring stop time warning when a procedure doesn't have a stop
-    # time or duration but hte next added procedure has a start time
-    P = mw.Protocol(A, duration="10 min")
-    P.add([pump1, pump2], rate="10 mL/min")
-    P.add([pump1, pump2], start="5 min", rate="1 mL/min")
-    with pytest.warns(UserWarning, match="inferring stop time"):
-        P.compile()
-
 
 def test_json():
-    P = mw.Protocol(A, duration="auto")
+    P = mw.Protocol(A)
     P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
-    assert json.loads(P.json()) == [
-        {
-            "start": 0,
-            "stop": 300,
-            "component": "pump1",
-            "params": {"rate": "10 mL/min"},
-        },
-        {
-            "start": 0,
-            "stop": 300,
-            "component": "pump2",
-            "params": {"rate": "10 mL/min"},
-        },
-    ]
+    assert json.loads(P.json()) == {
+        "pump1": [
+            {"params": {"rate": "10 mL/min"}, "start": 0},
+            {"params": {"rate": "0 mL/min"}, "start": 300.0},
+        ],
+        "pump2": [
+            {"params": {"rate": "10 mL/min"}, "start": 0},
+            {"params": {"rate": "0 mL/min"}, "start": 300.0},
+        ],
+    }
 
 
 def test_yaml():
-    P = mw.Protocol(A, duration="auto")
+    P = mw.Protocol(A)
     P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
     assert yaml.safe_load(P.yaml()) == json.loads(P.json())
