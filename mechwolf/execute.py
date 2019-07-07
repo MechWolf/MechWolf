@@ -44,7 +44,6 @@ async def main(experiment, dry_run):
                             procedure=procedure,
                             component=component,
                             experiment=experiment,
-                            end_time=end_time,
                             dry_run=dry_run,
                         )
                     )
@@ -79,7 +78,7 @@ async def main(experiment, dry_run):
         experiment.protocol.was_executed = True
 
 
-async def create_procedure(procedure, component, experiment, end_time, dry_run):
+async def create_procedure(procedure, component, experiment, dry_run):
 
     # wait for the right moment
     execution_time = procedure["time"].to("seconds").magnitude
