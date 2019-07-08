@@ -19,7 +19,7 @@
 		dataTable.addColumn({ type: 'date', id: 'End' });
 		dataTable.addRows([
 			{% for procedure in procedures%}
-			[ "{{procedure['component'].name}}", "{{procedure['params'] | safe}}", new Date(0, 0, 0, 0, 0, {{procedure["start"].to_base_units().magnitude}}), new Date(0, 0, 0, 0, 0, {{procedure["stop"].to_base_units().magnitude}}) ],
+			[ "{{procedure['component'].name}}", "{{procedure['params'] | safe}}", new Date(0, 0, 0, 0, 0, {{procedure["start"]}}), new Date(0, 0, 0, 0, 0, {{procedure["stop"]}}) ],
 			{% endfor %}
 			]);
 		chart.draw(dataTable, options);
