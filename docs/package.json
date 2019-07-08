@@ -1,0 +1,15 @@
+{
+  "name": "mechwolf-docs",
+  "version": "0.0.2",
+  "description": "The documentation site for the MechWolf package",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vuepress dev docs",
+    "build": "vuepress build docs"
+  },
+  "author": "Benjamin Lee",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "vuepress": "^1.0.2"
+  }
+}
