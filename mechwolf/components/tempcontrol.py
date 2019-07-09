@@ -17,7 +17,7 @@ class TempControl(ActiveComponent):
         active (bool): Whether the temperature controller is active.
     """
 
-    def __init__(self, name, internal_tubing):
+    def __init__(self, internal_tubing, name=None):
         super().__init__(name=name)
         if not isinstance(internal_tubing, Tube):
             raise TypeError("TempControl must have internal_tubing of type Tube.")

@@ -11,7 +11,7 @@ from .valve import Valve
 class ViciValve(Valve):
     """Controls a VICI Valco Valve"""
 
-    def __init__(self, name, mapping={}, serial_port=None):
+    def __init__(self, name=None, mapping={}, serial_port=None):
         super().__init__(name=name, mapping=mapping)
         self.serial_port = serial_port
 

@@ -14,7 +14,7 @@ class Pump(ActiveComponent):
         rate (str): The flow rate of the pump. Must be of the dimensionality of volume/time. Converted to a Quantity.
     """
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
         self._visualization_shape = "box3d"
@@ -36,7 +36,7 @@ class DummyPump(Pump):
         rate (str): The flow rate of the pump. Must be of the dimensionality of volume/time. Converted to a Quantity.
     """
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         super().__init__(name=name)
 
     def update(self):

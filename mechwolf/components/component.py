@@ -28,7 +28,7 @@ class Component(object):
             self.name = self.__class__.__name__ + "_" + str(self.__class__._id_counter)
             self.__class__._id_counter += 1
         else:
-            self.name = name
+            self.name = str(name)
         self._visualization_shape = "box"
 
     def __repr__(self):
@@ -71,7 +71,7 @@ class ActiveComponent(Component):
 
     _id_counter = 0
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         super().__init__(name=name)
 
     def update_from_params(self, params):

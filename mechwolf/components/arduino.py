@@ -12,7 +12,7 @@ class ArduinoSensor(Sensor):
     They spit out some data in ASCII in return.
     """
 
-    def __init__(self, name, serial_port=None, command="*"):
+    def __init__(self, name=None, serial_port=None, command="*"):
         super().__init__(name=name)
         self.serial_port = serial_port
         self.command = command.encode(encoding="ASCII")
