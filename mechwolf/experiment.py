@@ -114,9 +114,19 @@ class Experiment(object):
             logger.debug("Graphs not shown. Initializing...")
             for i, sensor in enumerate(self._sensor_names):
                 logger.trace(f"Initializing graph #{i+1} for {sensor}")
-                with self._output_widget.children[1].children[2].children[i]:
-                    p = figure(title=f"{sensor} data", plot_height=300, plot_width=600)
 
+                # bind the height of the graph to the selected plot height
+                self._output_widget.children[1].children[2].children[
+                    i
+                ].layout.height = f"{self._plot_height}px"
+                with self._output_widget.children[1].children[2].children[i]:
+
+                    # create the figure object
+                    p = figure(
+                        title=f"{sensor} data",
+                        plot_height=self._plot_height,
+                        plot_width=600,
+                    )
                     r = p.line(
                         source=self._transformed_data[sensor],
                         x="timestamps",
@@ -126,8 +136,12 @@ class Experiment(object):
                     )
                     p.xaxis.axis_label = "Experiment elapsed time (seconds)"
                     p.yaxis.axis_label = self._device_name_to_unit[sensor]
+
+                    # since we're in the with-statement, this will show up in the accordion
                     output_notebook(resources=INLINE, hide_banner=True)
                     target = show(p, notebook_handle=True)
+
+                    # save the target and plot for later updating
                     self._charts[sensor] = (target, r)
                 logger.trace(f"Sucessfully initialized graph {i}")
             logger.trace("All graphs successfully initialized")
