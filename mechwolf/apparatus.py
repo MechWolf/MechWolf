@@ -28,7 +28,7 @@ class Apparatus(object):
 
     _id_counter = 0
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, description=None):
         self.network = []
         self.components = set()
         # if given a name, then name the apparatus, else default to a sequential name
@@ -37,6 +37,7 @@ class Apparatus(object):
         else:
             self.name = "Apparatus_" + str(Apparatus._id_counter)
             Apparatus._id_counter += 1
+        self.description = description
 
     def __repr__(self):
         return f"<Apparatus {self.name}>"
@@ -290,12 +291,7 @@ class Apparatus(object):
 
         # make sure that all of the components are connected
         G = nx.Graph()  # convert the network to an undirected NetworkX graph
-        G.add_edges_from(
-            [
-                (connection.from_component, connection.to_component)
-                for connection in self.network
-            ]
-        )
+        G.add_edges_from([(c.from_component, c.to_component) for c in self.network])
         if not nx.is_connected(G):
             warn("Not all components connected.")
             return False
@@ -305,32 +301,33 @@ class Apparatus(object):
         for valve in valves:
 
             # ensure that valve's mapping components are part of apparatus
-            for name in valve.mapping.keys():
-                if name not in [x.name for x in self.components]:
+            for component in valve.mapping.keys():
+                if component not in self.components:
                     warn(
-                        f"Invalid mapping for Valve {valve}."
-                        f" No component named {name} exists."
+                        f"Invalid mapping for Valve {valve}. "
+                        f"{component} has not been added to {self.name}"
                     )
                     return False
 
-            # no more than one output from a valve (might have to change this)
-            if len([x for x in self.network if x.from_component is valve]) != 1:
-                warn(f"Valve {valve} has multiple outputs.")
-                return False
-
+            # TODO: make this check work again with SISO, SIMO, MISO, and MIMO valves.
+            # # no more than one output from a valve (might have to change this)
+            # if len([x for x in self.network if x.from_component is valve]) != 1:
+            #     warn(f"Valve {valve} has multiple outputs.")
+            #     return False
+            #
             # make sure valve's mapping is complete
-            non_mapped_components = [
-                connection.from_component
-                for connection in self.network
-                if connection.to_component == valve
-                and valve.mapping.get(connection.from_component.name) is None
-            ]
-            if non_mapped_components:
-                warn(
-                    f"Valve {valve} has incomplete mapping."
-                    f" No mapping for {non_mapped_components}"
-                )
-                return False
+            # non_mapped_components = [
+            #     connection.from_component
+            #     for connection in self.network
+            #     if connection.to_component == valve
+            #     and valve.mapping.get(connection.from_component.name) is None
+            # ]
+            # if non_mapped_components:
+            #     warn(
+            #         f"Valve {valve} has incomplete mapping."
+            #         f" No mapping for {non_mapped_components}"
+            #     )
+            #     return False
 
         return True
 

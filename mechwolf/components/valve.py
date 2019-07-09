@@ -26,7 +26,7 @@ class Valve(ActiveComponent):
         """Default to the first setting.
 
         This is an arbitrary choice but is guaranteed to be a valid setting."""
-        return dict(setting=1)
+        return {"setting": 1}
 
 
 class DummyValve(Valve):
