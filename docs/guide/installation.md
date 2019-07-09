@@ -2,7 +2,7 @@
 
 ## From PyPI (recommended)
 
-::: tip NOTE
+::: tip Note
 
 This will take a **long** time to compile on a Raspberry Pi.
 :::

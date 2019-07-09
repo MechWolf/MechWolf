@@ -39,8 +39,8 @@ detailed guide, see [The Hitchhiker's Guide to Python section on
 installing
 Python 3](http://docs.python-guide.org/en/latest/starting/installation/).
 
-::: warning WARNING
-Be sure to download Python 3.7! MechWolf is written in Python 3, which is
+::: warning Important
+Be sure to download Python 3.7! MechWolf is written in Python 3.7, which is
 not backwards compatible.
 :::
 
