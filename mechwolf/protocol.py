@@ -226,6 +226,13 @@ class Protocol(object):
         """
         output = {}
 
+        if len({c.name for c in self.apparatus._active_components}) != len(
+            self.apparatus._active_components
+        ):
+            raise RuntimeError(
+                "Found ActiveComponents with duplicate names. Aborting execution..."
+            )
+
         # deal only with compiling active components
         for component in self.apparatus._active_components:
             # determine the procedures for each component
@@ -242,9 +249,9 @@ class Protocol(object):
                 )
                 continue
 
-            # make sure all active components are activated, raising warning if not
+            # validate each component
             if not component.validate(dry_run=dry_run):
-                raise RuntimeError("Component is not valid.")
+                raise RuntimeError("Component is not valid. Aborting execution...")
 
             # check for conflicting continuous procedures
             if (
@@ -261,7 +268,8 @@ class Protocol(object):
                     f"{component} cannot have two procedures for the entire duration of the protocol. "
                     "If each procedure defines a different attribute to be set for the entire duration, "
                     "combine them into one call to add(). Otherwise, reduce ambiguity by defining start "
-                    "and stop times for each procedure."
+                    "and stop times for each procedure. "
+                    "Aborting execution..."
                 )
 
             for i, procedure in enumerate(component_procedures):
@@ -270,7 +278,8 @@ class Protocol(object):
                 try:
                     if component_procedures[i + 1]["start"] == 0:
                         raise RuntimeError(
-                            f"Ambiguous start time for {procedure['component']}."
+                            f"Ambiguous start time for {procedure['component']}. "
+                            "Aborting execution..."
                         )
                     elif (
                         component_procedures[i + 1]["start"] is not None
