@@ -14,7 +14,7 @@ from loguru import logger
 
 from . import ureg
 from .apparatus import Apparatus
-from .components import ActiveComponent, TempControl, Valve
+from .components import TempControl, Valve
 from .execute import main
 from .experiment import Experiment
 
@@ -29,17 +29,12 @@ class Protocol(object):
 
     Attributes:
         apparatus (Apparatus): The apparatus for which the protocol is being defined.
-        duration (str, optional): The duration of the protocol.
-            If None, every step will require an explicit start and stop time.
-            If "auto", the duration will be inferred, if possible, during compilation as the end of last procedure in
-            protocol.
-            If a string, such as "3 minutes", the duration will be explicitly defined. Defaults to "auto".
         name (str, optional): The name of the protocol. Defaults to "Protocol_X" where *X* is protocol count.
     """
 
     _id_counter = 0
 
-    def __init__(self, apparatus, duration="auto", name=None):
+    def __init__(self, apparatus, name=None):
         if not isinstance(apparatus, Apparatus):
             raise TypeError(
                 f"Must pass an Apparatus object. Got {type(apparatus)}, "
@@ -58,15 +53,6 @@ class Protocol(object):
             self.name = "Protocol_" + str(Protocol._id_counter)
             Protocol._id_counter += 1
 
-        # check duration, if given
-        if duration not in [None, "auto"]:
-            duration = ureg.parse_expression(duration)
-            if duration.dimensionality != ureg.hours.dimensionality:
-                raise ValueError(
-                    f"{duration.dimensionality} is an invalid unit "
-                    f"of measurement for duration. Must be {ureg.hours.dimensionality}."
-                )
-        self.duration = duration
         self.is_executing = False
         self.was_executed = False
 
@@ -88,7 +74,7 @@ class Protocol(object):
             )
 
         # perform the mapping for valves
-        if issubclass(component.__class__, Valve) and kwargs.get("setting") is not None:
+        if isinstance(component, Valve) and kwargs.get("setting") is not None:
             try:
                 kwargs["setting"] = component.mapping[kwargs["setting"]]
             except KeyError:
@@ -143,20 +129,14 @@ class Protocol(object):
             if isinstance(duration, timedelta):
                 duration = str(duration.total_seconds()) + " seconds"
             stop = start + ureg.parse_expression(duration)
-
-        # determine stop time
-        if not any([stop, self.duration, duration]):
-            raise RuntimeError(
-                "Must specify protocol duration during "
-                "instantiation in order to omit stop and duration. "
-                "To automatically set duration of protocol "
-                f'as end of last procedure in protocol, use duration="auto" when creating {self.name}.'
-            )
         elif stop is not None:
             if isinstance(stop, timedelta):
                 stop = str(stop.total_seconds()) + " seconds"
             if isinstance(stop, str):
                 stop = ureg.parse_expression(stop)
+
+        if start is not None and stop is not None and start > stop:
+            raise ValueError("Procedure beginning is after procedure end.")
 
         # a little magic for temperature controllers
         if issubclass(component.__class__, TempControl):
@@ -172,7 +152,16 @@ class Protocol(object):
 
         # add the procedure to the procedure list
         self.procedures.append(
-            dict(start=start, stop=stop, component=component, params=kwargs)
+            dict(
+                start=float(start.to_base_units().magnitude)
+                if start is not None
+                else start,
+                stop=float(stop.to_base_units().magnitude)
+                if stop is not None
+                else stop,
+                component=component,
+                params=kwargs,
+            )
         )
 
     def add(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
@@ -210,6 +199,20 @@ class Protocol(object):
                 _component, start=start, stop=stop, duration=duration, **kwargs
             )
 
+    @property
+    def _inferred_duration(self):
+        # infer the duration of the protocol
+        computed_durations = sorted(
+            [x["stop"] for x in self.procedures],
+            key=lambda z: z if z is not None else 0,
+        )
+        if all([x is None for x in computed_durations]):
+            raise RuntimeError(
+                "Unable to automatically infer duration of protocol. "
+                'Must define stop or duration for at least one procedure to use duration="auto".'
+            )
+        return computed_durations[-1]
+
     def compile(self, dry_run=True, _visualization=False):
         """Compile the protocol into a dict of devices and their procedures.
 
@@ -223,25 +226,8 @@ class Protocol(object):
         """
         output = {}
 
-        # infer the duration of the protocol
-        if self.duration == "auto":
-            self.duration = sorted(
-                [x["stop"] for x in self.procedures],
-                key=lambda z: z.to_base_units().magnitude
-                if isinstance(z, ureg.Quantity)
-                else 0,
-            )
-            if all([x is None for x in self.duration]):
-                raise RuntimeError(
-                    "Unable to automatically infer duration of protocol. "
-                    'Must define stop or duration for at least one procedure to use duration="auto".'
-                )
-            self.duration = self.duration[-1]
-
         # deal only with compiling active components
-        for component in [
-            x for x in self.apparatus.components if isinstance(x, ActiveComponent)
-        ]:
+        for component in self.apparatus._active_components:
             # determine the procedures for each component
             component_procedures = sorted(
                 [x for x in self.procedures if x["component"] == component],
@@ -279,42 +265,10 @@ class Protocol(object):
                 )
 
             for i, procedure in enumerate(component_procedures):
-                # ensure that the start time is before the stop time if given
-                if (
-                    procedure["stop"] is not None
-                    and procedure["start"] > procedure["stop"]
-                ):
-                    raise RuntimeError(
-                        "Start time must be less than or equal to stop time."
-                    )
-
-                # make sure that the start time isn't outside the duration
-                if (
-                    self.duration is not None
-                    and procedure["start"] is not None
-                    and procedure["start"] > self.duration
-                ):
-                    raise ValueError(
-                        f"Procedure cannot start at {procedure['start']}, "
-                        f"which is outside the duration of the experiment ({self.duration})."
-                    )
-
-                # make sure that the end time isn't outside the duration
-                if (
-                    self.duration is not None
-                    and procedure["stop"] is not None
-                    and procedure["stop"] > self.duration
-                ):
-                    raise ValueError(
-                        f"Procedure cannot end at {procedure['stop']}, "
-                        f"which is outside the duration of the experiment ({self.duration})."
-                    )
 
                 # automatically infer start and stop times
                 try:
-                    if component_procedures[i + 1]["start"] == ureg.parse_expression(
-                        "0 seconds"
-                    ):
+                    if component_procedures[i + 1]["start"] == 0:
                         raise RuntimeError(
                             f"Ambiguous start time for {procedure['component']}."
                         )
@@ -333,7 +287,7 @@ class Protocol(object):
                             f"Automatically inferring stop for {procedure['component']} as "
                             f"the end of the protocol. To override, provide stop in your call to add()."
                         )
-                        procedure["stop"] = self.duration
+                        procedure["stop"] = self._inferred_duration
 
             # give the component instructions at all times
             compiled = []
@@ -355,10 +309,7 @@ class Protocol(object):
                     # procedure begins, don't go back to the base state
                     try:
                         if isclose(
-                            component_procedures[i + 1]["start"]
-                            .to_base_units()
-                            .magnitude,
-                            procedure["stop"].to_base_units().magnitude,
+                            component_procedures[i + 1]["start"], procedure["stop"]
                         ):
                             continue
                     except IndexError:
@@ -376,17 +327,12 @@ class Protocol(object):
 
     def to_dict(self):
         compiled = deepcopy(self.compile(dry_run=True))
-        for item in compiled.items():
-            for procedure in item[1]:
-                procedure["time"] = procedure["time"].to_timedelta().total_seconds()
         compiled = {k.name: v for (k, v) in compiled.items()}
         return compiled
 
     def to_list(self):
         output = []
         for procedure in deepcopy(self.procedures):
-            procedure["start"] = procedure["start"].to_timedelta().total_seconds()
-            procedure["stop"] = procedure["stop"].to_timedelta().total_seconds()
             procedure["component"] = procedure["component"].name
             output.append(procedure)
         return output

@@ -1,4 +1,0 @@
-sphinxcontrib-programoutput
-nbsphinx
-ipykernel
-recommonmark
