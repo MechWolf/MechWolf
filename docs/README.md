@@ -25,16 +25,12 @@ footer: GPLv3 Licensed | Copyright © 2018-present MechWolf Team
   </div>
 </div>
 
-### MechWolf doesn't bite
+### MechWolf doesn't bite.
 
-```bash
-# Python 3.7 or above required!
-$ python -V
-Python 3.7.3
+Install MechWolf in one line:
 
-# install
-$ pip3 install mechwolf
-
-# open an interactive notebook
-$ jupyter notebook
 ```
+$ pip install mechwolf
+```
+
+If you get an error (such as `mechwolf requires Python '>=3.7' but the running Python is 2.7.16`), take a look at the [installation guide](guide/installation). If you're not sure what any of this means, see the [gentle introduction](guide/gentle_intro).
