@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "vuepress dev docs",
-    "build": "vuepress build docs",
-    "deploy": "rm -rf ./rendered/ && npm run build && git add ./rendered && git commit -m 'Initial dist subtree commit' && cd ../ && git subtree push --prefix rendered origin gh-pages"
+    "build": "vuepress build docs"
   },
   "author": "Benjamin Lee",
   "license": "GPL-3.0",
