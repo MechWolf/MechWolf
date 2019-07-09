@@ -1,7 +1,6 @@
 module.exports = {
   title: "MechWolf",
   description: "Continuous flow process automation made easy",
-  dest: "./rendered",
   themeConfig: {
     logo: "/head10x.png",
     lastUpdated: "Last Updated", // string | boolean
