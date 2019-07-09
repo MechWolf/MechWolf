@@ -23,8 +23,9 @@ module.exports = {
         collapsable: false,
         children: [
           "/guide/gentle_intro",
-          "/guide/new_components",
-          "/guide/installation"
+          "/guide/installation",
+          "/guide/getting_started",
+          "/guide/new_components"
         ]
       }
     ]
