@@ -7,6 +7,7 @@ module.exports = {
     repo: "Benjamin-Lee/mechwolf",
     editLinks: true,
     sidebar: [
+      "/intro",
       {
         title: "About",
         collapsable: false,

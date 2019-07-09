@@ -2,8 +2,8 @@
 home: true
 heroImage: /head10x.png
 actionText: Get Started →
-actionLink: /about/faq
-footer: MIT Licensed | Copyright © 2018-present Evan You
+actionLink: /intro
+footer: GPLv3 Licensed | Copyright © 2018-present Evan You
 ---
 
 <div style="text-align: center">
@@ -25,21 +25,14 @@ footer: MIT Licensed | Copyright © 2018-present Evan You
   </div>
 </div>
 
-### As Easy as 1, 2, 3
+### MechWolf doesn't bite
 
 ```bash
 # install
-yarn global add vuepress@next
-# OR npm install -g vuepress@next
+pip3 install mechwolf
 
-# create a markdown file
-echo '# Hello VuePress' > README.md
-
-# start writing
-vuepress dev
-
-# build to static files
-vuepress build
+# open an interactive notebook
+jupyter notebook
 ```
 
 ::: warning COMPATIBILITY NOTE
