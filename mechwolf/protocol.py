@@ -34,7 +34,8 @@ class Protocol(object):
 
     _id_counter = 0
 
-    def __init__(self, apparatus, name=None):
+    def __init__(self, apparatus, name=None, description=None):
+        # type checking
         if not isinstance(apparatus, Apparatus):
             raise TypeError(
                 f"Must pass an Apparatus object. Got {type(apparatus)}, "
@@ -45,19 +46,27 @@ class Protocol(object):
         if not apparatus.validate():
             raise ValueError("Apparaus is not valid.")
 
+        # store the passed args
         self.apparatus = apparatus
-        self.procedures = []
+        self.description = description
+
+        # generate the name
         if name is not None:
             self.name = name
         else:
             self.name = "Protocol_" + str(Protocol._id_counter)
             Protocol._id_counter += 1
 
+        # default values
+        self.procedures = []
         self.is_executing = False
         self.was_executed = False
 
     def __repr__(self):
-        return f"MechWolf protocol for Apparatus {self.apparatus}"
+        return f"<{self.__str__()}>"
+
+    def __str__(self):
+        return f"Protocol {self.name} defined over {repr(self.apparatus)}"
 
     def _add_single(
         self, component, start="0 seconds", stop=None, duration=None, **kwargs
