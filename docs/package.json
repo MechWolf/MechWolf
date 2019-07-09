@@ -4,9 +4,8 @@
   "description": "The documentation site for the MechWolf package",
   "main": "index.js",
   "scripts": {
-    "dev": "vuepress dev docs",
-    "build": "vuepress build docs",
-    "deploy": "rm -rf ./rendered/ && npm run build && git add ./rendered && git commit -m 'Initial dist subtree commit' && cd ../ && git subtree push --prefix rendered origin gh-pages"
+    "dev": "vuepress dev ./",
+    "build": "vuepress build ./"
   },
   "author": "Benjamin Lee",
   "license": "GPL-3.0",
