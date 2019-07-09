@@ -8,7 +8,7 @@ class LabJack(Sensor):
     See labjack.com for more details on their python API.
     """
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         super().__init__(name=name)
         try:
             import u3  # noqa

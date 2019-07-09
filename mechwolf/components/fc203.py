@@ -5,7 +5,7 @@ from .gsioc import GsiocComponent
 class GilsonFC203(ActiveComponent):
     """Controls a Gilson FC203B Fraction collector """
 
-    def __init__(self, name, serial_port=None, unit_id=1):
+    def __init__(self, name=None, serial_port=None, unit_id=1):
         super().__init__(name=name)
 
         self.serial_port = serial_port
