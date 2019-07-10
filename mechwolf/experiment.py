@@ -33,6 +33,7 @@ class Experiment(object):
         self.end_time = None
         self.data = {}
         self.executed_procedures = []
+        self._plot_height = 300
 
         # internal values (unstable!)
         self._charts = {}
