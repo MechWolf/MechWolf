@@ -258,7 +258,7 @@ class Protocol(object):
 
             # validate each component
             if not component.validate(dry_run=dry_run):
-                raise RuntimeError("Component is not valid. Aborting execution...")
+                raise RuntimeError("Component is not valid.")
 
             # check for conflicting continuous procedures
             if (
