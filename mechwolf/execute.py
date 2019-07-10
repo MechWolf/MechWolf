@@ -72,8 +72,15 @@ async def main(experiment, dry_run):
             except:  # noqa
                 logger.exception("Failed to execute protocol")
     finally:
+        logger.trace("Cleaning up...")
         if experiment._bound_logger is not None:
             logger.remove(experiment._bound_logger)
+
+        # allow sensors to start monitoring again
+        for component in experiment.compiled_protocol.keys():
+            if isinstance(component, Sensor):
+                logger.trace(f"Re enabling {component} monitoring...")
+                component._stop = False
         experiment.protocol.is_executing = False
         experiment.protocol.was_executed = True
 
@@ -141,5 +148,5 @@ async def end_monitoring(component, end_time: float):
         end_time (float): The end time for the sensor in EET.
     """
     await asyncio.sleep(end_time)
-    logger.debug(f"Setting {component}._done to True in order to stop monitoring")
-    component._done = True
+    logger.debug(f"Setting {component}._stop to True in order to stop monitoring")
+    component._stop = True

@@ -26,7 +26,7 @@ class Sensor(ActiveComponent):
         self.rate = ureg.parse_expression("0 Hz")
         self._visualization_shape = "ellipse"
         self._unit = ""
-        self._done = False
+        self._stop = False
 
     def base_state(self):
         """Default to being inactive."""
@@ -41,7 +41,7 @@ class Sensor(ActiveComponent):
            If data collection is on and needs to be turned off, turn off and return data."""
         while True:
 
-            if self._done:
+            if self._stop:
                 logger.trace(f"Done monitoring {self}")
                 break
             elif not self.rate:
