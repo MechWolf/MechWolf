@@ -238,9 +238,7 @@ class Protocol(object):
         if len({c.name for c in self.apparatus._active_components}) != len(
             self.apparatus._active_components
         ):
-            raise RuntimeError(
-                "Found ActiveComponents with duplicate names. Aborting execution..."
-            )
+            raise RuntimeError("Found ActiveComponents with duplicate names.")
 
         # deal only with compiling active components
         for component in self.apparatus._active_components:
@@ -260,7 +258,7 @@ class Protocol(object):
 
             # validate each component
             if not component.validate(dry_run=dry_run):
-                raise RuntimeError("Component is not valid. Aborting execution...")
+                raise RuntimeError("Component is not valid.")
 
             # check for conflicting continuous procedures
             if (
@@ -278,7 +276,7 @@ class Protocol(object):
                     "If each procedure defines a different attribute to be set for the entire duration, "
                     "combine them into one call to add(). Otherwise, reduce ambiguity by defining start "
                     "and stop times for each procedure. "
-                    "Aborting execution..."
+                    ""
                 )
 
             for i, procedure in enumerate(component_procedures):
@@ -287,8 +285,7 @@ class Protocol(object):
                 try:
                     if component_procedures[i + 1]["start"] == 0:
                         raise RuntimeError(
-                            f"Ambiguous start time for {procedure['component']}. "
-                            "Aborting execution..."
+                            f"Ambiguous start time for {procedure['component']}. " ""
                         )
                     elif (
                         component_procedures[i + 1]["start"] is not None
@@ -461,7 +458,11 @@ class Protocol(object):
             return
 
         logger.info(f"Compiling protocol with dry_run = {dry_run}")
-        compiled_protocol = self.compile(dry_run=dry_run)
+        try:
+            compiled_protocol = self.compile(dry_run=dry_run)
+        except RuntimeError as e:
+            # add an execution-specific message
+            raise (RuntimeError(str(e).rstrip() + " Aborting execution..."))
 
         # the Experiment object is going to hold all the info
         E = Experiment(
@@ -478,3 +479,13 @@ class Protocol(object):
             asyncio.run(main(experiment=E, dry_run=dry_run))
 
         return E
+
+    def clear_procedures(self) -> None:
+        """Reset the protocol's procedures.
+        """
+        if not self.was_executed or self.is_executing:
+            self.procedures = []
+        else:
+            raise RuntimeError(
+                "Unable to clear the procedures of a protocol that has been executed."
+            )
