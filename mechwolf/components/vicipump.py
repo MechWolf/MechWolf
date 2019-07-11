@@ -14,7 +14,7 @@ class ViciPump(Pump):
     This is specified in ml now, we can perhaps make it a ureg later
     """
 
-    def __init__(self, name, serial_port=None, volume_per_rev=0):
+    def __init__(self, name=None, serial_port=None, volume_per_rev=0):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
         self.serial_port = serial_port

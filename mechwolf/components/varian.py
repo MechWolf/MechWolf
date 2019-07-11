@@ -11,7 +11,9 @@ class VarianPump(Pump):
     """A Varian pump.
     """
 
-    def __init__(self, name, unit_id="0x80", serial_port=None, max_rate="0 mL/min"):
+    def __init__(
+        self, name=None, unit_id="0x80", serial_port=None, max_rate="0 mL/min"
+    ):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
         self.max_rate = ureg.parse_expression(max_rate)

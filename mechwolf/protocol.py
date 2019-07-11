@@ -34,7 +34,8 @@ class Protocol(object):
 
     _id_counter = 0
 
-    def __init__(self, apparatus, name=None):
+    def __init__(self, apparatus, name=None, description=None):
+        # type checking
         if not isinstance(apparatus, Apparatus):
             raise TypeError(
                 f"Must pass an Apparatus object. Got {type(apparatus)}, "
@@ -45,19 +46,27 @@ class Protocol(object):
         if not apparatus.validate():
             raise ValueError("Apparaus is not valid.")
 
+        # store the passed args
         self.apparatus = apparatus
-        self.procedures = []
+        self.description = description
+
+        # generate the name
         if name is not None:
             self.name = name
         else:
             self.name = "Protocol_" + str(Protocol._id_counter)
             Protocol._id_counter += 1
 
+        # default values
+        self.procedures = []
         self.is_executing = False
         self.was_executed = False
 
     def __repr__(self):
-        return f"MechWolf protocol for Apparatus {self.apparatus}"
+        return f"<{self.__str__()}>"
+
+    def __str__(self):
+        return f"Protocol {self.name} defined over {repr(self.apparatus)}"
 
     def _add_single(
         self, component, start="0 seconds", stop=None, duration=None, **kwargs
@@ -226,6 +235,11 @@ class Protocol(object):
         """
         output = {}
 
+        if len({c.name for c in self.apparatus._active_components}) != len(
+            self.apparatus._active_components
+        ):
+            raise RuntimeError("Found ActiveComponents with duplicate names.")
+
         # deal only with compiling active components
         for component in self.apparatus._active_components:
             # determine the procedures for each component
@@ -242,7 +256,7 @@ class Protocol(object):
                 )
                 continue
 
-            # make sure all active components are activated, raising warning if not
+            # validate each component
             if not component.validate(dry_run=dry_run):
                 raise RuntimeError("Component is not valid.")
 
@@ -261,7 +275,8 @@ class Protocol(object):
                     f"{component} cannot have two procedures for the entire duration of the protocol. "
                     "If each procedure defines a different attribute to be set for the entire duration, "
                     "combine them into one call to add(). Otherwise, reduce ambiguity by defining start "
-                    "and stop times for each procedure."
+                    "and stop times for each procedure. "
+                    ""
                 )
 
             for i, procedure in enumerate(component_procedures):
@@ -270,7 +285,7 @@ class Protocol(object):
                 try:
                     if component_procedures[i + 1]["start"] == 0:
                         raise RuntimeError(
-                            f"Ambiguous start time for {procedure['component']}."
+                            f"Ambiguous start time for {procedure['component']}. " ""
                         )
                     elif (
                         component_procedures[i + 1]["start"] is not None
@@ -443,7 +458,11 @@ class Protocol(object):
             return
 
         logger.info(f"Compiling protocol with dry_run = {dry_run}")
-        compiled_protocol = self.compile(dry_run=dry_run)
+        try:
+            compiled_protocol = self.compile(dry_run=dry_run)
+        except RuntimeError as e:
+            # add an execution-specific message
+            raise (RuntimeError(str(e).rstrip() + " Aborting execution..."))
 
         # the Experiment object is going to hold all the info
         E = Experiment(
@@ -460,3 +479,13 @@ class Protocol(object):
             asyncio.run(main(experiment=E, dry_run=dry_run))
 
         return E
+
+    def clear_procedures(self) -> None:
+        """Reset the protocol's procedures.
+        """
+        if not self.was_executed or self.is_executing:
+            self.procedures = []
+        else:
+            raise RuntimeError(
+                "Unable to clear the procedures of a protocol that has been executed."
+            )

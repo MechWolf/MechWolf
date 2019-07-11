@@ -9,7 +9,7 @@ from .pump import Pump, DummyPump
 from .sensor import Sensor, DummySensor
 from .tempcontrol import TempControl
 from .tube import Tube
-from .valve import Valve
+from .valve import Valve, DummyValve
 from .varian import VarianPump
 from .vessel import Vessel
 from .vici import ViciValve
