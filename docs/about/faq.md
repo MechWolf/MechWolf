@@ -30,18 +30,18 @@ application of machine learning to synthetic processes.
 
 Yes. However, we prepared [a guide for non-coders](../guide/gentle_intro) that will ease you into it.
 
-## Why don't you support Python \<3.7?
+## Why don't you support Python <span><</span>3.7?
 
 [f strings](https://www.python.org/dev/peps/pep-0498/) are the best thing since sliced bread and [asynchronous generators](https://www.python.org/dev/peps/pep-0492/) are pretty neat too.
 In all seriousness, execution depends on asynchronous code and Python 3.7 has the best support of all the Python versions.
 
-## Is this only for \[insert field here\]?
+## Is this only for [insert field here]?
 
 No. MechWolf is field agnostic. If it flows, MechWolf is capable of handling it.
 
 ## How can I get help?
 
-Take a look at our [support page](support).
+Take a look at our [support page](./support).
 
 ## Can I use MechWolf for commercial purposes?
 

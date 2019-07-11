@@ -1,27 +1,30 @@
 <div id="timeline"></div>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script
+  type="text/javascript"
+  src="https://www.gstatic.com/charts/loader.js"
+></script>
 <script charset="utf-8">
-	google.charts.load('current', {'packages':['timeline']});
-	google.charts.setOnLoadCallback(drawChart);
-	function drawChart() {
-		var container = document.getElementById('timeline');
-		var chart = new google.visualization.Timeline(container);
-		var dataTable = new google.visualization.DataTable();
-		var options = { timeline: {
-                barLabelStyle: {opacity: 0}},
-			avoidOverlappingGridLines: false
-		 };
+  google.charts.load('current', {'packages':['timeline']});
+  google.charts.setOnLoadCallback(drawChart);
+  function drawChart() {
+  	var container = document.getElementById('timeline');
+  	var chart = new google.visualization.Timeline(container);
+  	var dataTable = new google.visualization.DataTable();
+  	var options = { timeline: {
+                 barLabelStyle: {opacity: 0}},
+  		avoidOverlappingGridLines: false
+  	 };
 
 
-		dataTable.addColumn({ type: 'string', id: 'Component' });
-		dataTable.addColumn({ type: 'string', id: 'Setting' });
-		dataTable.addColumn({ type: 'date', id: 'Start' });
-		dataTable.addColumn({ type: 'date', id: 'End' });
-		dataTable.addRows([
-			{% for procedure in procedures%}
-			[ "{{procedure['component'].name}}", "{{procedure['params'] | safe}}", new Date(0, 0, 0, 0, 0, {{procedure["start"]}}), new Date(0, 0, 0, 0, 0, {{procedure["stop"]}}) ],
-			{% endfor %}
-			]);
-		chart.draw(dataTable, options);
-	}
+  	dataTable.addColumn({ type: 'string', id: 'Component' });
+  	dataTable.addColumn({ type: 'string', id: 'Setting' });
+  	dataTable.addColumn({ type: 'date', id: 'Start' });
+  	dataTable.addColumn({ type: 'date', id: 'End' });
+  	dataTable.addRows([
+  		{% for procedure in procedures%}
+  		[ "{{procedure['component'].name}}", "{{procedure['params'] | safe}}", new Date(0, 0, 0, 0, 0, {{procedure["start"]}}), new Date(0, 0, 0, 0, 0, {{procedure["stop"]}}) ],
+  		{% endfor %}
+  		]);
+  	chart.draw(dataTable, options);
+  }
 </script>
