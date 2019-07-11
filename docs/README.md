@@ -3,7 +3,7 @@ home: true
 heroImage: /head10x.png
 actionText: Get Started →
 actionLink: /intro
-footer: GPLv3 Licensed | Copyright © 2018-present MechWolf Team
+footer: GPLv3 Licensed | Copyright © 2018-present MechWolf Team | Made with :heart: in Cambridge, Boston, and Bloomington
 ---
 
 <div style="text-align: center">
@@ -12,7 +12,7 @@ footer: GPLv3 Licensed | Copyright © 2018-present MechWolf Team
 
 <div class="features">
   <div class="feature">
-    <h2>Safety First</h2>
+    <h2>Safety</h2>
     <p>MechWolf's compiler has your back. Design, simulate, and analyze experiments <em>before</em> connecting to real hardware to make sure they'll work. </p>
   </div>
   <div class="feature">
@@ -20,7 +20,7 @@ footer: GPLv3 Licensed | Copyright © 2018-present MechWolf Team
     <p>Follow the same process as in the lab, except now in Python: design an apparatus, create a protocol, execute it, and analyze the results.</p>
   </div>
   <div class="feature">
-    <h2>Interactive</h2>
+    <h2>Interactivity</h2>
     <p>Use an interactive browser-based notebook to visualize your apparatus and protocol and then monitor the experiment in real time with live graphs.</p>
   </div>
 </div>
