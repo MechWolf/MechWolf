@@ -1,4 +1,4 @@
-from .sensor import Sensor
+from ..stdlib.sensor import Sensor
 
 
 class LabJack(Sensor):
@@ -7,6 +7,20 @@ class LabJack(Sensor):
     Currently set up to read differential input between FIO1 and FIO0.
     See labjack.com for more details on their python API.
     """
+
+    metadata = {
+        "author": [
+            {
+                "first_name": "Murat",
+                "last_name": "Ozturk",
+                "email": "hello@littleblack.fish",
+                "institution": "Indiana University, School of Informatics, Computing and Engineering",
+                "github_username": "littleblackfish",
+            }
+        ],
+        "stability": "beta",
+        "supported": True,
+    }
 
     def __init__(self, name=None):
         super().__init__(name=name)

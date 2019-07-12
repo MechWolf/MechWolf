@@ -5,11 +5,25 @@ try:
 except ImportError:
     pass
 
-from .valve import Valve
+from ..stdlib.valve import Valve
 
 
 class ViciValve(Valve):
     """Controls a VICI Valco Valve"""
+
+    metadata = {
+        "author": [
+            {
+                "first_name": "Murat",
+                "last_name": "Ozturk",
+                "email": "hello@littleblack.fish",
+                "institution": "Indiana University, School of Informatics, Computing and Engineering",
+                "github_username": "littleblackfish",
+            }
+        ],
+        "stability": "beta",
+        "supported": True,
+    }
 
     def __init__(self, name=None, mapping={}, serial_port=None):
         super().__init__(name=name, mapping=mapping)

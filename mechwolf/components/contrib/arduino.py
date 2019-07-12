@@ -1,6 +1,6 @@
 import serial
 
-from .sensor import Sensor
+from ..stdlib.sensor import Sensor
 
 
 class ArduinoSensor(Sensor):
@@ -11,6 +11,20 @@ class ArduinoSensor(Sensor):
     Then they listen for a single byte command
     They spit out some data in ASCII in return.
     """
+
+    metadata = {
+        "author": [
+            {
+                "first_name": "Murat",
+                "last_name": "Ozturk",
+                "email": "hello@littleblack.fish",
+                "institution": "Indiana University, School of Informatics, Computing and Engineering",
+                "github_username": "littleblackfish",
+            }
+        ],
+        "stability": "beta",
+        "supported": True,
+    }
 
     def __init__(self, name=None, serial_port=None, command="*"):
         super().__init__(name=name)

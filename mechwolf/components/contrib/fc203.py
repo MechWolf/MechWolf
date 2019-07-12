@@ -1,9 +1,23 @@
-from .component import ActiveComponent
+from ..stdlib.component import ActiveComponent
 from .gsioc import GsiocComponent
 
 
 class GilsonFC203(ActiveComponent):
     """Controls a Gilson FC203B Fraction collector """
+
+    metadata = {
+        "author": [
+            {
+                "first_name": "Murat",
+                "last_name": "Ozturk",
+                "email": "hello@littleblack.fish",
+                "institution": "Indiana University, School of Informatics, Computing and Engineering",
+                "github_username": "littleblackfish",
+            }
+        ],
+        "stability": "beta",
+        "supported": True,
+    }
 
     def __init__(self, name=None, serial_port=None, unit_id=1):
         super().__init__(name=name)

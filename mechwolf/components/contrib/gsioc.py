@@ -5,6 +5,20 @@ except ImportError:
 
 
 class GsiocComponent:
+    metadata = {
+        "author": [
+            {
+                "first_name": "Murat",
+                "last_name": "Ozturk",
+                "email": "hello@littleblack.fish",
+                "institution": "Indiana University, School of Informatics, Computing and Engineering",
+                "github_username": "littleblackfish",
+            }
+        ],
+        "stability": "beta",
+        "supported": True,
+    }
+
     def __init__(self, serial_port=None, unit_id=0):
         self.ser = serial.Serial(
             serial_port, baudrate=19200, parity="E", stopbits=1, timeout=0.02

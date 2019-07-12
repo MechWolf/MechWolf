@@ -1,5 +1,5 @@
+from ..stdlib.pump import Pump
 from . import ureg
-from .pump import Pump
 
 try:
     import serial
@@ -13,6 +13,20 @@ class ViciPump(Pump):
     which can be found on the certificate of conformance
     This is specified in ml now, we can perhaps make it a ureg later
     """
+
+    metadata = {
+        "author": [
+            {
+                "first_name": "Murat",
+                "last_name": "Ozturk",
+                "email": "hello@littleblack.fish",
+                "institution": "Indiana University, School of Informatics, Computing and Engineering",
+                "github_username": "littleblackfish",
+            }
+        ],
+        "stability": "beta",
+        "supported": True,
+    }
 
     def __init__(self, name=None, serial_port=None, volume_per_rev=0):
         super().__init__(name=name)

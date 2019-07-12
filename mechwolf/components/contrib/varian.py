@@ -1,5 +1,5 @@
+from ..stdlib.pump import Pump
 from . import ureg
-from .pump import Pump
 
 try:
     import serial
@@ -10,6 +10,20 @@ except ImportError:
 class VarianPump(Pump):
     """A Varian pump.
     """
+
+    metadata = {
+        "author": [
+            {
+                "first_name": "Murat",
+                "last_name": "Ozturk",
+                "email": "hello@littleblack.fish",
+                "institution": "Indiana University, School of Informatics, Computing and Engineering",
+                "github_username": "littleblackfish",
+            }
+        ],
+        "stability": "beta",
+        "supported": True,
+    }
 
     def __init__(
         self, name=None, unit_id="0x80", serial_port=None, max_rate="0 mL/min"
