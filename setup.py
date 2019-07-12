@@ -30,7 +30,6 @@ setup(
     tests_require=["pytest"],
     setup_requires=["pytest-runner"],
     install_requires=[
-        "CIRpy",
         "Jinja2",
         "mistune",
         "terminaltables",

@@ -204,7 +204,7 @@ peptoid = [
 ]
 ```
 
-We now define 
+We now define
 
 
 ```python
