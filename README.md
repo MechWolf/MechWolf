@@ -48,37 +48,52 @@ Let's say you're trying to automate the production of [acetaminophen](https://en
 The reaction involves combining two chemicals, 4-aminophenol and acetic anhydride.
 The basic level of organization in MechWolf are individual components, such as the vessels and pumps.
 
-First, we create an **`Apparatus`** object:
+First, we define our components and create an **`Apparatus`** object to hold them:
 
 ```python
 import mechwolf as mw
 
 # define the vessels
-aminophenol = mw.Vessel(description="15 mL 4-aminophenol", name="aminophenol")
-acetic_anhydride = mw.Vessel("15 mL acetic anhydride", name="acetic anhydride")
-acetaminophen = mw.Vessel("acetaminophen", name="acetaminophen")
+aminophenol = mw.Vessel("15 mL 4-aminophenol")
+acetic_anhydride = mw.Vessel("15 mL acetic anhydride")
+acetaminophen = mw.Vessel("acetaminophen")
 
 # define the pumps
-pump_1 = mw.Pump(name="pump_1")
-pump_2 = mw.Pump(name="pump_2")
+pump_1 = mw.Pump()
+pump_2 = mw.Pump()
 
 # define the mixer
 mixer = mw.TMixer()
 
 # same tube specs for all tubes
-tube = mw.Tube(length="1 m",
-               ID="1/16 in",
-               OD="2/16 in",
-               material="PVC")
+tube = mw.Tube(length="1 m", ID="1/16 in", OD="2/16 in", material="PVC")
 
 # create the Apparatus object
 A = mw.Apparatus()
+```
 
-# add the connections
-A.add(aminophenol, pump_1, tube) # connect vessel_1 to pump_1
-A.add(acetic_anhydride, pump_2, tube) # connect vessel_2 to pump_2
-A.add([pump_1, pump_2], mixer, tube) # connect pump_1 and pump_2 to mixer
-A.add(mixer, acetaminophen, tube) # connect mixer to vessel_3
+Next, we define the connectivity of the **`Apparatus`** with **`add()`**. **`add()`** expects three arguments, `from_component`, `to_component`, and `tube` (in that order). First, we connect `aminophenol` to `pump_1` via `tube`:
+
+```python
+A.add(from_component=aminophenol, to_component=pump_1, tube=tube)
+```
+
+Note that the keyword arguments are optional:
+
+```python
+A.add(acetic_anhydride, pump_2, tube)
+```
+
+Since `from_component` is a list, both `pump_1` and `pump_2` will be connected to `mixer`.
+
+```python
+A.add([pump_1, pump_2], mixer, tube)
+```
+
+Finally, connect `mixer` to the output vessel, `acetaminophen`:
+
+```python
+A.add(mixer, acetaminophen, tube)
 ```
 
 Then we define a **`Protocol`** and run it:

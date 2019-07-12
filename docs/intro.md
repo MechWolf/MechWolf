@@ -30,19 +30,19 @@ components, such as the vessels and pumps. Let's go ahead and create them:
 import mechwolf as mw
 
 # define the vessels
-aminophenol = mw.Vessel(description="15 mL `4-aminophenol`", name="aminophenol")
-acetic_anhydride = mw.Vessel("15 mL `acetic anhydride`", name="acetic anhydride")
-acetaminophen = mw.Vessel("`acetaminophen`", name="acetaminophen")
+aminophenol = mw.Vessel("15 mL `4-aminophenol`")
+acetic_anhydride = mw.Vessel("15 mL `acetic anhydride`")
+acetaminophen = mw.Vessel("`acetaminophen`")
 
 # define the pumps
-pump_1 = mw.Pump(name="pump_1")
-pump_2 = mw.Pump(name="pump_2")
+pump_1 = mw.Pump()
+pump_2 = mw.Pump()
 
 # define the mixer
 mixer = mw.TMixer()
 ```
 
-That wasn’t too bad! Just as putting vessels and pumps on a lab bench doesn’t actually do anything, we’re going to need to tell MechWolf what the configuration of the components is. The ` symbols are there to surround chemical names that we want resolved; we’ll see how that works shortly.
+That wasn’t too bad! Just as putting vessels and pumps on a lab bench doesn’t actually do anything, we’re going to need to tell MechWolf what the configuration of the components is. The \` symbols are there to surround chemical names that we want resolved; we’ll see how that works shortly.
 
 We can do this by creating an `Apparatus` object. To add connections between components, we need to tell MechWolf three things: where the connection is from, where it’s going, and how they are actually connected. Tubing type can have a significant effect on reproducibility, so we require that you explicitly specify what tubing you are using when connecting components. This sounds complicated, but it is actually easy in practice:
 
@@ -184,13 +184,13 @@ A.describe()
 
 A vessel containing 15 mL 4-aminophenol was connected to Pump pump_1 using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch). A vessel containing 15 mL acetic anhydride (Acetyl acetate) was connected to Pump pump_2 using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch). Pump pump_1 was connected to TMixer TMixer_0 using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch). Pump pump_2 was connected to TMixer TMixer_0 using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch). TMixer TMixer_0 was connected to a vessel containing acetaminophen (N-(4-Hydroxyphenyl)acetamide) using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch).
 
-Note that chemical names were automatically resolved to their IUPAC names. That’s because the ` symbols around the chemical name tell MechWolf to use the National Cancer Institute’s resolver.
+Note that chemical names were automatically resolved to their IUPAC names. That’s because the \` symbols around the chemical name tell MechWolf to use the National Cancer Institute’s resolver.
 
 Now that we’ve gone over how to define an apparatus and all the different ways to inspect it, let’s make it synthesize acetaminophen. We do that with a `Protocol`, a list of procedures defined for an `Apparatus`. For this reaction, it’s as simple as deciding the flow rate and duration for which to run the pumps:
 
 ```python
 # create the Protocol object
-P = mw.Protocol(A, duration="auto", name="acetaminophen synthesis")
+P = mw.Protocol(A, name="acetaminophen synthesis")
 P.add([pump_1, pump_2], duration="15 seconds", rate="1 mL/min")
 ```
 
@@ -199,7 +199,8 @@ It’s really that simple to create protocols. We can visualize it equally simpl
 ```python
 P.visualize()
 ```
-
+<div id="timeline">
+</div>
 <div id="timeline"></div>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script charset="utf-8">
@@ -240,16 +241,4 @@ Just as we expect, the pumps will both turn on to 1 mL/min at time 0 and turn of
 
 ```python
 P.execute(dry_run=True)
-```
-
-    VBox(children=(HTML(value='<h3>Experiment 2019_07_04_22_49_53_6007a857</h3>'), Tab(children=(HTML(value='<ul><…
-
-
-
-
-
-    <Experiment 2019_07_04_22_49_53_6007a857>
-
-```python
-
 ```
