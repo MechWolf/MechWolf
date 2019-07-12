@@ -198,8 +198,7 @@ It’s really that simple to create protocols. We can visualize it equally simpl
 ```python
 P.visualize()
 ```
-<div id="timeline">
-</div>
+
 <div id="timeline"></div>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script charset="utf-8">
