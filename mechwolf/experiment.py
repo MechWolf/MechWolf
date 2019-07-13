@@ -1,4 +1,5 @@
 import time
+from typing import TYPE_CHECKING
 
 import ipywidgets as widgets
 from bokeh.io import output_notebook, push_notebook, show
@@ -8,7 +9,6 @@ from loguru import logger
 from xxhash import xxh32
 
 from .components import Sensor
-from .protocol import Protocol
 
 try:
     get_ipython  # noqa
@@ -16,13 +16,17 @@ try:
 except NameError:
     in_ipython = False
 
+# handle the hard issue of circular dependencies
+if TYPE_CHECKING:
+    from .protocol import Protocol
+
 
 class Experiment(object):
     """
         Experiments contain all data from execution of a protocol.
     """
 
-    def __init__(self, protocol: Protocol, compiled_protocol: dict, verbosity: str):
+    def __init__(self, protocol: "Protocol", compiled_protocol: dict, verbosity: str):
         self.protocol = protocol
         self.compiled_protocol = compiled_protocol
 
