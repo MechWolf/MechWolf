@@ -8,6 +8,7 @@ from loguru import logger
 from xxhash import xxh32
 
 from .components import Sensor
+from .protocol import Protocol
 
 try:
     get_ipython  # noqa
@@ -21,7 +22,7 @@ class Experiment(object):
         Experiments contain all data from execution of a protocol.
     """
 
-    def __init__(self, protocol, compiled_protocol: dict, verbosity: str):
+    def __init__(self, protocol: Protocol, compiled_protocol: dict, verbosity: str):
         self.protocol = protocol
         self.compiled_protocol = compiled_protocol
 

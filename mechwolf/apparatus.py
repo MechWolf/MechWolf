@@ -1,4 +1,5 @@
 from collections import namedtuple
+from typing import Iterable, Optional, Union
 from warnings import warn
 
 import networkx as nx
@@ -28,7 +29,7 @@ class Apparatus(object):
 
     _id_counter = 0
 
-    def __init__(self, name=None, description=None):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None):
         self.network = []
         self.components = set()
         # if given a name, then name the apparatus, else default to a sequential name
@@ -46,10 +47,12 @@ class Apparatus(object):
         return f"Apparatus {self.name}"
 
     @property
-    def _active_components(self):
+    def _active_components(self) -> set:
         return {x for x in self.components if isinstance(x, ActiveComponent)}
 
-    def _add_single(self, from_component, to_component, tube):
+    def _add_single(
+        self, from_component: Component, to_component: Component, tube: Tube
+    ) -> None:
         """Adds a single connection to the apparatus.
 
         For args, see add().
@@ -68,42 +71,39 @@ class Apparatus(object):
         )
         self.components.update([from_component, to_component])
 
-    def add(self, from_component, to_component, tube):
+    def add(
+        self,
+        from_component: Union[Component, Iterable],
+        to_component: Component,
+        tube: Tube,
+    ) -> None:
         """Adds connections to the apparatus.
 
         Args:
-            from_component (Component or Iterable): The
-                :class:`~mechwolf.components.component.Component` from which the
-                flow is originating. If an iterable, all items in the iterable will
-                be connected to the same component.
-            to_component (Component): The
-                :class:`~mechwolf.components.component.Component` where the flow is
-                going.
-            tube (Tube): The :class:`~mechwolf.components.tube.Tube` that
-                connects the components.
+            from_component: The :class:`~mechwolf.components.component.Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
+            to_component: The :class:`~mechwolf.components.component.Component` where the flow is going.
+            tube: The :class:`~mechwolf.components.tube.Tube` that connects the components.
 
         Raises:
             ValueError: When the connection being added is invalid.
         """
 
-        try:
-            iter(from_component)
-        except TypeError:
-            from_component = [from_component]
-
-        for component in from_component:
-            self._add_single(component, to_component, tube)
+        if isinstance(from_component, Iterable):
+            for component in from_component:
+                self._add_single(component, to_component, tube)
+        else:
+            self._add_single(from_component, to_component, tube)
 
     def visualize(
         self,
-        title=True,
-        label_tubes=False,
-        describe_vessels=False,
-        node_attr={},
-        edge_attr={},
-        graph_attr=dict(splines="ortho"),
-        file_format="pdf",
-        filename=None,
+        title: bool = True,
+        label_tubes: bool = False,
+        describe_vessels: bool = False,
+        node_attr: dict = {},
+        edge_attr: dict = {},
+        graph_attr: dict = dict(splines="ortho"),
+        file_format: str = "pdf",
+        filename: Optional[str] = None,
     ):
         """Generates a visualization of the graph of an apparatus.
 
@@ -183,12 +183,12 @@ class Apparatus(object):
         except NameError:
             f.view(cleanup=True)
 
-    def summarize(self, style="gfm"):
+    def summarize(self, style: str = "gfm") -> Optional[HTML]:
         """Prints a summary table of the apparatus.
 
         Args:
             style (str, optional): Either `gfm`` for GitHub-flavored Markdown or
-                ``ascii``. If equal to ``gfm`` and in a Jupyter notebook, returns a
+               ``ascii``. If equal to ``gfm`` and in a Jupyter notebook, returns a
                 rendered HTML version of the GFM table.
 
         Returns:
@@ -278,12 +278,11 @@ class Apparatus(object):
         print("\nTubing")
         print(tubing_table.table)
 
-    def validate(self):
+    def validate(self) -> bool:
         """Checks that the apparatus is valid.
 
         Note:
-            Calling this function yourself is likely unnecessary because the
-            :class:`Protocol` class calls it upon instantiation.
+            Calling this function yourself is likely unnecessary because the :class:`Protocol` class calls it upon instantiation.
 
         Returns:
             bool: Whether the apparatus is valid.
@@ -331,13 +330,11 @@ class Apparatus(object):
 
         return True
 
-    def describe(self):
+    def describe(self) -> Union[str, Markdown]:
         """Generates a human-readable description of the apparatus.
 
         Returns:
-            str: A description of apparatus. When in Jupyter, this string is
-                wrapped in a :class:`IPython.display.Markdown` object for nicer
-                display.
+            str: A description of apparatus. When in Jupyter, this string is wrapped in a :class:`IPython.display.Markdown` object for nicer display.
 
         Raises:
             RuntimeError: When a component cannot be described.

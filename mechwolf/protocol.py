@@ -5,6 +5,7 @@ import webbrowser
 from copy import deepcopy
 from datetime import timedelta
 from math import isclose
+from typing import Optional
 from warnings import warn
 
 import yaml
@@ -14,7 +15,7 @@ from loguru import logger
 
 from . import ureg
 from .apparatus import Apparatus
-from .components import TempControl, Valve
+from .components import ActiveComponent, TempControl, Valve
 from .execute import main
 from .experiment import Experiment
 
@@ -34,7 +35,12 @@ class Protocol(object):
 
     _id_counter = 0
 
-    def __init__(self, apparatus, name=None, description=None):
+    def __init__(
+        self,
+        apparatus: Apparatus,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+    ):
         # type checking
         if not isinstance(apparatus, Apparatus):
             raise TypeError(
@@ -69,7 +75,12 @@ class Protocol(object):
         return f"Protocol {self.name} defined over {repr(self.apparatus)}"
 
     def _add_single(
-        self, component, start="0 seconds", stop=None, duration=None, **kwargs
+        self,
+        component: ActiveComponent,
+        start="0 seconds",
+        stop=None,
+        duration=None,
+        **kwargs,
     ):
         """Adds a single procedure to the protocol.
 
