@@ -6,17 +6,14 @@ from . import ureg
 
 
 class Component(object):
-    """One of the individial, irreducible parts of a flow chemistry setup.
+    """
+    One of the individial, irreducible parts of a flow chemistry setup.
 
-    All components in an :class:`~mechwolf.Apparatus` must be of type
-    :class:`Component`. However, it is unlikely that a user will directly
-    instantiate a :class:`Component`.
+    All components in an `Apparatus` must be of type `Component`. However, it is unlikely that a user will directly
+    instantiate a `Component`.
 
     Attributes:
-        name (str, optional): The name of the component.
-
-    Raises:
-        ValueError: When a component has the same name as another component.
+    - name (str, optional): The name of the component.
     """
 
     _id_counter = 0
@@ -54,18 +51,17 @@ class Component(object):
 
 
 class ActiveComponent(Component):
-    """A connected, controllable component.
+    """
+    A connected, controllable component.
 
-    All components being manipulated in a :class:`~mechwolf.Protocol` must be of
-    type :class:`ActiveComponent`.
+    All components being manipulated in a `Protocol` must be of type `ActiveComponent`.
 
-    Note:
-        Users should not directly instantiate an :class:`ActiveComponent`
-        because it is an abstract base class, not a functioning laboratory
-        instrument.
+    ::: tip
+    Users should not directly instantiate an `ActiveComponent` because it is an abstract base class, not a functioning laboratory instrument.
+    :::
 
     Attributes:
-        name (str): The name of the component.
+    - name (str): The name of the component.
 
     """
 
@@ -74,11 +70,12 @@ class ActiveComponent(Component):
     def __init__(self, name=None):
         super().__init__(name=name)
 
-    def update_from_params(self, params):
-        """Updates the attributes of the object from a dict.
+    def update_from_params(self, params: dict) -> None:
+        """
+        Updates the attributes of the object from a dict.
 
-
-            params (dict): A dict whose keys are the strings of attribute names and values are the new values of the attribute.
+        # Arguments
+        - `params`: A dict whose keys are the strings of attribute names and values are the new values of the attribute.
 
         """
         for key, value in params.items():
@@ -87,20 +84,21 @@ class ActiveComponent(Component):
             except BaseException:
                 setattr(self, key, value)
 
-    def base_state(self):
-        """A placeholder method for the base state of the component.
+    def base_state(self) -> dict:
+        """
+        A placeholder method for the base state of the component.
 
-        All subclasses of ActiveComponent must implement a function that returns
-        a dict of its base state. At the end of a protocol, the component will
-        return to this state.
+        All subclasses of `ActiveComponent` must implement a function that returns a dict of its base state. At the end of a protocol, the component will return to this state.
 
-        Returns:
-            dict: A dict that has values which can be parsed into compatible units of
-            the object's attributes, if applicable.
+        # Returns
+        A dict that has values which can be parsed into compatible units of the object's attributes, if applicable.
 
-        Example:
-            >>> Pump.base_state()
-            {"rate": "0 ml/min"}
+        # Example
+
+        ```python
+        >>> Pump.base_state()
+        {"rate": "0 ml/min"}
+        ```
 
         """
         raise NotImplementedError(
@@ -113,26 +111,22 @@ class ActiveComponent(Component):
             "This method should return a True if the update was successful and False otherwise."
         )
 
-    def validate(self, dry_run):
-        """Checks if a component's class is valid.
+    def validate(self, dry_run: bool) -> bool:
+        """
+        Checks if a component's class is valid.
 
-        Arguments:
-            dry_run (bool): Whether this is a validation check for a dry run. Ignores the actual executability of the component.
+        # Arguments
+        - `dry_run`: Whether this is a validation check for a dry run. Ignores the actual executability of the component.
 
 
-        Returns:
-            bool: True if valid, else False.
+        # Returns
+        Whether the component is valid or not.
         """
 
         logger.debug(f"Validating {self.name}...")
 
-        # ensure is an ActiveComponent
-        if not issubclass(self.__class__, ActiveComponent):
-            warn(f"{self} is not an instance of ActiveComponent")
-            return False
-
         # the base_state dict must not be empty
-        elif not self.base_state():
+        if not self.base_state():
             warn("base_state method dict must not be empty")
             return False
 
