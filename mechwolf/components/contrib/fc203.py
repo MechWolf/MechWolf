@@ -1,4 +1,4 @@
-from ..stdlib.component import ActiveComponent
+from ..stdlib.active_component import ActiveComponent
 from .gsioc import GsiocComponent
 
 

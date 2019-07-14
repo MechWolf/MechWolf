@@ -1,6 +1,6 @@
 from typing import Optional
 
-from .component import ActiveComponent
+from .active_component import ActiveComponent
 
 
 class Valve(ActiveComponent):

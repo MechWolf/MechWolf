@@ -1,4 +1,4 @@
-from .component import ActiveComponent
+from .active_component import ActiveComponent
 
 
 class Dummy(ActiveComponent):

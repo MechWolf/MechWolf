@@ -6,7 +6,7 @@ from warnings import warn
 from loguru import logger
 
 from . import ureg
-from .component import ActiveComponent
+from .active_component import ActiveComponent
 
 
 class Sensor(ActiveComponent):

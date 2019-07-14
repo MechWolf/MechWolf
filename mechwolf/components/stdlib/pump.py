@@ -1,7 +1,7 @@
 from typing import Optional
 
 from . import ureg
-from .component import ActiveComponent
+from .active_component import ActiveComponent
 
 
 class Pump(ActiveComponent):
