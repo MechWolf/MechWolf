@@ -27,7 +27,8 @@ module.exports = {
           "/guide/getting_started",
           "/guide/new_components"
         ]
-      }
+      },
+      "/api"
     ]
   }
 };

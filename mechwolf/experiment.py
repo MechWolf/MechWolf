@@ -23,10 +23,16 @@ if TYPE_CHECKING:
 
 class Experiment(object):
     """
-        Experiments contain all data from execution of a protocol.
+    Experiments contain all data from execution of a protocol.
     """
 
     def __init__(self, protocol: "Protocol", compiled_protocol: dict, verbosity: str):
+        """
+        # Arguments
+        - `protocol`: The protocol for which the experiment was conducted
+        - `compiled_protocol`: The results of `protocol.compile()`.
+        - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
+        """
         self.protocol = protocol
         self.compiled_protocol = compiled_protocol
 
@@ -78,7 +84,7 @@ class Experiment(object):
             [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), self._tab]
         )
 
-        def log(x):
+        def _log(x):
             with self._output_widget.children[1].children[1]:  # the log
                 pad_length = (
                     len(str(int(self.protocol._inferred_duration))) + 4
@@ -91,7 +97,7 @@ class Experiment(object):
                     print(f"({'setup': ^{pad_length+1}}) " + x.rstrip())
 
         self._bound_logger = logger.add(
-            lambda x: log(x),
+            lambda x: _log(x),
             level=verbosity,
             colorize=True,
             format="{level.icon} {message}",

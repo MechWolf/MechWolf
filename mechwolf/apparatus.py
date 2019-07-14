@@ -15,21 +15,28 @@ Connection = namedtuple("Connection", ["from_component", "to_component", "tube"]
 
 
 class Apparatus(object):
-    """A unique network of components.
+    """
+    A unique network of components.
 
-    Note:
-        The same components may be organized into multiple distinct apparatuses, depending on the connections between them.
+    ::: tip Note
+    The same components may be organized into multiple distinct apparatuses, depending on the connections between them.
+    :::
 
-    Attributes:
-        network (list): A list of tuples in the form (from_component, to_component, tube) describing the configuration
-            of the apparatus.
-        components (set): The components that make up the apparatus.
-        name (str): The name of the apparatus. Defaults to "Apparatus_X" where *X* is apparatus count.
+    ### Attributes
+    - `network`: A list of tuples in the form `(from_component, to_component, tube)` describing the configuration of the apparatus.
+    - `components` (set): The components that make up the apparatus.
+
+    See also the arguments of `__init__()` for more attributes.
     """
 
     _id_counter = 0
 
     def __init__(self, name: Optional[str] = None, description: Optional[str] = None):
+        """
+        # Arguments
+        - `name`: The name of the apparatus. Defaults to "Apparatus_X" where *X* is apparatus count. This should be short and sweet.
+        - `description`: A description of the apparatus. Can be as long and wordy as you want.
+        """
         self.network = []
         self.components = set()
         # if given a name, then name the apparatus, else default to a sequential name
@@ -77,15 +84,16 @@ class Apparatus(object):
         to_component: Component,
         tube: Tube,
     ) -> None:
-        """Adds connections to the apparatus.
+        """
+        Adds connections to the apparatus.
 
-        Args:
-            from_component: The :class:`~mechwolf.components.component.Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
-            to_component: The :class:`~mechwolf.components.component.Component` where the flow is going.
-            tube: The :class:`~mechwolf.components.tube.Tube` that connects the components.
+        # Arguments
+        - `from_component`: The `Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
+        - `to_component`: The :`Component` where the flow is going.
+        - `tube`: `Tube` that connects the components.
 
-        Raises:
-            ValueError: When the connection being added is invalid.
+        # Raises
+        - `ValueError`: When the connection being added is invalid.
         """
 
         if isinstance(from_component, Iterable):
@@ -104,36 +112,24 @@ class Apparatus(object):
         graph_attr: dict = dict(splines="ortho"),
         file_format: str = "pdf",
         filename: Optional[str] = None,
-    ):
-        """Generates a visualization of the graph of an apparatus.
+    ) -> Optional[Digraph]:
+        """
+        Generates a visualization of the graph of an apparatus.
 
-        For full list of acceptable Graphviz attributes for see `the
-        graphviz.org docs <http://www.graphviz.org/doc/info/attrs.html>`_ and
-        `its Python API's docs
-        <http://graphviz.readthedocs.io/en/stable/manual.html#attributes>`_.
+        For full list of acceptable Graphviz attributes for see [the graphviz.org docs](http://www.graphviz.org/doc/info/attrs.html) and [its Python API's docs](http://graphviz.readthedocs.io/en/stable/manual.html#attributes).
 
-        Args:
-            title (bool, optional): Whether to show the title in the output.
-                Defaults to True.
-            label_tubes (bool, optional): Whether to label the tubes between
-                components with the length, inner diameter, and outer diameter.
-            describe_vessels (bool, optional): Whether to display the names or
-                content descriptions of :class:`~mechwolf.components.vessel.Vessel`
-                components.
-            node_attr (dict, optional): Controls the appearance of the nodes of
-                the graph. Must be of the form {"attribute": "value"}.
-            edge_attr (dict, optional): Controls the appearance of the edges of
-                the graph. Must be of the form {"attribute": "value"}.
-            graph_attr (dict, optional): Controls the appearance of the graph.
-                Must be of the form {"attribute": "value"}. Defaults to orthogonal
-                splines and a node separation of 1
-            file_format (str, optional): The output format of the graph, either
-                "pdf" or "png". Defaults to "pdf
-            filename (str, optional): The name of the output file. Defaults to
-                the name of the apparatus.
+        # Arguments
+        - `title`: Whether to show the title in the output. Defaults to True.
+        - `label_tubes`: Whether to label the tubes between components with the length, inner diameter, and outer diameter.
+        - `describe_vessels`: Whether to display the names or content descriptions of `Vessel` components.
+        - `node_attr`: Controls the appearance of the nodes of the graph. Must be of the form `{"attribute": "value"}`.
+        - `edge_attr`: Controls the appearance of the edges of the graph. Must be of the form `{"attribute": "value"}`.
+        - `graph_attr`: Controls the appearance of the graph. Must be of the form `{"attribute": "value"}`. Defaults to orthogonal splines and a node separation of 1
+        - `file_format`: The output format of the graph, either "pdf" or "png".
+        - `filename`: The name of the output file. Defaults to the name of the apparatus.
 
-        Raises:
-            ImportError: When the visualization package is not installed.
+        # Raises
+        - `ImportError`: When the visualization package is not installed.
         """
         f = Digraph(
             name=self.name,
@@ -184,16 +180,14 @@ class Apparatus(object):
             f.view(cleanup=True)
 
     def summarize(self, style: str = "gfm") -> Optional[HTML]:
-        """Prints a summary table of the apparatus.
+        """
+        Prints a summary table of the apparatus.
 
-        Args:
-            style (str, optional): Either `gfm`` for GitHub-flavored Markdown or
-               ``ascii``. If equal to ``gfm`` and in a Jupyter notebook, returns a
-                rendered HTML version of the GFM table.
+        # Arguments
+        - `style`: Either `gfm` for GitHub-flavored Markdown or `ascii`. If equal to `gfm` and in a Jupyter notebook, returns a rendered HTML version of the GFM table.
 
-        Returns:
-            IPython.display.HTML: In Jupyter, a nice HTML table. Otherwise, the
-                output is printed to the terminal.
+        # Returns
+        In Jupyter, a nice HTML table. Otherwise, the output is printed to the terminal.
         """
 
         if style == "ascii":
@@ -279,13 +273,15 @@ class Apparatus(object):
         print(tubing_table.table)
 
     def validate(self) -> bool:
-        """Checks that the apparatus is valid.
+        """
+        Checks that the apparatus is valid.
 
-        Note:
-            Calling this function yourself is likely unnecessary because the :class:`Protocol` class calls it upon instantiation.
+        ::: tip
+        Calling this function yourself is likely unnecessary because the `Protocol` class calls it upon instantiation.
+        :::
 
-        Returns:
-            bool: Whether the apparatus is valid.
+        # Returns
+        Whether the apparatus is valid.
         """
 
         # make sure that all of the components are connected
@@ -331,13 +327,14 @@ class Apparatus(object):
         return True
 
     def describe(self) -> Union[str, Markdown]:
-        """Generates a human-readable description of the apparatus.
+        """
+        Generates a human-readable description of the apparatus.
 
-        Returns:
-            str: A description of apparatus. When in Jupyter, this string is wrapped in a :class:`IPython.display.Markdown` object for nicer display.
+        # Returns
+        - `str`: A description of apparatus. When in Jupyter, this string is wrapped in a `IPython.display.Markdown` object for nicer display.
 
-        Raises:
-            RuntimeError: When a component cannot be described.
+        # Raises
+        - `RuntimeError`: When a component cannot be described.
         """
 
         def _description(element, capitalize=False):

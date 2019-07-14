@@ -143,7 +143,7 @@ async def monitor(component, experiment, dry_run):
 async def end_monitoring(component, end_time: float):
     """Creates a new async task that ends the monitoring for a :class:`~mechwolf.components.sensor.Sensor` when it is done for the protocol.
 
-    Args:
+
         component (:class:`~mechwolf.components.sensor.Sensor`): A :class:`~mechwolf.components.sensor.Sensor` to end monitoring for.
         end_time (float): The end time for the sensor in EET.
     """

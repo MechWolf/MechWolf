@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "vuepress dev ./",
-    "build": "vuepress build ./"
+    "build": "npm run api && vuepress build ./",
+    "api": "python generate_api_docs.py > api.md"
   },
   "author": "Benjamin Lee",
   "license": "GPL-3.0",

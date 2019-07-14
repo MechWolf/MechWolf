@@ -77,7 +77,7 @@ class ActiveComponent(Component):
     def update_from_params(self, params):
         """Updates the attributes of the object from a dict.
 
-        Args:
+
             params (dict): A dict whose keys are the strings of attribute names and values are the new values of the attribute.
 
         """

@@ -5,7 +5,7 @@ import webbrowser
 from copy import deepcopy
 from datetime import timedelta
 from math import isclose
-from typing import Optional
+from typing import Iterable, Optional, Union
 from warnings import warn
 
 import yaml
@@ -21,16 +21,18 @@ from .experiment import Experiment
 
 
 class Protocol(object):
-    """A set of procedures for an apparatus.
+    """
+    A set of procedures for an apparatus.
 
     A protocol is defined as a list of procedures, atomic steps for the individual active components of an apparatus.
 
-    Note:
-        The same :class:`Apparatus` object can create multiple distinct :class:`Protocol` objects.
+    ::: tip
+    The same `Apparatus` object can create multiple distinct `Protocol` objects.
+    :::
 
     Attributes:
-        apparatus (Apparatus): The apparatus for which the protocol is being defined.
-        name (str, optional): The name of the protocol. Defaults to "Protocol_X" where *X* is protocol count.
+    - `apparatus`: The apparatus for which the protocol is being defined.
+    - `name`: The name of the protocol. Defaults to `"Protocol_X"` where *X* is protocol count.
     """
 
     _id_counter = 0
@@ -184,29 +186,32 @@ class Protocol(object):
             )
         )
 
-    def add(self, component, start="0 seconds", stop=None, duration=None, **kwargs):
-        """Adds a procedure to the protocol.
+    def add(
+        self,
+        component: Union[ActiveComponent, Iterable],
+        start="0 seconds",
+        stop=None,
+        duration=None,
+        **kwargs,
+    ):
+        """
+        Adds a procedure to the protocol.
 
-        Warning:
-            If stop and duration are both None, the procedure's stop time will be inferred as the end of the protocol.
+        ::: warning
+        If stop and duration are both `None`, the procedure's stop time will be inferred as the end of the protocol.
+        :::
 
-        Args:
-            component_added (ActiveComponent or Iterable): The component(s) for which the procedure being added. If an
-                interable, all components will have the same parameters.
-            start (str, optional): The start time of the procedure relative to the start of the protocol, such as
-                ``"5 seconds"``. May also be a :class:`datetime.timedelta`. Defaults to ``"0 seconds"``, *i.e.* the
-                beginning of the protocol.
-            stop (str, optional): The stop time of the procedure relative to the start of the protocol, such as
-                ``"30 seconds"``. May also be a :class:`datetime.timedelta`. May not be given if ``duration`` is
-                used. Defaults to None.
-            duration (str, optional): The duration of the procedure, such as "1 hour". May also be a
-                :class:`datetime.timedelta`. May not be used if ``stop`` is used. Defaults to None.
-            **kwargs: The state of the component for the procedure.
+        # Arguments
+        - `component_added`: The component(s) for which the procedure being added. If an interable, all components will have the same parameters.
+        - `start`: The start time of the procedure relative to the start of the protocol, such as `"5 seconds"`. May also be a `datetime.timedelta`. Defaults to `"0 seconds"`, *i.e.* the beginning of the protocol.
+        - `stop`: The stop time of the procedure relative to the start of the protocol, such as `"30 seconds"`. May also be a `datetime.timedelta`. May not be given if `duration` is used.
+        duration: The duration of the procedure, such as "1 hour". May not be used if `stop` is used.
+        - `**kwargs`: The state of the component for the procedure.
 
-        Raises:
-            TypeError: A component is not of the correct type (*i.e.* a Component object)
-            ValueError: An error occurred when attempting to parse the kwargs.
-            RuntimeError: Stop time of procedure is unable to be determined or invalid component.
+        # Raises
+        - `TypeError`: A component is not of the correct type (*i.e.* a Component object)
+        - `ValueError`: An error occurred when attempting to parse the kwargs.
+        - `RuntimeError`: Stop time of procedure is unable to be determined or invalid component.
         """
 
         try:
@@ -233,16 +238,15 @@ class Protocol(object):
             )
         return computed_durations[-1]
 
-    def compile(self, dry_run=True, _visualization=False):
-        """Compile the protocol into a dict of devices and their procedures.
+    def compile(self, dry_run: bool = True, _visualization: bool = False) -> dict:
+        """
+        Compile the protocol into a dict of devices and their procedures.
 
-        Returns:
-            dict: A dict with the names of components as the values and lists of their procedures as the value.
-            The elements of the list of procedures are dicts with two keys: "time", whose value is a pint Quantity,
-            and "params", whose value is a dict of parameters for the procedure.
+        # Returns
+        A dict with components as the values and lists of their procedures as the value. The elements of the list of procedures are dicts with two keys: "time" in seconds, and "params", whose value is a dict of parameters for the procedure.
 
-        Raises:
-            RuntimeError: When compilation fails.
+        # Raises
+        - `RuntimeError`: When compilation fails.
         """
         output = {}
 
@@ -363,16 +367,14 @@ class Protocol(object):
             output.append(procedure)
         return output
 
-    def yaml(self):
-        """Outputs
+    def yaml(self) -> Union[str, Code]:
+        """
+        Outputs the uncompiled procedures to YAML.
 
-         procedures to YAML.
+        Internally, this is a conversion of the output of `Protocol.json` for the purpose of enhanced human readability.
 
-        Internally, this is a conversion of the output of :meth:`Protocol.json`
-        for the purpose of enhanced human readability.
-
-        Returns:
-            str: YAML of the procedure list. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
+        # Returns:
+        YAML of the procedure list. When in Jupyter, this string is wrapped in an `IPython.display.Code` object for nice syntax highlighting.
 
         """
         compiled_yaml = yaml.safe_dump(self.to_list(), default_flow_style=False)
@@ -384,11 +386,12 @@ class Protocol(object):
             pass
         return compiled_yaml
 
-    def json(self):
-        """Outputs procedures to JSON.
+    def json(self) -> Union[str, Code]:
+        """
+        Outputs the uncompiled procedures to JSON.
 
-        Returns:
-            str: JSON of the protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
+        # Returns
+        JSON of the protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
         """
         compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
 
@@ -399,17 +402,18 @@ class Protocol(object):
             pass
         return compiled_json
 
-    def visualize(self, browser=True):
-        """Generates a Gantt plot visualization of the protocol.
+    def visualize(self, browser: bool = True) -> Union[str, HTML]:
+        """
+        Generates a Gantt plot visualization of the protocol.
 
-        Args:
-            browser (bool, optional): Whether to open in the browser. Defaults to true.
+        # Arguments
+        - `browser`: Whether to open in the browser.
 
-        Returns:
-            str: The html of the visualization. When in Jupyter, this string is wrapped in a :class:`IPython.display.HTML` object for interactive display.
+        # Returns
+        The html of the visualization. When in Jupyter, this string is wrapped in a `IPython.display.HTML` object for interactive display.
 
-        Raises:
-            ImportError: When the visualization package is not installed.
+        # Raises
+        - `ImportError`: When the visualization package is not installed.
         """
 
         # render the html
@@ -438,29 +442,19 @@ class Protocol(object):
 
         return visualization
 
-    def execute(self, dry_run=False, verbosity="info"):
-        """Executes the procedure.
+    def execute(self, dry_run: bool = False, verbosity: str = "info") -> Experiment:
+        """
+        Executes the procedure.
 
-        Args:
-            dry_run (bool, optional): Whether to simulate the experiment or
-                actually perform it. Defaults to False, which means executing the
-                protocol on real hardware.
+        # Arguments
+        - `dry_run`: Whether to simulate the experiment or actually perform it. Defaults to `False`, which means executing the protocol on real hardware.
+        - `verbosity`: The level of logging verbosity. One of `"critical"`, `"error"`, `"warning"`, `"success"`, `"info"`, `"debug"`, or `"trace"` in descending order of severity. `"debug"` and (especially) `"trace"` are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
 
-            verbosity (str, optional): The level of logging verbosity. One of
-                ``"critical"``, ``"error"``, ``"warning"``, ``"success"``,
-                ``"info"``, ``"debug"``, or ``"trace"`` in descending order of
-                severity. ``"debug"`` and (especially) ``"trace"`` are not meant to
-                be used regularly, as they generate significant amounts of usually
-                useless information. However, these verbosity levels are useful for
-                tracing where exactly a bug was generated, especially if no error
-                message was thrown. Defaults to ``"info"``.
+        # Returns
+        An `Experiment` object. In a Jupyter notebook, the object yields an interactive visualization.
 
-        Note:
-            Must only contain :class:`~mechwolf.components.component.ActiveComponent` s that have an
-            update method, i.e. real components.
-
-        Raises:
-            RuntimeError: When attempting to execute a protocol on invalid components.
+        # Raises
+        `RuntimeError`: When attempting to execute a protocol on invalid components.
         """
 
         # If protocol is executing, return an error
@@ -492,7 +486,8 @@ class Protocol(object):
         return E
 
     def clear_procedures(self) -> None:
-        """Reset the protocol's procedures.
+        """
+        Reset the protocol's procedures.
         """
         if not self.was_executed or self.is_executing:
             self.procedures = []
