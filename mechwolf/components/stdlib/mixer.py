@@ -2,12 +2,13 @@ from .component import Component
 
 
 class Mixer(Component):
-    """A generic mixer.
+    """
+    A generic mixer.
 
-    This is an alias of :class:`~mechwolf.Component`.
+    This is an alias of `Component`.
 
     Attributes:
-        name (str, optional): The name of the mixer.
+    - `name` (`str`, optional): The name of the mixer.
     """
 
     def __init__(self, name=None):
@@ -16,12 +17,13 @@ class Mixer(Component):
 
 
 class TMixer(Mixer):
-    """A T mixer.
+    """
+    A T mixer.
 
-    This is an alias of :class:`~mechwolf.Component`.
+    This is an alias of `Component`.
 
     Attributes:
-        name (str, optional): The name of the mixer.
+    - `name` (`str`, optional): The name of the mixer.
     """
 
     def __init__(self, name=None):
@@ -29,12 +31,13 @@ class TMixer(Mixer):
 
 
 class YMixer(Mixer):
-    """A Y mixer.
+    """
+    A Y mixer.
 
-    This is an alias of :class:`~mechwolf.Component`.
+    This is an alias of `Component`.
 
     Attributes:
-        name (str, optional): The name of the mixer.
+    - `name` (`str`, optional): The name of the mixer.
     """
 
     def __init__(self, name=None):
@@ -42,12 +45,13 @@ class YMixer(Mixer):
 
 
 class CrossMixer(Mixer):
-    """A cross mixer.
+    """
+    A cross mixer.
 
-    This is an alias of :class:`~mechwolf.Component`.
+    This is an alias of `Component`.
 
     Attributes:
-        name (str, optional): The name of the mixer.
+    - `name` (`str`, optional): The name of the mixer.
     """
 
     def __init__(self, name=None):

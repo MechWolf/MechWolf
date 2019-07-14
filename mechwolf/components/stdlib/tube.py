@@ -8,17 +8,24 @@ class Tube(object):
     """A tube.
 
     Attributes:
-        length (str): The length of the tube. Converted to a Quantity.
-        ID (str): The inner diameter of the tube. Converted to a Quantity.
-        OD (str): The outer diameter of the tube. Converted to a Quantity.
-        Volume (Quantity): The volume of the tube, as determined from the length and inner diameter.
-        material (str): The material of the tube.
+    - `length` (`pint.Quantity`): The length of the tube.
+    - `ID` (`pint.Quantity`): The inner diameter of the tube.
+    - `OD` (`pint.Quantity`): The outer diameter of the tube.
+    - `volume` (`pint.Quantity`): The volume of the tube, as determined from the length and inner diameter.
+    - `material` (`str`): The material of the tube.
 
     Raises:
         ValueError: When the outer diameter is less than the inner diameter of the tube.
     """
 
-    def __init__(self, length, ID, OD, material):
+    def __init__(self, length: str, ID: str, OD: str, material: str):
+        """
+        See the `Tube` attributes for a description of the arguments.
+
+        ::: tip Note
+        The arguments to __init__ are `str`s, not `pint.Quantity`s.
+        :::
+        """
         self.length = ureg.parse_expression(length)
         self.ID = ureg.parse_expression(ID)
         self.OD = ureg.parse_expression(OD)

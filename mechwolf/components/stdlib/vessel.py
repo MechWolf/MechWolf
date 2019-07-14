@@ -2,12 +2,13 @@ from .component import Component
 
 
 class Vessel(Component):
-    """A generic vessel.
+    """
+    A generic vessel.
 
     Attributes:
-        description (str): The contents of the vessel.
-        name (str): The name of the vessel, if different from the description.
-    """  # noqa
+    - `description` (`str`): The contents of the vessel.
+    - `name` (`str`): The name of the vessel, if different from the description.
+    """
 
     def __init__(self, description, name=None):
         super().__init__(name=name)

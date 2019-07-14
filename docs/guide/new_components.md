@@ -8,12 +8,12 @@ your own component. Here's how:
 
 1.  **Decide what kind of component it is.**  
     If you're trying to make a new kind of pump, for example, you'll
-    want to be inheriting from `~mechwolf.components.pump.Pump`. For
+    want to be inheriting from `components.pump.Pump`. For
     components being controlled (i.e. not aliases of
-    `~mechwolf.components.component.Component`), you'll have to
+    `components.component.Component`), you'll have to
     create a subclass of
-    `~mechwolf.components.component.ActiveComponent`. If you are
-    only creating an alias of `~mechwolf.validate_component`, you
+    `components.component.ActiveComponent`. If you are
+    only creating an alias of `validate_component`, you
     can skip 4–6.
 
 2.  **Create a new class.**  
@@ -25,11 +25,11 @@ your own component. Here's how:
     argument to `__init__` and the line
     `super().__init__(name=name)`, which tells Python to pass the
     name argument up to the
-    `~mechwolf.components.component.ActiveComponent` class.
+    `components.component.ActiveComponent` class.
 
 3.  **Give the component its attributes.**  
     This means that anything that you will be using as keywords
-    during your calls to `~mechwolf.Protocol.add` must be
+    during your calls to `Protocol.add` must be
     attributes. Furthermore, if they are quantities such as "10
     mL/min", these attributes should be parsed Quantity objects.
 
@@ -47,10 +47,10 @@ your own component. Here's how:
 
     The values in the base state dictionary need to be parsable into
     valid values, the same as if they were passed as keyword
-    arguments to `~mechwolf.Protocol.add`. In fact, under the hood,
+    arguments to `Protocol.add`. In fact, under the hood,
     that is exactly what is happening. At the end of your protocol,
-    `~mechwolf.Protocol.compile` adds a procedure for each
-    `~mechwolf.components.component.ActiveComponent` in the protocol
+    `Protocol.compile` adds a procedure for each
+    `components.component.ActiveComponent` in the protocol
     to return to its base state.å
 
 5.  **Give it an update method.**  
@@ -70,7 +70,7 @@ your own component. Here's how:
     able to support both uses.
 
     Note: this step doesn't apply to
-    `~mechwolf.components.sensor.Sensor` s, which already have a
+    `components.sensor.Sensor` s, which already have a
     built-in update method.
 
 6.  **For sensors, give it a read method.**
@@ -79,8 +79,8 @@ your own component. Here's how:
     > the data read in from the sensor. MechWolf will automatically
     > timestamp it, so don't worry about that.
 
-7.  **Test thoroughly with** `~mechwolf.validate_component`.  
-    For your convenience, the `~mechwolf.validate_component`
+7.  **Test thoroughly with** `validate_component`.  
+    For your convenience, the `validate_component`
     function will take an instance of your class (not the class
     itself) and verify that it meets the requirements to be used in
     a protocol.
@@ -101,7 +101,7 @@ want an automated philosopher's stone with MechWolf\!
 
 To make it work with MechWolf, we'll follow the process of creating a
 new component by making a blank class that inherits from
-`~mechwolf.components.component.ActiveComponent`:
+`components.component.ActiveComponent`:
 
     from mechwolf import ActiveComponent
 
@@ -150,7 +150,7 @@ imagination:
             yield
 
 Saving it as `philosophersstone.py`, we can then use
-`~mechwolf.validate_component` to test if instances of the class are
+`validate_component` to test if instances of the class are
 valid:
 
     >>> import mechwolf as mw
@@ -159,7 +159,7 @@ valid:
     >>> mw.validate_component(stone)
     True
 
-`~mechwolf.validate_component` returned `True`, meaning that the
+`validate_component` returned `True`, meaning that the
 philosopher's stone class is facially valid.
 
 ## Example: The Vici Valve
@@ -168,13 +168,13 @@ The last example, though illustrative, isn't actually a working
 component, since (unfortunately) philosophers' stones don't exist.
 Luckily, we have the next best thing: a Vici valve. To show how to
 create working components, we'll walk through MechWolf's implementation
-of `~mechwolf.components.vici.ViciValve`.
+of `components.vici.ViciValve`.
 
 First, we need to include the import statements at the top. We
 communicate with Vici valves via serial on the client, but don't
 actually _need_ the serial package in order to instantiate a
-`~mechwolf.components.vici.ViciValve` object. That's because you need to
-be able to instantiate `~mechwolf.components.vici.ViciValve` objects on
+`components.vici.ViciValve` object. That's because you need to
+be able to instantiate `components.vici.ViciValve` objects on
 devices without the client extras installed (which includes the serial
 package), such as when designing apparatuses on your personal computer.
 For that reason, we wrap `import serial` in a try-except clause:
@@ -186,8 +186,8 @@ For that reason, we wrap `import serial` in a try-except clause:
 </div>
 
 Because Vici valves are subclasses of
-`~mechwolf.components.valve.Valve`, we also need to import
-`~mechwolf.components.valve.Valve`. Since `vici.py` is in the components
+`components.valve.Valve`, we also need to import
+`components.valve.Valve`. Since `vici.py` is in the components
 directory, we do a local import:
 
 <div class="literalinclude" data-lines="8">
@@ -197,7 +197,7 @@ directory, we do a local import:
 </div>
 
 If we were creating the object in a different directory, we would import
-`~mechwolf.components.valve.Valve` the usual way:
+`components.valve.Valve` the usual way:
 
     from mechwolf import Valve
 
@@ -218,13 +218,13 @@ And we'll create an `__init__()` method:
 </div>
 
 Note that the arguments include the ones required by
-`~mechwolf.components.valve.Valve` (`name` and `mapping`) and
+`components.valve.Valve` (`name` and `mapping`) and
 `serial_port`, which is needed to connect to the physical component on
 the client.
 
 We can skip adding a base state because
-`~mechwolf.components.valve.Valve` already has one, meaning that
-`~mechwolf.components.vici.ViciValve` will inherit it automatically.
+`components.valve.Valve` already has one, meaning that
+`components.vici.ViciValve` will inherit it automatically.
 
 Now for the important parts: we need to make the object be able to make
 its real-world state match the object's state. We do that with the
@@ -274,14 +274,14 @@ have more about information about how to use `__enter__` and `__exit__`
 methods.
 
 That's it\! We now have a functioning Vici valve. Let's test it with
-`~mechwolf.validate_component`:
+`validate_component`:
 
     >>> import mechwolf as mw
     >>> mw.validate_component(mw.ViciValve(name="test", mapping={}))
     True
 
 Sure enough, it works. This isn't just an example however, it's exactly
-how the Vici valve in the `~mechwolf.components.vici` module works\!
+how the Vici valve in the `components.vici` module works\!
 
 If you're stuck trying to make a new component, don't hesitate to reach
 out for `help <support>`.
