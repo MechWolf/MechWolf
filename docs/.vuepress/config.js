@@ -28,7 +28,14 @@ module.exports = {
           "/guide/new_components"
         ]
       },
-      "/api"
+      {
+        title: "API Reference",
+        collapsable: false,
+        children: [
+          "/api/mechwolf",
+          "/api/stdlib_components"
+        ]
+      }
     ]
   }
 };

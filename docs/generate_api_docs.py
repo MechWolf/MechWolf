@@ -1,3 +1,7 @@
+def deindent(x, levels):
+    return "\n".join((line[4 * levels :] for line in x.split("\n")))  # noqa
+
+
 class PyObj(object):
     def __init__(self, source_code):
         self.source_code = source_code.rstrip()
@@ -15,12 +19,7 @@ class PyObj(object):
                 '"""', doctring_start_idx + 1
             )
         ][3:-3].rstrip()
-        return "\n".join(
-            (
-                line[4 * self.indentation_level :]  # noqa
-                for line in docstring.split("\n")
-            )
-        )
+        return deindent(docstring, self.indentation_level)
 
     @property
     def indentation_level(self):
@@ -107,17 +106,8 @@ def analyze_file(filename):
     return classes
 
 
-results = {}
-for filename in [
-    "../mechwolf/protocol.py",
-    "../mechwolf/apparatus.py",
-    "../mechwolf/experiment.py",
-]:
-    results[filename] = analyze_file(filename)
-
-
-def generate_markdown(ast):
-    header = "---\nsidebarDepth: 2\neditLink: false\n---\n# API Reference\n"
+def generate_markdown(ast, title):
+    header = "---\nsidebarDepth: 2\neditLink: false\n---\n# " + title + "\n"
 
     body = ""
 
@@ -133,8 +123,8 @@ def generate_markdown(ast):
                         "### "
                         + method.name
                         + "\n\n```python\n"
-                        + method.signature
-                        + ":\n```\n"
+                        + deindent(method.signature, 1)
+                        + "\n```\n"
                         + method.docstring.replace("#", "####")
                         + "\n\n"
                     )
@@ -144,4 +134,23 @@ def generate_markdown(ast):
     return header + body
 
 
-print(generate_markdown(results))
+with open("api/mechwolf.md", "w+") as f:
+    results = {}
+    for filename in [
+        "../mechwolf/apparatus.py",
+        "../mechwolf/protocol.py",
+        "../mechwolf/experiment.py",
+    ]:
+        results[filename] = analyze_file(filename)
+    print(generate_markdown(results, "MechWolf"), file=f)
+
+
+with open("api/stdlib_components.md", "w+") as f:
+    results = {}
+    for filename in [
+        "../mechwolf/components/stdlib/component.py",
+        "../mechwolf/components/stdlib/pump.py",
+        "../mechwolf/components/stdlib/mixer.py",
+    ]:
+        results[filename] = analyze_file(filename)
+    print(generate_markdown(results, "Component Standard Library"), file=f)
