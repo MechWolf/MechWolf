@@ -3,7 +3,7 @@ home: true
 heroImage: /head10x.png
 actionText: Get Started →
 actionLink: /intro
-footer: GPLv3 Licensed | Copyright © 2018-present MechWolf Team
+footer: GPLv3 Licensed | Copyright © 2017-present MechWolf Team
 ---
 
 <div style="text-align: center">
