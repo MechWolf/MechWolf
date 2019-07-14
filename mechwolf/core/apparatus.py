@@ -8,8 +8,8 @@ from IPython.display import HTML, Markdown
 from mistune import markdown
 from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 
-from . import ureg
-from .components import ActiveComponent, Component, Tube, Valve, Vessel
+from .. import ureg
+from ..components import ActiveComponent, Component, Tube, Valve, Vessel
 
 Connection = namedtuple("Connection", ["from_component", "to_component", "tube"])
 

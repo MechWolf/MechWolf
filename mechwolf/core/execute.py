@@ -6,7 +6,7 @@ from datetime import datetime
 
 from loguru import logger
 
-from .components import Sensor
+from ..components import Sensor
 
 Datapoint = namedtuple("Datapoint", ["data", "timestamp", "experiment_elapsed_time"])
 

@@ -8,7 +8,7 @@ from bokeh.resources import INLINE
 from loguru import logger
 from xxhash import xxh32
 
-from .components import Sensor
+from ..components import Sensor
 
 try:
     get_ipython  # noqa

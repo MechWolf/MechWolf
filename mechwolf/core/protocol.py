@@ -13,9 +13,9 @@ from IPython.display import HTML, Code, display
 from jinja2 import Environment, PackageLoader, select_autoescape
 from loguru import logger
 
-from . import ureg
+from .. import ureg
+from ..components import ActiveComponent, TempControl, Valve
 from .apparatus import Apparatus
-from .components import ActiveComponent, TempControl, Valve
 from .execute import main
 from .experiment import Experiment
 
