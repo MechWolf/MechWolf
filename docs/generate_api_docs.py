@@ -1,5 +1,5 @@
 class PyObj(object):
-    def __init__(self, source_code: str):
+    def __init__(self, source_code):
         self.source_code = source_code.rstrip()
 
         # calculate the object's name
@@ -41,7 +41,7 @@ class PyObj(object):
 
 
 class Function(PyObj):
-    def __init__(self, source_code: str):
+    def __init__(self, source_code):
         super().__init__(source_code)
 
     def __repr__(self):
@@ -57,7 +57,7 @@ class Function(PyObj):
 
 
 class Class(PyObj):
-    def __init__(self, source_code: str):
+    def __init__(self, source_code):
         super().__init__(source_code)
         self.methods = []
 
