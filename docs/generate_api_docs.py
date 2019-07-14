@@ -117,7 +117,7 @@ for filename in [
 
 
 def generate_markdown(ast):
-    header = "# API Reference\n"
+    header = "---\nsidebarDepth: 2\neditLink: false\n---\n# API Reference\n"
 
     body = ""
 
@@ -130,9 +130,9 @@ def generate_markdown(ast):
                     continue
                 try:
                     body += (
-                        "### `"
+                        "### "
                         + method.name
-                        + "`\n\n```python\n"
+                        + "\n\n```python\n"
                         + method.signature
                         + ":\n```\n"
                         + method.docstring.replace("#", "####")

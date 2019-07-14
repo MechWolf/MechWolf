@@ -32,7 +32,7 @@ class Protocol(object):
 
     Attributes:
     - `apparatus`: The apparatus for which the protocol is being defined.
-    - `name`: The name of the protocol. Defaults to `"Protocol_X"` where *X* is protocol count.
+    - `name`: The name of the protocol. Defaults to "Protocol_X" where *X* is protocol count.
     """
 
     _id_counter = 0
@@ -391,7 +391,7 @@ class Protocol(object):
         Outputs the uncompiled procedures to JSON.
 
         # Returns
-        JSON of the protocol. When in Jupyter, this string is wrapped in a :class:`IPython.display.Code` object for nice syntax highlighting.
+        JSON of the protocol. When in Jupyter, this string is wrapped in a `IPython.display.Code` object for nice syntax highlighting.
         """
         compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
 
@@ -411,9 +411,6 @@ class Protocol(object):
 
         # Returns
         The html of the visualization. When in Jupyter, this string is wrapped in a `IPython.display.HTML` object for interactive display.
-
-        # Raises
-        - `ImportError`: When the visualization package is not installed.
         """
 
         # render the html
@@ -448,7 +445,7 @@ class Protocol(object):
 
         # Arguments
         - `dry_run`: Whether to simulate the experiment or actually perform it. Defaults to `False`, which means executing the protocol on real hardware.
-        - `verbosity`: The level of logging verbosity. One of `"critical"`, `"error"`, `"warning"`, `"success"`, `"info"`, `"debug"`, or `"trace"` in descending order of severity. `"debug"` and (especially) `"trace"` are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
+        - `verbosity`: The level of logging verbosity. One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity. "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
 
         # Returns
         An `Experiment` object. In a Jupyter notebook, the object yields an interactive visualization.

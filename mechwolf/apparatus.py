@@ -22,7 +22,7 @@ class Apparatus(object):
     The same components may be organized into multiple distinct apparatuses, depending on the connections between them.
     :::
 
-    ### Attributes
+    Attributes:
     - `network`: A list of tuples in the form `(from_component, to_component, tube)` describing the configuration of the apparatus.
     - `components` (set): The components that make up the apparatus.
 
@@ -89,7 +89,7 @@ class Apparatus(object):
 
         # Arguments
         - `from_component`: The `Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
-        - `to_component`: The :`Component` where the flow is going.
+        - `to_component`: The `Component` where the flow is going.
         - `tube`: `Tube` that connects the components.
 
         # Raises
