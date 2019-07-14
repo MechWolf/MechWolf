@@ -123,13 +123,15 @@ def generate_markdown(_class):
 
     body = "# " + _class.name + "\n" + _class.docstring + "\n"
 
-    for method in _class.methods:
+    for method in sorted(
+        _class.methods, key=lambda x: x.name
+    ):  # alphabetize the methods
         if method.is_internal:
             continue
         try:
             body += (
                 "## "
-                + method.name
+                + method.name.replace("_", "\_")  # noqa
                 + "\n\n```python\n"
                 + deindent(method.signature, 1)
                 + "\n```\n"
