@@ -16,13 +16,16 @@ class PyObj(object):
 
     @property
     def docstring(self):
-        doctring_start_idx = self.source_code.index('"""')
-        docstring = self.source_code[
-            doctring_start_idx : self.source_code.index(  # noqa
-                '"""', doctring_start_idx + 1
-            )
-        ][3:-3].rstrip()
-        return deindent(docstring, self.indentation_level)
+        try:
+            doctring_start_idx = self.source_code.index('"""')
+            docstring = self.source_code[
+                doctring_start_idx : self.source_code.index(  # noqa
+                    '"""', doctring_start_idx + 1
+                )
+            ][3:-3].rstrip()
+            return deindent(docstring, self.indentation_level)
+        except ValueError:
+            return ""
 
     @property
     def indentation_level(self):
@@ -155,7 +158,7 @@ for f in stdlib.glob("*.py"):
 
 
 contrib = Path("../mechwolf/components/contrib")
-for f in core.glob("*.py"):
+for f in contrib.glob("*.py"):
     if f.stem == "__init__":
         continue
     with open("api/components/contrib/" + f.stem + ".md", "w+") as _f:

@@ -124,3 +124,11 @@ aws_key.json
 
 # vscode specific file
 .vscode/settings.json
+
+# ignore automatically generated docs
+docs/api/components/stdlib/*
+!docs/api/components/stdlib/README.md
+docs/api/components/contrib/*
+!docs/api/components/contrib/README.md
+docs/api/core/*
+!docs/api/core/README.md

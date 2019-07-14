@@ -21,18 +21,36 @@ module.exports = {
           title: "Component Standard Library",
           collapsable: false,
           children: [
-            "/api/components/stdlib/pump",
-            "/api/components/stdlib/valve",
-            "/api/components/stdlib/mixer"
+            "/api/components/stdlib/active_component.md",
+            "/api/components/stdlib/broken_dummy_component.md",
+            "/api/components/stdlib/component.md",
+            "/api/components/stdlib/cross_mixer.md",
+            "/api/components/stdlib/dummy.md",
+            "/api/components/stdlib/dummy_pump.md",
+            "/api/components/stdlib/dummy_sensor.md",
+            "/api/components/stdlib/dummy_valve.md",
+            "/api/components/stdlib/mixer.md",
+            "/api/components/stdlib/pump.md",
+            "/api/components/stdlib/sensor.md",
+            "/api/components/stdlib/t_mixer.md",
+            "/api/components/stdlib/tempcontrol.md",
+            "/api/components/stdlib/tube.md",
+            "/api/components/stdlib/valve.md",
+            "/api/components/stdlib/vessel.md",
+            "/api/components/stdlib/y_mixer.md"
           ]
         },
         {
           title: "Contributed Component Library",
           collapsable: false,
           children: [
-            "/api/components/stdlib/pump",
-            "/api/components/stdlib/valve",
-            "/api/components/stdlib/mixer"
+            "/api/components/contrib/arduino.md",
+            "/api/components/contrib/fc203.md",
+            "/api/components/contrib/gsioc.md",
+            "/api/components/contrib/labjack.md",
+            "/api/components/contrib/varian.md",
+            "/api/components/contrib/vici.md",
+            "/api/components/contrib/vicipump.md"
           ]
         }
       ],

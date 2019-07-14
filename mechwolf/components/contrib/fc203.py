@@ -3,7 +3,9 @@ from .gsioc import GsiocComponent
 
 
 class GilsonFC203(ActiveComponent):
-    """Controls a Gilson FC203B Fraction collector """
+    """
+    Controls a Gilson FC203B Fraction collector
+    """
 
     metadata = {
         "author": [

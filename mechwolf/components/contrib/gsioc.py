@@ -4,7 +4,7 @@ except ImportError:
     pass
 
 
-class GsiocComponent:
+class GsiocComponent(object):
     metadata = {
         "author": [
             {
