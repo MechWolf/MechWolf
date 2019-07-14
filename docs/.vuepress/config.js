@@ -9,9 +9,31 @@ module.exports = {
     sidebar: {
       "/api/": [
         {
-          title: "API Reference",
+          title: "Core",
           collapsable: false,
-          children: ["/api/mechwolf", "/api/stdlib_components"]
+          children: [
+            "/api/core/apparatus",
+            "/api/core/protocol",
+            "/api/core/experiment"
+          ]
+        },
+        {
+          title: "Component Standard Library",
+          collapsable: false,
+          children: [
+            "/api/components/stdlib/pump",
+            "/api/components/stdlib/valve",
+            "/api/components/stdlib/mixer"
+          ]
+        },
+        {
+          title: "Contributed Component Library",
+          collapsable: false,
+          children: [
+            "/api/components/stdlib/pump",
+            "/api/components/stdlib/valve",
+            "/api/components/stdlib/mixer"
+          ]
         }
       ],
       "/": [

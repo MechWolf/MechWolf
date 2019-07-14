@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 def deindent(x, levels):
     return "\n".join((line[4 * levels :] for line in x.split("\n")))  # noqa
 
@@ -38,6 +41,10 @@ class PyObj(object):
 
         return int(float(indentation_level) / 4) + 1
 
+    @property
+    def is_internal(self):
+        return self.name.startswith("_") and not self.name.startswith("__")
+
 
 class Function(PyObj):
     def __init__(self, source_code):
@@ -45,10 +52,6 @@ class Function(PyObj):
 
     def __repr__(self):
         return "<Function " + self.name + ">"
-
-    @property
-    def is_internal(self):
-        return self.name.startswith("_") and not self.name.startswith("__")
 
     @property
     def signature(self):
@@ -102,55 +105,68 @@ def analyze_file(filename):
                 except IndexError:
                     pass
                 current_class.methods.append(Function(func_str))
+    if len([_class for _class in classes if not _class.is_internal]) > 1:
+        raise ValueError("More than one class per file!")
+    try:
+        return classes[0]
+    except IndexError:
+        pass
 
-    return classes
 
+def generate_markdown(_class):
+    if _class is None:
+        return ""
+    header = "---\neditLink: false\n---\n"
 
-def generate_markdown(ast, title):
-    header = "---\nsidebarDepth: 2\neditLink: false\n---\n# " + title + "\n"
+    body = "# " + _class.name + "\n" + _class.docstring + "\n"
 
-    body = ""
-
-    for f, classes in ast.items():
-        for _class in classes:
-            body += "## " + _class.name + "\n" + _class.docstring + "\n"
-
-            for method in _class.methods:
-                if method.is_internal:
-                    continue
-                try:
-                    body += (
-                        "### "
-                        + method.name
-                        + "\n\n```python\n"
-                        + deindent(method.signature, 1)
-                        + "\n```\n"
-                        + method.docstring.replace("#", "####")
-                        + "\n\n"
-                    )
-                except ValueError:
-                    pass
+    for method in _class.methods:
+        if method.is_internal:
+            continue
+        try:
+            body += (
+                "## "
+                + method.name
+                + "\n\n```python\n"
+                + deindent(method.signature, 1)
+                + "\n```\n"
+                + method.docstring.replace("#", "###")
+                + "\n\n"
+            )
+        except ValueError:
+            pass
 
     return header + body
 
 
-with open("api/mechwolf.md", "w+") as f:
-    results = {}
-    for filename in [
-        "../mechwolf/apparatus.py",
-        "../mechwolf/protocol.py",
-        "../mechwolf/experiment.py",
-    ]:
-        results[filename] = analyze_file(filename)
-    print(generate_markdown(results, "MechWolf"), file=f)
+core = Path("../mechwolf/core/")
+for f in core.glob("*.py"):
+    if f.stem == "__init__":
+        continue
+    with open("api/core/" + f.stem + ".md", "w+") as _f:
+        print(generate_markdown(analyze_file(str(f))), file=_f)
+
+stdlib = Path("../mechwolf/components/stdlib")
+for f in stdlib.glob("*.py"):
+    if f.stem == "__init__":
+        continue
+    with open("api/components/stdlib/" + f.stem + ".md", "w+") as _f:
+        print(generate_markdown(analyze_file(str(f))), file=_f)
 
 
-with open("api/stdlib_components.md", "w+") as f:
-    results = {}
-    for filename in [
-        "../mechwolf/components/stdlib/component.py",
-        "../mechwolf/components/stdlib/pump.py",
-        "../mechwolf/components/stdlib/mixer.py",
-    ]:
-        results[filename] = analyze_file(filename)
-    print(generate_markdown(results, "Component Standard Library"), file=f)
+contrib = Path("../mechwolf/components/contrib")
+for f in core.glob("*.py"):
+    if f.stem == "__init__":
+        continue
+    with open("api/components/contrib/" + f.stem + ".md", "w+") as _f:
+        print(generate_markdown(analyze_file(str(f))), file=_f)
+
+# with open("api/stdlib_components.md", "w+") as f:
+#     results = {}
+#     for filename in [
+#         "../mechwolf/components/stdlib/component.py",
+#         "../mechwolf/components/stdlib/pump.py",
+#         "../mechwolf/components/stdlib/mixer.py",
+#     ]:
+#         results[filename] = analyze_file(filename)
+#     print(generate_markdown(results, "Component Standard Library"), file=f)
