@@ -134,7 +134,7 @@ def generate_markdown(ast):
                         + method.name
                         + "`\n\n```python\n"
                         + method.signature
-                        + "\n```\n"
+                        + ":\n```\n"
                         + method.docstring.replace("#", "####")
                         + "\n\n"
                     )
