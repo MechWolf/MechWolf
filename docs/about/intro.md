@@ -32,7 +32,7 @@ import mechwolf as mw
 # define the vessels
 aminophenol = mw.Vessel("15 mL 4-aminophenol")
 acetic_anhydride = mw.Vessel("15 mL acetic anhydride")
-acetaminophen = mw.Vessel("`acetaminophen`")
+acetaminophen = mw.Vessel("acetaminophen")
 
 # define the pumps
 pump_1 = mw.Pump()
@@ -183,7 +183,6 @@ A.describe()
 ```
 
 A vessel containing 15 mL 4-aminophenol was connected to Pump pump_1 using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch). A vessel containing 15 mL acetic anhydride (Acetyl acetate) was connected to Pump pump_2 using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch). Pump pump_1 was connected to TMixer TMixer_0 using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch). Pump pump_2 was connected to TMixer TMixer_0 using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch). TMixer TMixer_0 was connected to a vessel containing acetaminophen (N-(4-Hydroxyphenyl)acetamide) using PVC tubing (length 1 meter, ID 0.0625 inch, OD 0.125 inch).
-
 
 Now that we’ve gone over how to define an apparatus and all the different ways to inspect it, let’s make it synthesize acetaminophen. We do that with a `Protocol`, a list of procedures defined for an `Apparatus`. For this reaction, it’s as simple as deciding the flow rate and duration for which to run the pumps:
 

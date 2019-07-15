@@ -71,6 +71,17 @@ class Apparatus(object):
         if not issubclass(tube.__class__, Tube):
             raise ValueError("Tube must be an instance of Tube")
 
+        if (
+            Connection(
+                from_component=from_component, to_component=to_component, tube=tube
+            )
+            in self.network
+        ):
+            warn(
+                f"Duplicate connection from {from_component} to {to_component} omitted."
+            )
+            return
+
         self.network.append(
             Connection(
                 from_component=from_component, to_component=to_component, tube=tube
@@ -101,6 +112,7 @@ class Apparatus(object):
             for _from_component in from_component:
                 for _to_component in to_component:
                     self._add_single(_from_component, _to_component, tube)
+
         # multiple from components, one to component
         elif isinstance(from_component, Iterable):
             for _from_component in from_component:
