@@ -56,11 +56,16 @@ async def main(experiment, dry_run):
                             component=component, experiment=experiment, dry_run=dry_run
                         )
                     )
-                    tasks.append(end_monitoring(component, end_time))
+                    tasks.append(end_monitoring(component, end_time, dry_run))
 
             experiment.start_time = time.time()
 
             start_msg = f"{experiment} started at {datetime.utcfromtimestamp(experiment.start_time)} UTC"
+
+            # Add a reminder about FF
+            if isinstance(dry_run, int):
+                logger.info(f"Simulating at {dry_run}x speed...")
+
             logger.success(start_msg)
             try:
                 await asyncio.gather(*tasks)
@@ -89,7 +94,10 @@ async def create_procedure(procedure, component, experiment, dry_run):
 
     # wait for the right moment
     execution_time = procedure["time"]
-    await asyncio.sleep(execution_time)
+    if isinstance(dry_run, int):
+        await asyncio.sleep(execution_time / dry_run)
+    else:
+        await asyncio.sleep(execution_time)
 
     component.update_from_params(
         procedure["params"]
@@ -140,13 +148,16 @@ async def monitor(component, experiment, dry_run):
             logger.error(f"Failed to updated experiment! Error message: {str(e)}")
 
 
-async def end_monitoring(component, end_time: float):
+async def end_monitoring(component, end_time: float, dry_run: bool):
     """Creates a new async task that ends the monitoring for a `components.sensor.Sensor` when it is done for the protocol.
 
 
         component (`components.sensor.Sensor`): A `components.sensor.Sensor` to end monitoring for.
         end_time (float): The end time for the sensor in EET.
     """
-    await asyncio.sleep(end_time)
+    if isinstance(dry_run, int):
+        await asyncio.sleep(end_time / dry_run)
+    else:
+        await asyncio.sleep(end_time)
     logger.debug(f"Setting {component}._stop to True in order to stop monitoring")
     component._stop = True

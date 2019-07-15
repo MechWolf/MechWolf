@@ -439,12 +439,14 @@ class Protocol(object):
 
         return visualization
 
-    def execute(self, dry_run: bool = False, verbosity: str = "info") -> Experiment:
+    def execute(
+        self, dry_run: Union[bool, int] = False, verbosity: str = "info"
+    ) -> Experiment:
         """
         Executes the procedure.
 
         # Arguments
-        - `dry_run`: Whether to simulate the experiment or actually perform it. Defaults to `False`, which means executing the protocol on real hardware.
+        - `dry_run`: Whether to simulate the experiment or actually perform it. Defaults to `False`, which means executing the protocol on real hardware. If an integer greater than zero, the dry run will execute at that many times speed.
         - `verbosity`: The level of logging verbosity. One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity. "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
 
         # Returns
