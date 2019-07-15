@@ -5,16 +5,11 @@ import ipywidgets as widgets
 from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
+from IPython import get_ipython
 from loguru import logger
 from xxhash import xxh32
 
 from ..components import Sensor
-
-try:
-    get_ipython  # noqa
-    in_ipython = True
-except NameError:
-    in_ipython = False
 
 # handle the hard issue of circular dependencies
 if TYPE_CHECKING:
@@ -119,7 +114,7 @@ class Experiment(object):
             self.data[device] = []
         self.data[device].append(datapoint)
 
-        if not in_ipython:
+        if get_ipython() is None:
             return
 
         if not self._graphs_shown:

@@ -4,6 +4,7 @@ from warnings import warn
 
 import networkx as nx
 from graphviz import Digraph
+from IPython import get_ipython
 from IPython.display import HTML, Markdown
 from mistune import markdown
 from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
@@ -198,11 +199,9 @@ class Apparatus(object):
             title = title if not title else self.name
             f.attr(label=title)
 
-        try:
-            get_ipython()
+        if get_ipython():
             return f
-        except NameError:
-            f.view(cleanup=True)
+        f.view(cleanup=True)
 
     def summarize(self, style: str = "gfm") -> Optional[HTML]:
         """
@@ -281,8 +280,7 @@ class Apparatus(object):
         tubing_table.title = "Tubing"
         tubing_table.inner_footing_row_border = "True"
 
-        try:
-            get_ipython
+        if get_ipython():
             if style == "gfm":
                 html = (
                     f"<h3>{components_table.title}</h3>"
@@ -290,8 +288,6 @@ class Apparatus(object):
                     f"<h3>{tubing_table.title}</h3>{markdown(tubing_table.table)}"
                 )
                 return HTML(html)
-        except NameError:
-            pass
         print("Components")
         print(components_table.table)
         print("\nTubing")
@@ -388,9 +384,6 @@ class Apparatus(object):
                 f" {to_component} using {connection[2].material}"
                 f" tubing (length {tube.length}, ID {tube.ID}, OD {tube.OD}). "
             )
-        try:
-            get_ipython
+        if get_ipython():
             return Markdown(result)
-        except NameError:
-            pass
         return result

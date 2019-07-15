@@ -9,6 +9,7 @@ from typing import Iterable, Optional, Union
 from warnings import warn
 
 import yaml
+from IPython import get_ipython
 from IPython.display import HTML, Code, display
 from jinja2 import Environment, PackageLoader, select_autoescape
 from loguru import logger
@@ -379,11 +380,8 @@ class Protocol(object):
         """
         compiled_yaml = yaml.safe_dump(self.to_list(), default_flow_style=False)
 
-        try:
-            get_ipython
+        if get_ipython():
             return Code(compiled_yaml, language="yaml")
-        except NameError:
-            pass
         return compiled_yaml
 
     def json(self) -> Union[str, Code]:
@@ -395,11 +393,8 @@ class Protocol(object):
         """
         compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
 
-        try:
-            get_ipython
+        if get_ipython():
             return Code(compiled_json, language="json")
-        except NameError:
-            pass
         return compiled_json
 
     def visualize(self, browser: bool = True) -> Union[str, HTML]:
@@ -423,11 +418,8 @@ class Protocol(object):
         )
 
         # show it in Jupyter, if possible
-        try:
-            get_ipython()
+        if get_ipython():
             return HTML(visualization)
-        except NameError:
-            pass
 
         template = env.get_template("visualizer.html")
         visualization = template.render(title=self.name, visualization=visualization)
@@ -487,10 +479,9 @@ class Protocol(object):
 
         self.is_executing = True
 
-        try:
-            get_ipython()
+        if get_ipython():
             asyncio.ensure_future(main(experiment=E, dry_run=dry_run))
-        except NameError:
+        else:
             asyncio.run(main(experiment=E, dry_run=dry_run))
 
         return E
