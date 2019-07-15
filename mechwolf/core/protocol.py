@@ -440,17 +440,21 @@ class Protocol(object):
         return visualization
 
     def execute(
-        self, dry_run: Union[bool, int] = False, verbosity: str = "info"
-    ) -> Experiment:
+        self,
+        dry_run: Union[bool, int] = False,
+        verbosity: str = "info",
+        confirm: bool = False,
+    ) -> Optional[Experiment]:
         """
         Executes the procedure.
 
         # Arguments
         - `dry_run`: Whether to simulate the experiment or actually perform it. Defaults to `False`, which means executing the protocol on real hardware. If an integer greater than zero, the dry run will execute at that many times speed.
         - `verbosity`: The level of logging verbosity. One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity. "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
+        - `confirm`: Whether to bypass the manual confirmation message before execution.
 
         # Returns
-        An `Experiment` object. In a Jupyter notebook, the object yields an interactive visualization.
+        An `Experiment` object. In a Jupyter notebook, the object yields an interactive visualization. If protocol execution fails for any reason that does not raise an error, the return type is None.
 
         # Raises
         `RuntimeError`: When attempting to execute a protocol on invalid components.
@@ -473,6 +477,13 @@ class Protocol(object):
             self, compiled_protocol=compiled_protocol, verbosity=verbosity.upper()
         )
         display(E._output_widget)
+
+        # make the user confirm if it's the real deal
+        if not dry_run and not confirm:
+            confirmation = input(f"Execute? [y/N]: ").lower()
+            if not confirmation or confirmation[0] != "y":
+                logger.critical("Aborting execution...")
+                return
 
         self.is_executing = True
 
