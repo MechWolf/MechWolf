@@ -63,7 +63,7 @@ async def main(experiment, dry_run):
             start_msg = f"{experiment} started at {datetime.utcfromtimestamp(experiment.start_time)} UTC"
 
             # Add a reminder about FF
-            if isinstance(dry_run, int):
+            if type(dry_run) == int:
                 logger.info(f"Simulating at {dry_run}x speed...")
 
             logger.success(start_msg)
