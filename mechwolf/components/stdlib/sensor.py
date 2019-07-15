@@ -18,7 +18,7 @@ class Sensor(ActiveComponent):
     - rate (`pint.Quantity`): Data collection rate in Hz. A rate of 0 Hz corresponds to the sensor being off.
     """
 
-    def __init__(self, name: Optional[str]):
+    def __init__(self, name: Optional[str] = None):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 Hz")
         self._visualization_shape = "ellipse"
