@@ -6,6 +6,29 @@ module.exports = {
     lastUpdated: "Last Updated", // string | boolean
     repo: "Benjamin-Lee/mechwolf",
     editLinks: true,
+    nav: [
+      { text: "Learn", link: "/intro/" },
+      {
+        text: "API Reference",
+        items: [
+          { text: "Overview", link: "/api/overview" },
+          {
+            text: "Modules",
+            items: [
+              { text: "core", link: "/api/core/" },
+              {
+                text: "stdlib",
+                link: "/api/components/stdlib/"
+              },
+              {
+                text: "contrib",
+                link: "/api/components/contrib/"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     sidebar: {
       "/api/": [
         {
