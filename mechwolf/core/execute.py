@@ -94,7 +94,7 @@ async def create_procedure(procedure, component, experiment, dry_run):
 
     # wait for the right moment
     execution_time = procedure["time"]
-    if isinstance(dry_run, int):
+    if type(dry_run) == int:
         await asyncio.sleep(execution_time / dry_run)
     else:
         await asyncio.sleep(execution_time)
@@ -155,7 +155,7 @@ async def end_monitoring(component, end_time: float, dry_run: bool):
         component (`components.sensor.Sensor`): A `components.sensor.Sensor` to end monitoring for.
         end_time (float): The end time for the sensor in EET.
     """
-    if isinstance(dry_run, int):
+    if type(dry_run) == int:
         await asyncio.sleep(end_time / dry_run)
     else:
         await asyncio.sleep(end_time)
