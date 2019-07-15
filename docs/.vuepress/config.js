@@ -7,7 +7,7 @@ module.exports = {
     repo: "Benjamin-Lee/mechwolf",
     editLinks: true,
     nav: [
-      { text: "Learn", link: "/intro/" },
+      { text: "Learn", link: "/about/intro/" },
       {
         text: "API Reference",
         items: [
@@ -27,6 +27,10 @@ module.exports = {
             ]
           }
         ]
+      },
+      {
+        text: "Get Help",
+        link: "https://github.com/Benjamin-Lee/MechWolf/issues/new/choose"
       }
     ],
     sidebar: {
@@ -78,11 +82,11 @@ module.exports = {
         }
       ],
       "/": [
-        "/intro",
         {
           title: "About",
           collapsable: false,
           children: [
+            "/about/intro",
             "/about/faq",
             "/about/support",
             "/about/why",
@@ -98,8 +102,7 @@ module.exports = {
             "/guide/getting_started",
             "/guide/new_components"
           ]
-        },
-        "/api/"
+        }
       ]
     }
   }

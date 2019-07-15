@@ -2,7 +2,7 @@
 home: true
 heroImage: /head10x.png
 actionText: Get Started →
-actionLink: /intro
+actionLink: /about/intro
 footer: GPLv3 Licensed | Copyright © 2017-present MechWolf Team
 ---
 
