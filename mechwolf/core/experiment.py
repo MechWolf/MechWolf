@@ -62,8 +62,8 @@ class Experiment(object):
         # create a nice, pretty HTML string wth the metadata
         metadata = "<ul>"
         for k, v in {
+            "Apparatus Name": self.protocol.apparatus.name,
             "Protocol name": self.protocol.name,
-            "Start time": self.start_time,
         }.items():
             metadata += f"<li>{k}: {v}</li>"
         metadata += "</ul>"

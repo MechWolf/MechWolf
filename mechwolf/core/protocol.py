@@ -416,7 +416,7 @@ class Protocol(object):
         # render the html
         env = Environment(
             autoescape=select_autoescape(["html", "xml"]),
-            loader=PackageLoader("mechwolf", "templates"),
+            loader=PackageLoader("mechwolf", "core/templates"),
         )
         visualization = env.get_template("viz_div.html").render(
             procedures=self.procedures
