@@ -81,24 +81,37 @@ class Apparatus(object):
     def add(
         self,
         from_component: Union[Component, Iterable],
-        to_component: Component,
+        to_component: Union[Component, Iterable],
         tube: Tube,
     ) -> None:
         """
-        Adds connections to the apparatus.
+        Adds connections to the apparatus. If both `from_component` and `to_component` are iterables, then their Cartesian product will be added to the apparatus.
 
         # Arguments
         - `from_component`: The `Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
-        - `to_component`: The `Component` where the flow is going.
+        - `to_component`: The `Component` where the flow is going. If an iterable, all items in the iterable will be connected to the same component.
         - `tube`: `Tube` that connects the components.
 
         # Raises
         - `ValueError`: When the connection being added is invalid.
         """
 
-        if isinstance(from_component, Iterable):
-            for component in from_component:
-                self._add_single(component, to_component, tube)
+        # the cartesian product
+        if isinstance(from_component, Iterable) and isinstance(to_component, Iterable):
+            for _from_component in from_component:
+                for _to_component in to_component:
+                    self._add_single(_from_component, _to_component, tube)
+        # multiple from components, one to component
+        elif isinstance(from_component, Iterable):
+            for _from_component in from_component:
+                self._add_single(_from_component, to_component, tube)
+
+        # multiple to components, one from component
+        elif isinstance(to_component, Iterable):
+            for _to_component in to_component:
+                self._add_single(from_component, _to_component, tube)
+
+        # one to and one from component
         else:
             self._add_single(from_component, to_component, tube)
 
