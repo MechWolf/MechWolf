@@ -102,10 +102,6 @@ ENV/
 # mypy
 .mypy_cache/
 
-# databases
-.db
-.db_vedis_journal
-
 # documentation
 _build
 _templates
@@ -113,14 +109,8 @@ _templates
 # Graphviz PDFs
 .gv.pdf
 
-# encryption keys
-*.pem
-
 # node.js
 node_modules
-
-# don't store aws secret key
-aws_key.json
 
 # vscode specific file
 .vscode/settings.json
@@ -132,3 +122,6 @@ docs/api/components/contrib/*
 !docs/api/components/contrib/README.md
 docs/api/core/*
 !docs/api/core/README.md
+
+# automatically generated logging
+*.log.json
