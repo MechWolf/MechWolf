@@ -40,7 +40,7 @@ async def main(experiment, dry_run):
 
                 for procedure in experiment.compiled_protocol[component]:
                     tasks.append(
-                        create_procedure(
+                        wait_and_execute_procedure(
                             procedure=procedure,
                             component=component,
                             experiment=experiment,
@@ -78,8 +78,6 @@ async def main(experiment, dry_run):
                 logger.exception("Failed to execute protocol")
     finally:
         logger.trace("Cleaning up...")
-        if experiment._bound_logger is not None:
-            logger.remove(experiment._bound_logger)
 
         # allow sensors to start monitoring again
         for component in experiment.compiled_protocol.keys():
@@ -89,8 +87,12 @@ async def main(experiment, dry_run):
         experiment.protocol.is_executing = False
         experiment.protocol.was_executed = True
 
+        if experiment._bound_logger is not None:
+            logger.trace("Deactivating logging to Jupyter notebook widget...")
+            logger.remove(experiment._bound_logger)
 
-async def create_procedure(procedure, component, experiment, dry_run):
+
+async def wait_and_execute_procedure(procedure, component, experiment, dry_run):
 
     # wait for the right moment
     execution_time = procedure["time"]
