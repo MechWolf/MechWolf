@@ -58,13 +58,11 @@ class GilsonFC203(ActiveComponent):
         self.gsioc.buffered_command(drain_command)
         self.gsioc.buffered_command("W2         Drain")
 
-    async def update(self):
+    def update(self):
         if self.position == 0:
             self.drain()
         else:
             self.goto(self.position)
-
-        return True
 
     def base_state(self):
         """We assume that the collector starts at the drain position.
