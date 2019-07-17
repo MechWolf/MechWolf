@@ -156,8 +156,8 @@ async def wait_and_execute_procedure(
 
 async def monitor(component, experiment, dry_run):
     logger.debug(f"Started monitoring {component.name}")
-    async for result in component.monitor(dry_run=dry_run):
-        try:
+    try:
+        async for result in component.monitor(dry_run=dry_run):
             experiment.update(
                 device=component.name,
                 datapoint=Datapoint(
@@ -166,9 +166,9 @@ async def monitor(component, experiment, dry_run):
                     experiment_elapsed_time=result["timestamp"] - experiment.start_time,
                 ),
             )
-        except Exception as e:
-            logger.error(f"Failed to updated experiment!")
-            raise e
+    except RuntimeError as e:
+        logger.error(f"Failed to read {component}!")
+        raise e
 
 
 async def end_monitoring(component, end_time: float, dry_run: bool):

@@ -50,6 +50,7 @@ module.exports = {
           children: [
             "/api/components/stdlib/active_component.md",
             "/api/components/stdlib/broken_dummy_component.md",
+            "/api/components/stdlib/broken_dummy_sensor.py",
             "/api/components/stdlib/component.md",
             "/api/components/stdlib/cross_mixer.md",
             "/api/components/stdlib/dummy.md",
