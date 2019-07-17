@@ -31,7 +31,6 @@ setup(
     setup_requires=["pytest-runner"],
     install_requires=[
         "Jinja2",
-        "mistune",
         "terminaltables",
         "networkx",
         "bokeh",
@@ -42,6 +41,7 @@ setup(
         "PyYAML",
         "jupyter",
         "loguru",
+        "ipywidgets",
         "xxhash",
     ],
     extras_require={

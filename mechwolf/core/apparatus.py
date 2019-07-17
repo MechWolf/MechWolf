@@ -5,8 +5,7 @@ from warnings import warn
 import networkx as nx
 from graphviz import Digraph
 from IPython import get_ipython
-from IPython.display import HTML, Markdown
-from mistune import markdown
+from IPython.display import Markdown
 from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 
 from .. import ureg
@@ -203,7 +202,7 @@ class Apparatus(object):
             return f
         f.view(cleanup=True)
 
-    def summarize(self, style: str = "gfm") -> Optional[HTML]:
+    def summarize(self, style: str = "gfm") -> Optional[Markdown]:
         """
         Prints a summary table of the apparatus.
 
@@ -221,12 +220,8 @@ class Apparatus(object):
 
         # create a components table
         summary = [["Name", "Type"]]  # header rows of components table
-        for component in list(self.components):
-            if not isinstance(component, Vessel):
-                summary.append([component.name, component.__class__.__name__])
-            else:
-                # we want to know what's actually in the vessel
-                summary.append([component.description, component.__class__.__name__])
+        for component in sorted(self.components, key=lambda x: x.__class__.__name__):
+            summary.append([component.name, component.__class__.__name__])
 
         # generate the components table
         components_table = tableStyle(summary)
@@ -265,8 +260,8 @@ class Apparatus(object):
             )
         summary.append(
             [
-                "",
                 "**Total**" if style == "gfm" else "Total",
+                "n/a",
                 round(total_length, 4),
                 "n/a",
                 "n/a",
@@ -282,12 +277,13 @@ class Apparatus(object):
 
         if get_ipython():
             if style == "gfm":
-                html = (
-                    f"<h3>{components_table.title}</h3>"
-                    f"{markdown(components_table.table)}"
-                    f"<h3>{tubing_table.title}</h3>{markdown(tubing_table.table)}"
+                md = (
+                    f"### {components_table.title}\n\n"
+                    f"{components_table.table}\n\n"
+                    f"### {tubing_table.title} \n\n"
+                    f"{tubing_table.table}"
                 )
-                return HTML(html)
+                return Markdown(md)
         print("Components")
         print(components_table.table)
         print("\nTubing")
