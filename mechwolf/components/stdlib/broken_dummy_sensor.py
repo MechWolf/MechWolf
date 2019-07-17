@@ -4,15 +4,16 @@ from .sensor import Sensor
 
 
 class BrokenDummySensor(Sensor):
-    """A dummy sensor returning the number of times it has been read.
+    """
+    A dummy sensor returning the number of times it has been read. After a few reads, it fails, raising a `RuntimeError`.
 
     ::: danger
     Using this component during real protocol execution will result in a failure.
     :::
 
-    Attributes:
-        name (str, optional): The name of the Sensor.
-        rate (Quantity): Data collection rate in Hz. A rate of 0 Hz corresponds to the sensor being off.
+    # Attributes:
+    - `name` (str, optional): The name of the Sensor.
+    - `rate` (Quantity): Data collection rate in Hz. A rate of 0 Hz corresponds to the sensor being off.
     """
 
     def __init__(self, name: Optional[str] = None):
