@@ -25,4 +25,3 @@ class Dummy(ActiveComponent):
             print("Active!")
         else:
             print("Inactive.")
-        return True

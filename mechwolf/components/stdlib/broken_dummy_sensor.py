@@ -24,6 +24,6 @@ class BrokenDummySensor(Sensor):
     def read(self) -> int:
         """Collect the data."""
         self.counter += 1
-        if self.counter > 3:
-            raise RuntimeError("Unsurprisingly, the broken sensor is broken")
+        if self.counter > 15 and self.rate:
+            raise RuntimeError("Unsurprisingly, the broken sensor is broken.")
         return self.counter

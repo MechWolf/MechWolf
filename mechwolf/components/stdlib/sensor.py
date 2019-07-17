@@ -78,6 +78,6 @@ class Sensor(ActiveComponent):
         logger.trace("Performing general component checks...")
         return super().validate(dry_run=dry_run)
 
-    def update(self):
+    def update(self) -> None:
         # sensors don't have an update method; they implement read
-        return True
+        pass

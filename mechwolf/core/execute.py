@@ -40,10 +40,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
             for component in components:
                 # Find out when each component's monitoring should end
                 end_time = max(
-                    [
-                        procedure["time"]
-                        for procedure in experiment.compiled_protocol[component]
-                    ]
+                    [p["time"] for p in experiment.compiled_protocol[component]]
                 )
 
                 logger.debug(f"Calculated {component} end time is {end_time}s")
@@ -64,10 +61,12 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                     logger.debug(f"Creating sensor monitoring task for {component}")
                     tasks.append(
                         monitor(
-                            component=component, experiment=experiment, dry_run=dry_run
+                            sensor=component,
+                            experiment=experiment,
+                            dry_run=dry_run,
+                            strict=strict,
                         )
                     )
-                    tasks.append(end_monitoring(component, end_time, dry_run))
 
             # Add a reminder about FF
             if type(dry_run) == int:
@@ -89,13 +88,13 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
             except:  # noqa
                 logger.exception("Failed to execute protocol due to uncaught error!")
     finally:
-        logger.trace("Cleaning up...")
-
         # allow sensors to start monitoring again
+        logger.debug("Stopping all sensors")
         for component in experiment.compiled_protocol.keys():
             if isinstance(component, Sensor):
-                logger.trace(f"Re enabling {component} monitoring...")
-                component._stop = False
+                component._stop = True
+
+        # set some protocol metadata
         experiment.protocol.is_executing = False
         experiment.protocol.was_executed = True
 
@@ -129,58 +128,47 @@ async def wait_and_execute_procedure(
             f" at {procedure['time']}s"
         )
         record = {}
-        success = True
     else:
         logger.info(
             f"Executing: {procedure['params']} on {component}"
             f" at {procedure['time']}s"
         )
-        success = component.update()  # NOTE: This does!
-
-    if not success:
-        logger.error(f"Failed to update {component}!")
-        if strict:
-            raise RuntimeError("Failure!")
+        try:
+            component.update()  # NOTE: This does!
+        except Exception as e:
+            logger.error(f"Failed to update {component}!")
+            if strict:
+                raise RuntimeError(
+                    f"Failed to update {component}. Got exception of type {type(e)} with message {e.message}"
+                )
 
     record = {
         "timestamp": time.time(),
         "params": procedure["params"],
         "type": "executed_procedure" if not dry_run else "simulated_procedure",
         "component": component,
-        "success": success,
     }
     record["experiment_elapsed_time"] = record["timestamp"] - experiment.start_time
 
     experiment.executed_procedures.append(record)
 
 
-async def monitor(component, experiment, dry_run):
-    logger.debug(f"Started monitoring {component.name}")
+async def monitor(sensor: Sensor, experiment: Experiment, dry_run: bool, strict: bool):
+    logger.debug(f"Started monitoring {sensor.name}")
+    sensor._stop = False
     try:
-        async for result in component.monitor(dry_run=dry_run):
+        async for result in sensor.monitor(dry_run=dry_run):
             experiment.update(
-                device=component.name,
+                device=sensor.name,
                 datapoint=Datapoint(
                     data=result["data"],
                     timestamp=result["timestamp"],
                     experiment_elapsed_time=result["timestamp"] - experiment.start_time,
                 ),
             )
-    except RuntimeError as e:
-        logger.error(f"Failed to read {component}!")
-        raise e
-
-
-async def end_monitoring(component, end_time: float, dry_run: bool):
-    """Creates a new async task that ends the monitoring for a `components.sensor.Sensor` when it is done for the protocol.
-
-
-        component (`components.sensor.Sensor`): A `components.sensor.Sensor` to end monitoring for.
-        end_time (float): The end time for the sensor in EET.
-    """
-    if type(dry_run) == int:
-        await asyncio.sleep(end_time / dry_run)
-    else:
-        await asyncio.sleep(end_time)
-    logger.debug(f"Setting {component}._stop to True in order to stop monitoring")
-    component._stop = True
+    except Exception as e:
+        logger.error(f"Failed to update {sensor}!")
+        if strict:
+            raise RuntimeError(
+                f"Failed to update {sensor}. Got exception of type {type(e)} with message {str(e)}"
+            )

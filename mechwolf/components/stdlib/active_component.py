@@ -123,9 +123,13 @@ class ActiveComponent(Component):
             )
             with self:
                 logger.trace("Context entered. Calling update()")
-                if not self.update():
+                try:
+                    self.update()
+                except Exception as e:
                     warn(
-                        f"Failed to set {self} to base state. Aborting before execution."
+                        f"Failed to set {self} to base state. "
+                        f"Recieved {type(e)} with message {str(e)}. "
+                        "Aborting before execution."
                     )
                     return False
                 logger.trace("Update successful")

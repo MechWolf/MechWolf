@@ -70,7 +70,6 @@ class VarianPump(Pump):
         # print(flow_command)
         self.ser.write(flow_command)
 
-    def update(self):
+    def update(self) -> None:
         new_rate = self.rate.to(ureg.ml / ureg.min).magnitude
         self.set_flow(new_rate)
-        return True

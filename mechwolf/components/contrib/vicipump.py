@@ -70,4 +70,3 @@ class ViciPump(Pump):
 
     def update(self):
         self.set_flow(self.rate)
-        return True

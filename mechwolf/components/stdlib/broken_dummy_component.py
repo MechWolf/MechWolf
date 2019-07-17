@@ -16,11 +16,9 @@ class BrokenDummyComponent(Dummy):
     def __init__(self, name=None):
         super().__init__(name=name)
 
-    def update(self):
+    def update(self) -> None:
         if self.active:
-            return False
-        else:
-            return True
+            raise RuntimeError
 
     def validate(self, dry_run):
         return True
