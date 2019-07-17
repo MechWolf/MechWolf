@@ -40,7 +40,5 @@ class Component(object):
 
     def validate(self, dry_run):
         """Components are valid for dry runs, but not for real runs."""
-        if dry_run:
-            return True
-        else:
-            return False
+        if not dry_run:
+            raise RuntimeError

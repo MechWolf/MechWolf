@@ -273,8 +273,10 @@ class Protocol(object):
                 continue
 
             # validate each component
-            if not component.validate(dry_run=dry_run):
-                raise RuntimeError("Component is not valid.")
+            try:
+                component.validate(dry_run=dry_run)
+            except Exception as e:
+                raise RuntimeError(f"{component} isn't valid. Got error: '{str(e)}'.")
 
             # check for conflicting continuous procedures
             if (

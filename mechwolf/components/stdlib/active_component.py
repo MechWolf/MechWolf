@@ -1,5 +1,3 @@
-from warnings import warn
-
 from loguru import logger
 
 from . import ureg
@@ -44,7 +42,8 @@ class ActiveComponent(Component):
         """
         A placeholder method for the base state of the component.
 
-        All subclasses of `ActiveComponent` must implement a function that returns a dict of its base state. At the end of a protocol, the component will return to this state.
+        All subclasses of `ActiveComponent` must implement a function that returns a dict of its base state.
+        At the end of a protocol, the component will return to this state.
 
         # Returns
         A dict that has values which can be parsed into compatible units of the object's attributes, if applicable.
@@ -58,21 +57,19 @@ class ActiveComponent(Component):
 
         """
         raise NotImplementedError(
-            f"Please implement the base_state() method for {self} that returns a dict."
+            f"Please implement a base_state() method for {self} that returns a dict."
         )
 
     def update(self):
-        raise NotImplementedError(
-            f"Please implement the update() method for {self}. "
-            "This method should return a True if the update was successful and False otherwise."
-        )
+        raise NotImplementedError(f"Please implement an update() method for {self}.")
 
-    def validate(self, dry_run: bool) -> bool:
+    def validate(self, dry_run: bool) -> None:
         """
         Checks if a component's class is valid.
 
         # Arguments
-        - `dry_run`: Whether this is a validation check for a dry run. Ignores the actual executability of the component.
+        - `dry_run`: Whether this is a validation check for a dry run.
+        Ignores the actual executability of the component.
 
 
         # Returns
@@ -83,57 +80,46 @@ class ActiveComponent(Component):
 
         # the base_state dict must not be empty
         if not self.base_state():
-            warn("base_state method dict must not be empty")
-            return False
+            raise ValueError("base_state method dict must not be empty")
 
         # base_state method must return a dict
         elif not isinstance(self.base_state(), dict):
-            warn("base_state method does not return a dict")
-            return False
+            raise ValueError("base_state method does not return a dict")
 
         # validate the base_state dict
         for k, v in self.base_state().items():
             if not hasattr(self, k):
-                warn(
-                    f"Invalid attribute {k} for {self}. Valid attributes are {self.__dict__}"
+                raise ValueError(
+                    f"base_state sets {k} for {self} but {k} is not an attribute of {self}. "
+                    f"Valid attributes are {self.__dict__}"
                 )
-                return False
+
+            # dimensionality checking
             if (
                 isinstance(self.__dict__[k], ureg.Quantity)
                 and ureg.parse_expression(v).dimensionality
                 != self.__dict__[k].dimensionality
             ):
-                warn(
-                    f"Invalid dimensionality {ureg.parse_expression(v).dimensionality} for {k} for {self}."
+                raise ValueError(
+                    f"Invalid dimensionality in base_state for {self}. "
+                    f"Got {ureg.parse_expression(v).dimensionality} for {k}, "
+                    f"expected {self.__dict__[k].dimensionality}"
                 )
-                return False
-            elif not isinstance(self.__dict__[k], ureg.Quantity) and not isinstance(
-                self.__dict__[k], type(v)
-            ):
-                warn(
-                    f"Bad type matching for {k} in base_state dict. Should be {type(self.__dict__[k])} but is {type(v)}."
-                )
-                return False
+
+            # if not dimensional, do type matching
+            if not isinstance(self.__dict__[k], ureg.Quantity):
+                if not isinstance(self.__dict__[k], type(v)):
+                    raise ValueError(
+                        f"Bad type matching for {k} in base_state dict. "
+                        f"Should be {type(self.__dict__[k])} but is {type(v)}."
+                    )
 
         # once we've checked everything, it should be good
         if not dry_run:
             self.update_from_params(self.base_state())
-            logger.trace(
-                f"Attempting to call update() method for {self}. Entering context..."
-            )
+            logger.trace(f"Attempting to call update() for {self}. Entering context")
             with self:
-                logger.trace("Context entered. Calling update()")
-                try:
-                    self.update()
-                except Exception as e:
-                    warn(
-                        f"Failed to set {self} to base state. "
-                        f"Recieved {type(e)} with message {str(e)}. "
-                        "Aborting before execution."
-                    )
-                    return False
-                logger.trace("Update successful")
-            logger.trace("Context exited successfully")
-        logger.debug(f"{self} is valid")
+                if self.update() is not None:
+                    raise ValueError("Received return value from update.")
 
-        return True
+        logger.debug(f"{self} is valid")
