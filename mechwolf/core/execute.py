@@ -3,15 +3,25 @@ import time
 from collections import namedtuple
 from contextlib import ExitStack
 from datetime import datetime
+from typing import Union
 
 from loguru import logger
 
-from ..components import Sensor
+from ..components import Component, Sensor
+from .experiment import Experiment
 
 Datapoint = namedtuple("Datapoint", ["data", "timestamp", "experiment_elapsed_time"])
 
 
-async def main(experiment, dry_run):
+async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
+    """
+    The function that actually does the execution of the protocol.
+
+    Args:
+    - `experiment`: The experiment to execute.
+    - `dry_run`: Whether to simulate the experiment or actually perform it. If an integer greater than zero, the dry run will execute at that many times speed.
+    - `strict`: Whether to stop execution upon any errors.
+    """
 
     tasks = []
 
@@ -45,6 +55,7 @@ async def main(experiment, dry_run):
                             component=component,
                             experiment=experiment,
                             dry_run=dry_run,
+                            strict=strict,
                         )
                     )
 
@@ -58,14 +69,13 @@ async def main(experiment, dry_run):
                     )
                     tasks.append(end_monitoring(component, end_time, dry_run))
 
-            experiment.start_time = time.time()
-
-            start_msg = f"{experiment} started at {datetime.utcfromtimestamp(experiment.start_time)} UTC"
-
             # Add a reminder about FF
             if type(dry_run) == int:
                 logger.info(f"Simulating at {dry_run}x speed...")
 
+            # begin the experiment
+            experiment.start_time = time.time()
+            start_msg = f"{experiment} started at {datetime.utcfromtimestamp(experiment.start_time)} UTC"
             logger.success(start_msg)
             try:
                 await asyncio.gather(*tasks)
@@ -74,8 +84,10 @@ async def main(experiment, dry_run):
                 experiment.end_time = time.time()
                 end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
                 logger.success(end_msg)
+            except RuntimeError:
+                logger.critical("Protocol execution is stopping NOW!")
             except:  # noqa
-                logger.exception("Failed to execute protocol")
+                logger.exception("Failed to execute protocol due to uncaught error!")
     finally:
         logger.trace("Cleaning up...")
 
@@ -92,7 +104,13 @@ async def main(experiment, dry_run):
             logger.remove(experiment._bound_logger)
 
 
-async def wait_and_execute_procedure(procedure, component, experiment, dry_run):
+async def wait_and_execute_procedure(
+    procedure,
+    component: Component,
+    experiment: Experiment,
+    dry_run: Union[bool, int],
+    strict: bool,
+):
 
     # wait for the right moment
     execution_time = procedure["time"]
@@ -121,6 +139,8 @@ async def wait_and_execute_procedure(procedure, component, experiment, dry_run):
 
     if not success:
         logger.error(f"Failed to update {component}!")
+        if strict:
+            raise RuntimeError("Failure!")
 
     record = {
         "timestamp": time.time(),
@@ -147,7 +167,8 @@ async def monitor(component, experiment, dry_run):
                 ),
             )
         except Exception as e:
-            logger.error(f"Failed to updated experiment! Error message: {str(e)}")
+            logger.error(f"Failed to updated experiment!")
+            raise e
 
 
 async def end_monitoring(component, end_time: float, dry_run: bool):
