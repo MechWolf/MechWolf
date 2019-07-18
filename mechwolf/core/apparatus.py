@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import Iterable, Optional, Union
+from typing import Iterable, List, Optional, Set, Union
 from warnings import warn
 
 import networkx as nx
@@ -37,8 +37,8 @@ class Apparatus(object):
         - `name`: The name of the apparatus. Defaults to "Apparatus_X" where *X* is apparatus count. This should be short and sweet.
         - `description`: A description of the apparatus. Can be as long and wordy as you want.
         """
-        self.network = []
-        self.components = set()
+        self.network: List[Connection] = []
+        self.components: Set[Component] = set()
         # if given a name, then name the apparatus, else default to a sequential name
         if name is not None:
             self.name = name
@@ -114,22 +114,28 @@ class Apparatus(object):
                     self._add_single(_from_component, _to_component, tube)
 
         # multiple from components, one to component
-        elif isinstance(from_component, Iterable):
+        elif isinstance(from_component, Iterable) and not isinstance(
+            to_component, Iterable
+        ):
             for _from_component in from_component:
                 self._add_single(_from_component, to_component, tube)
 
         # multiple to components, one from component
-        elif isinstance(to_component, Iterable):
+        elif isinstance(to_component, Iterable) and not isinstance(
+            from_component, Iterable
+        ):
             for _to_component in to_component:
                 self._add_single(from_component, _to_component, tube)
 
         # one to and one from component
-        else:
+        elif not isinstance(to_component, Iterable) and not isinstance(
+            from_component, Iterable
+        ):
             self._add_single(from_component, to_component, tube)
 
     def visualize(
         self,
-        title: bool = True,
+        title: Union[bool, str] = True,
         label_tubes: bool = False,
         describe_vessels: bool = False,
         node_attr: dict = {},
@@ -144,7 +150,7 @@ class Apparatus(object):
         For full list of acceptable Graphviz attributes for see [the graphviz.org docs](http://www.graphviz.org/doc/info/attrs.html) and [its Python API's docs](http://graphviz.readthedocs.io/en/stable/manual.html#attributes).
 
         # Arguments
-        - `title`: Whether to show the title in the output. Defaults to True.
+        - `title`: Whether to show the title in the output. Defaults to True. If a string, the title to use for the output.
         - `label_tubes`: Whether to label the tubes between components with the length, inner diameter, and outer diameter.
         - `describe_vessels`: Whether to display the names or content descriptions of `Vessel` components.
         - `node_attr`: Controls the appearance of the nodes of the graph. Must be of the form `{"attribute": "value"}`.
@@ -195,12 +201,14 @@ class Apparatus(object):
 
         # show the title of the graph
         if title:
-            title = title if not title else self.name
+            title = title if isinstance(title, str) else self.name
             f.attr(label=title)
 
         if get_ipython():
             return f
-        f.view(cleanup=True)
+        else:
+            f.view(cleanup=True)
+            return None
 
     def summarize(self, style: str = "gfm") -> Optional[Markdown]:
         """
@@ -284,10 +292,12 @@ class Apparatus(object):
                     f"{tubing_table.table}"
                 )
                 return Markdown(md)
+
         print("Components")
         print(components_table.table)
         print("\nTubing")
         print(tubing_table.table)
+        return None
 
     def validate(self) -> bool:
         """

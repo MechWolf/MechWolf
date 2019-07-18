@@ -1,5 +1,5 @@
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Union
 
 import ipywidgets as widgets
 from bokeh.io import output_notebook, push_notebook, show
@@ -9,11 +9,12 @@ from IPython import get_ipython
 from loguru import logger
 from xxhash import xxh32
 
-from ..components import Sensor
+from ..components import ActiveComponent, Sensor
 
 # handle the hard issue of circular dependencies
 if TYPE_CHECKING:
     from .protocol import Protocol
+    from .execute import Datapoint
 
 
 class Experiment(object):
@@ -21,7 +22,14 @@ class Experiment(object):
     Experiments contain all data from execution of a protocol.
     """
 
-    def __init__(self, protocol: "Protocol", compiled_protocol: dict, verbosity: str):
+    def __init__(
+        self,
+        protocol: "Protocol",
+        compiled_protocol: Mapping[
+            ActiveComponent, Iterable[Mapping[str, Union[float, Mapping[str, Any]]]]
+        ],
+        verbosity: str,
+    ):
         """
         # Arguments
         - `protocol`: The protocol for which the experiment was conducted
@@ -35,21 +43,23 @@ class Experiment(object):
         self.experiment_id = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{xxh32(str(protocol.yaml())).hexdigest()}'
 
         # default values
-        self.start_time = None  # the experiment hasn't started until main() is called
-        self.end_time = None
-        self.data = {}
-        self.executed_procedures = []
+        self.start_time: float  # the experiment hasn't started until main() is called
+        self.end_time: float
+        self.data: Dict[str, List[Datapoint]] = {}
+        self.executed_procedures: List[
+            Dict[str, Union[float, Dict[str, Any], str, ActiveComponent]]
+        ] = []
         self._plot_height = 300
 
         # internal values (unstable!)
-        self._charts = {}
+        self._charts = {}  # type: ignore
         self._graphs_shown = False
         self._sensors = [c for c in self.compiled_protocol if isinstance(c, Sensor)][
             ::-1
         ]  # reverse the list so the accordion is in order
         self._device_name_to_unit = {c.name: c._unit for c in self._sensors}
         self._sensor_names = [s.name for s in self._sensors]
-        self._transformed_data = {
+        self._transformed_data: Dict[str, Dict[str, List[Datapoint]]] = {
             s: {"datapoints": [], "timestamps": []} for s in self._sensor_names
         }
         self._bound_logger = None

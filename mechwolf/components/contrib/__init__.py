@@ -1,6 +1,6 @@
 from .. import ureg as _ureg
 
-ureg = _ureg
+ureg = _ureg  # type: ignore
 
 from .arduino import ArduinoSensor
 from .fc203 import GilsonFC203

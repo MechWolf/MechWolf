@@ -18,9 +18,9 @@ class DummySensor(Sensor):
     def __init__(self, name: Optional[str] = None):
         super().__init__(name=name)
         self._unit = "Dimensionless"
-        self.counter = 0
+        self.counter = 0.0
 
-    def read(self) -> int:
+    def read(self) -> float:
         """Collect the data."""
         self.counter += (random.random() * 2) - 1
         return self.counter

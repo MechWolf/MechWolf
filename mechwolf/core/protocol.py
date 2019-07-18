@@ -5,7 +5,7 @@ import webbrowser
 from copy import deepcopy
 from datetime import timedelta
 from math import isclose
-from typing import Iterable, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from warnings import warn
 
 import yaml
@@ -67,7 +67,9 @@ class Protocol(object):
             Protocol._id_counter += 1
 
         # default values
-        self.procedures = []
+        self.procedures: List[
+            MutableMapping[str, Union[float, None, ActiveComponent, Mapping[str, Any]]]
+        ] = []
         self.is_executing = False
         self.was_executed = False
 
@@ -84,7 +86,7 @@ class Protocol(object):
         stop=None,
         duration=None,
         **kwargs,
-    ):
+    ) -> None:
         """Adds a single procedure to the protocol.
 
         See add() for full documentation.
@@ -189,7 +191,7 @@ class Protocol(object):
 
     def add(
         self,
-        component: Union[ActiveComponent, Iterable],
+        component: Union[ActiveComponent, Iterable[ActiveComponent]],
         start="0 seconds",
         stop=None,
         duration=None,
@@ -215,14 +217,14 @@ class Protocol(object):
         - `RuntimeError`: Stop time of procedure is unable to be determined or invalid component.
         """
 
-        try:
-            iter(component)
-        except TypeError:
-            component = [component]
-
-        for _component in component:
+        if isinstance(component, Iterable):
+            for _component in component:
+                self._add_single(
+                    _component, start=start, stop=stop, duration=duration, **kwargs
+                )
+        else:
             self._add_single(
-                _component, start=start, stop=stop, duration=duration, **kwargs
+                component, start=start, stop=stop, duration=duration, **kwargs
             )
 
     @property
@@ -239,7 +241,9 @@ class Protocol(object):
             )
         return computed_durations[-1]
 
-    def compile(self, dry_run: bool = True, _visualization: bool = False) -> dict:
+    def compile(
+        self, dry_run: bool = True, _visualization: bool = False
+    ) -> Dict[ActiveComponent, List[Dict[str, Union[float, Dict[str, Any]]]]]:
         """
         Compile the protocol into a dict of devices and their procedures.
 
@@ -259,7 +263,7 @@ class Protocol(object):
         # deal only with compiling active components
         for component in self.apparatus._active_components:
             # determine the procedures for each component
-            component_procedures = sorted(
+            component_procedures: List[MutableMapping] = sorted(
                 [x for x in self.procedures if x["component"] == component],
                 key=lambda x: x["start"],
             )
@@ -439,7 +443,7 @@ class Protocol(object):
         verbosity: str = "info",
         confirm: bool = False,
         strict: bool = True,
-    ) -> Optional[Experiment]:
+    ) -> Experiment:
         """
         Executes the procedure.
 
@@ -458,30 +462,29 @@ class Protocol(object):
 
         # If protocol is executing, return an error
         if self.is_executing:
-            logger.error("Protocol is currently running.")
-            return
+            raise RuntimeError("Protocol is currently running.")
 
         logger.info(f"Compiling protocol with dry_run = {dry_run}")
         try:
-            compiled_protocol = self.compile(dry_run=dry_run)
+            compiled_protocol = self.compile(dry_run=bool(dry_run))
         except RuntimeError as e:
             # add an execution-specific message
             raise (RuntimeError(str(e).rstrip() + " Aborting execution..."))
-
-        # the Experiment object is going to hold all the info
-        E = Experiment(
-            self, compiled_protocol=compiled_protocol, verbosity=verbosity.upper()
-        )
-        display(E._output_widget)
 
         # make the user confirm if it's the real deal
         if not dry_run and not confirm:
             confirmation = input(f"Execute? [y/N]: ").lower()
             if not confirmation or confirmation[0] != "y":
                 logger.critical("Aborting execution...")
-                return
+                raise RuntimeError("Execution aborted by user.")
 
         self.is_executing = True
+
+        # the Experiment object is going to hold all the info
+        E = Experiment(
+            self, compiled_protocol=compiled_protocol, verbosity=verbosity.upper()
+        )
+        display(E._output_widget)  # type: ignore
 
         if get_ipython():
             asyncio.ensure_future(main(experiment=E, dry_run=dry_run, strict=strict))

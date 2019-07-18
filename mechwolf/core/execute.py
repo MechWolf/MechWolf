@@ -3,11 +3,11 @@ import time
 from collections import namedtuple
 from contextlib import ExitStack
 from datetime import datetime
-from typing import Union
+from typing import Iterable, List, Union
 
 from loguru import logger
 
-from ..components import Component, Sensor
+from ..components import ActiveComponent, Sensor
 from .experiment import Experiment
 
 Datapoint = namedtuple("Datapoint", ["data", "timestamp", "experiment_elapsed_time"])
@@ -19,7 +19,8 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
 
     Args:
     - `experiment`: The experiment to execute.
-    - `dry_run`: Whether to simulate the experiment or actually perform it. If an integer greater than zero, the dry run will execute at that many times speed.
+    - `dry_run`: Whether to simulate the experiment or actually perform it.
+        If an integer greater than zero, the dry run will execute at that many times speed.
     - `strict`: Whether to stop execution upon any errors.
     """
 
@@ -36,13 +37,12 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                     for component in experiment.compiled_protocol.keys()
                 ]
             else:
-                components = experiment.compiled_protocol.keys()
+                components = list(experiment.compiled_protocol.keys())
             for component in components:
                 # Find out when each component's monitoring should end
-                end_time = max(
-                    [p["time"] for p in experiment.compiled_protocol[component]]
-                )
-
+                procedures: Iterable = experiment.compiled_protocol[component]
+                end_times: List[float] = [p["time"] for p in procedures]
+                end_time: float = max(end_times)  # we only want the last end time
                 logger.debug(f"Calculated {component} end time is {end_time}s")
 
                 for procedure in experiment.compiled_protocol[component]:
@@ -85,7 +85,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
     finally:
         # allow sensors to start monitoring again
         logger.debug("Stopping all sensors")
-        for component in experiment.compiled_protocol.keys():
+        for component in list(experiment.compiled_protocol.keys()):
             if isinstance(component, Sensor):
                 component._stop = True
 
@@ -100,7 +100,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
 
 async def wait_and_execute_procedure(
     procedure,
-    component: Component,
+    component: ActiveComponent,
     experiment: Experiment,
     dry_run: Union[bool, int],
     strict: bool,
@@ -122,7 +122,6 @@ async def wait_and_execute_procedure(
             f"Simulating: {procedure['params']} on {component}"
             f" at {procedure['time']}s"
         )
-        record = {}
     else:
         logger.info(
             f"Executing: {procedure['params']} on {component}"
@@ -134,7 +133,7 @@ async def wait_and_execute_procedure(
             logger.error(f"Failed to update {component}!")
             if strict:
                 raise RuntimeError(
-                    f"Failed to update {component}. Got exception of type {type(e)} with message {e.message}"
+                    f"Failed to update {component}. Got exception of type {type(e)} with message '{str(e)}'.'"
                 )
 
     record = {

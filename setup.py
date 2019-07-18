@@ -53,6 +53,7 @@ setup(
             "pipdeptree",
             "pipreqs",
             "black",
+            "mypy",
         ]
     },
 )
