@@ -59,14 +59,9 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 # for sensors, add the monitor task
                 if isinstance(component, Sensor):
                     logger.debug(f"Creating sensor monitoring task for {component}")
-                    tasks.append(
-                        monitor(
-                            sensor=component,
-                            experiment=experiment,
-                            dry_run=dry_run,
-                            strict=strict,
-                        )
-                    )
+                    monitor_task = monitor(component, experiment, bool(dry_run), strict)
+                    end_monitoring_task = end_monitoring(component, end_time, dry_run)
+                    tasks.extend((monitor_task, end_monitoring_task))
 
             # Add a reminder about FF
             if type(dry_run) == int:
@@ -172,3 +167,18 @@ async def monitor(sensor: Sensor, experiment: Experiment, dry_run: bool, strict:
             raise RuntimeError(
                 f"Failed to update {sensor}. Got exception of type {type(e)} with message {str(e)}"
             )
+
+
+async def end_monitoring(sensor: Sensor, end_time: float, dry_run: Union[bool, int]):
+    """
+    Creates a new async task that ends the monitoring for a `components.sensor.Sensor` when it is done for the protocol.
+
+    component (`components.sensor.Sensor`): A `components.sensor.Sensor` to end monitoring for.
+    end_time (float): The end time for the sensor in EET.
+    """
+    if type(dry_run) == int:
+        await asyncio.sleep(end_time / dry_run)
+    else:
+        await asyncio.sleep(end_time)
+    logger.debug(f"Setting {sensor}._stop to True in order to stop monitoring")
+    sensor._stop = True
