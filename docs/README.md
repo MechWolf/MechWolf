@@ -13,15 +13,15 @@ footer: GPLv3 Licensed | Copyright © 2017-present MechWolf Team
 <div class="features">
   <div class="feature">
     <h2>Safety</h2>
-    <p>MechWolf's compiler has your back. Design, simulate, and analyze experiments <em>before</em> connecting to real hardware to make sure they'll work. </p>
+    <p>Design, simulate, and analyze experiments <em>in advance</em> to make sure they'll work. If things do end up going wrong, Mechwolf stops the experiment right away.</p>
   </div>
   <div class="feature">
     <h2>Simplicity</h2>
-    <p>Follow the same process as in the lab, except now in Python: design an apparatus, create a protocol, execute it, and analyze the results.</p>
+    <p>Follow the same process as in the lab, except now in Python. Knowing just two commands, you can design an apparatus, create a protocol, and then execute it.</p>
   </div>
   <div class="feature">
     <h2>Interactivity</h2>
-    <p>Use an interactive browser-based notebook to visualize your apparatus and protocol and then monitor the experiment in real time with live graphs.</p>
+    <p>Use an interactive browser-based notebook to visualize your apparatus and protocol and then monitor the experiment in real time with live graphs (no setup required).</p>
   </div>
 </div>
 

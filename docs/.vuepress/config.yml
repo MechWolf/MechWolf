@@ -1,0 +1,87 @@
+title: MechWolf
+description: Continuous flow process automation made easy
+themeConfig:
+  logo: /head10x.png
+  lastUpdated: Last Updated
+  repo: Benjamin-Lee/mechwolf
+  editLinks: true
+  nav:
+    - text: Learn
+      link: /about/intro/
+    - text: Develop
+      link: /develop/contributing/
+    - text: API Reference
+      items:
+        - text: Overview
+          link: /api/overview
+        - text: Modules
+          items:
+            - text: core
+              link: /api/core/
+            - text: stdlib
+              link: /api/components/stdlib/
+            - text: contrib
+              link: /api/components/contrib/
+    - text: Get Help
+      link: https://github.com/Benjamin-Lee/MechWolf/issues/new/choose
+  sidebar:
+    /api/:
+      - title: Core
+        collapsable: false
+        children:
+          - /api/core/apparatus
+          - /api/core/protocol
+          - /api/core/experiment
+      - title: Component Standard Library
+        collapsable: false
+        children:
+          - /api/components/stdlib/active_component
+          - /api/components/stdlib/broken_dummy_component
+          - /api/components/stdlib/broken_dummy_sensor
+          - /api/components/stdlib/component
+          - /api/components/stdlib/cross_mixer
+          - /api/components/stdlib/dummy
+          - /api/components/stdlib/dummy_pump
+          - /api/components/stdlib/dummy_sensor
+          - /api/components/stdlib/dummy_valve
+          - /api/components/stdlib/mixer
+          - /api/components/stdlib/pump
+          - /api/components/stdlib/sensor
+          - /api/components/stdlib/t_mixer
+          - /api/components/stdlib/tempcontrol
+          - /api/components/stdlib/tube
+          - /api/components/stdlib/valve
+          - /api/components/stdlib/vessel
+          - /api/components/stdlib/y_mixer
+      - title: Contributed Component Library
+        collapsable: false
+        children:
+          - /api/components/contrib/arduino
+          - /api/components/contrib/fc203
+          - /api/components/contrib/gsioc
+          - /api/components/contrib/labjack
+          - /api/components/contrib/varian
+          - /api/components/contrib/vici
+          - /api/components/contrib/vicipump
+    /develop/:
+      - title: Developer Information
+        collapsable: false
+        children:
+          - /develop/contributing
+          - /develop/new_components
+          - /develop/documentation
+    /:
+      - title: About
+        collapsable: false
+        children:
+          - /about/intro
+          - /about/faq
+          - /about/support
+          - /about/why
+          - about/license
+      - title: Guide
+        collapsable: false
+        children:
+          - /guide/gentle_intro
+          - /guide/installation
+          - /guide/getting_started
