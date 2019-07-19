@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import AsyncGenerator, Optional
+from typing import Any, AsyncGenerator, Dict, Optional
 from warnings import warn
 
 from loguru import logger
@@ -25,7 +25,7 @@ class Sensor(ActiveComponent):
         self._unit = ""
         self._stop = False
 
-    def base_state(self) -> dict:
+    def base_state(self) -> Dict[str, Any]:
         """
         Default to being inactive.
         """

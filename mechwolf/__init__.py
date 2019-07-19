@@ -11,6 +11,8 @@ from .core.protocol import Protocol
 from .components import *  # type: ignore
 from .core.experiment import Experiment
 
+from . import zoo
+
 # deactivate logging (see https://loguru.readthedocs.io/en/stable/overview.html#suitable-for-scripts-and-libraries)
 from loguru import logger
 
