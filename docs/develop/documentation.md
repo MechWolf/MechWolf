@@ -10,8 +10,6 @@ Specifically, this means:
 1. [Type annotations for function signatures](#type-annotations)
 1. [Release notes](#release-notes)
 
-Let's break it down.
-
 ## Docstrings
 
 All MechWolf classes and functions need docstrings.
@@ -77,7 +75,7 @@ In essence, type annotation allows bugs like this to be caught _before_ runtime:
 def foo(x, y):
     return x + y
 
-foo(1, "two")
+foo(1, "two") # this will raise an uncaught error!
 ```
 
 As you know, you can't add a string to an integer in Python, but the only way to find that out is to attempt to run the code.
@@ -87,7 +85,7 @@ Because we don't want to be encountering errors in live code running hardware, w
 def foo(x: int, y: int) -> int:
     return x + y
 
-foo(1, "two")
+foo(1, "two") # Mypy will catch this bug!
 ```
 
 All code in MechWolf is fully type annotated in this manner.
