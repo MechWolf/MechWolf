@@ -32,38 +32,39 @@ Anything tagged with "enhancement" and "help wanted" is open to whoever wants to
 
 1. First, [fork the repository on GitHub](https://github.com/Benjamin-Lee/MechWolf).
 1. Clone your fork:
-    ```
-    $ git clone git@github.com:your_name_here/MechWolf.git
-    ```
+   ```bash
+   $ git clone git@github.com:your_name_here/MechWolf.git
+   ```
 1. Set up your virtualenv:
-    ```
-    $ virtualenv -p python3.7 mechwolf-dev-env
-    $ source mechwolf-dev-env/bin/activate
-    ```
+   ```bash
+   $ virtualenv -p python3.7 mechwolf-dev-env
+   $ source mechwolf-dev-env/bin/activate
+   ```
 1. Install MechWolf with the developer dependencies:
-    ```
-    (mechwolf-dev-env) $ cd MechWolf
-    (mechwolf-dev-env) $ pip install -e .[dev]
-    ```
+   ```bash
+   (mechwolf-dev-env) $ cd MechWolf
+   (mechwolf-dev-env) $ pip install -e .[dev]
+   ```
 1. Set up [pre-commit](https://pre-commit.com/):
-    ```
-    (mechwolf-dev-env) $ pre-commit install
-    ```
+   ```bash
+   (mechwolf-dev-env) $ pre-commit install
+   ```
 1. Make a new branch:
-    ```
-    (mechwolf-dev-env) $ git checkout -b name-of-your-bugfix-or-feature
-    ```
+   ```bash
+   (mechwolf-dev-env) $ git checkout -b name-of-your-bugfix-or-feature
+   ```
 1. Once you're done making your changes, make sure that the test suite passes:
-    ```
-    (mechwolf-dev-env) $ pytest
-    ```
+   ```bash
+   (mechwolf-dev-env) $ pytest
+   ```
 1. Then, make your commit:
-    ```
-    (mechwolf-dev-env) $ git add *
-    (mechwolf-dev-env) $ git commit -am "commit message here"
-    (mechwolf-dev-env) $ git push origin name-of-your-bugfix-or-feature
-    ```
-    Pre-commit will make sure that your changes conform to our coding style, as well as that it passes some [static analysis tests](http://flake8.pycqa.org/en/latest/).
+   ```bash
+   (mechwolf-dev-env) $ git add *
+   (mechwolf-dev-env) $ git commit -am "commit message here"
+   (mechwolf-dev-env) $ git push origin name-of-your-bugfix-or-feature
+   ```
+   Pre-commit will make sure that your changes conform to our [coding style](https://github.com/python/black/), as well as that it passes some [static analysis tests](http://flake8.pycqa.org/en/latest/) and is [correctly typed](https://mypy.readthedocs.io/en/latest/).
 1. When you're done, create a pull request for us to review.
-    As a general rule, ensure that the tests and documentation are updated before submitting your pull request.
-    Furthermore, it should be compatible with all supported Python versions, which is currently Python 3.7 and 3.8.
+   As a general request, please ensure that the tests and documentation are updated before submitting your pull request.
+   This allows us to review and accept it as quickly as possible.
+   Furthermore, it should be compatible with all supported Python versions, which is currently only ython 3.7.
