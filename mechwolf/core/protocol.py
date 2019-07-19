@@ -99,13 +99,13 @@ class Protocol(object):
             )
 
         # perform the mapping for valves
-        if isinstance(component, Valve) and kwargs.get("setting") is not None:
+        if isinstance(component, Valve) and isinstance(component.mapping, Mapping):
             try:
                 kwargs["setting"] = component.mapping[kwargs["setting"]]
             except KeyError:
                 # allow direct specification of valve settings
-                if isinstance(kwargs["setting"], int):
-                    pass
+                if not isinstance(kwargs["setting"], int):
+                    raise ValueError(f"Invalid setting {kwargs['setting']} for {self}.")
 
         # don't let users give empty procedures
         if not kwargs:

@@ -324,13 +324,14 @@ class Apparatus(object):
         for valve in valves:
 
             # ensure that valve's mapping components are part of apparatus
-            for component in valve.mapping.keys():
-                if component not in self.components:
-                    warn(
-                        f"Invalid mapping for Valve {valve}. "
-                        f"{component} has not been added to {self.name}"
-                    )
-                    return False
+            if isinstance(valve.mapping, Mapping):
+                for component in valve.mapping.keys():
+                    if component not in self.components:
+                        warn(
+                            f"Invalid mapping for Valve {valve}. "
+                            f"{component} has not been added to {self.name}"
+                        )
+                        return False
 
             # TODO: make this check work again with SISO, SIMO, MISO, and MIMO valves.
             # # no more than one output from a valve (might have to change this)
