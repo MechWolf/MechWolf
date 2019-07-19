@@ -1,10 +1,5 @@
 from ..stdlib.sensor import Sensor
 
-try:
-    import u3  # noqa
-except ModuleNotFoundError:
-    pass
-
 
 class LabJack(Sensor):
     """
@@ -32,12 +27,14 @@ class LabJack(Sensor):
 
     def __enter__(self):
         try:
+            import u3  # noqa
+
             self.device = u3.U3()  # noqa
         except ModuleNotFoundError:
             raise ModuleNotFoundError(
                 "No u3 module installed. "
-                "Try getting it here: "
-                "https://github.com/labjack/LabJackPython/blob/master/src/u3.py."
+                "Try using this command: "
+                "pip install git+https://github.com/labjack/LabJackPython.git"
             )
 
         self.device.configIO(FIOAnalog=15)  # Configure FIO 0-3 as analog in

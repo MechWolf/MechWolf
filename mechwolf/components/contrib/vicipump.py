@@ -1,11 +1,6 @@
 from ..stdlib.pump import Pump
 from . import ureg
 
-try:
-    import serial
-except ImportError:
-    pass
-
 
 class ViciPump(Pump):
     """A Vici M50 pump.
@@ -35,6 +30,7 @@ class ViciPump(Pump):
         self.volume_per_rev = volume_per_rev
 
     def __enter__(self):
+        import serial
 
         self.ser = serial.Serial(
             self.serial_port,

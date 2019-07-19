@@ -1,10 +1,3 @@
-# NOTE: When changing this file, be sure to update new_components.rst
-# because it references specific line numbers here.
-try:
-    import serial
-except ImportError:
-    pass
-
 from ..stdlib.valve import Valve
 
 
@@ -30,6 +23,8 @@ class ViciValve(Valve):
         self.serial_port = serial_port
 
     def __enter__(self):
+        import serial
+
         # create the serial connection
         self.ser = serial.Serial(
             self.serial_port,

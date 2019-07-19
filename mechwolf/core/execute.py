@@ -95,7 +95,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
 
         if experiment._bound_logger is not None:
             logger.trace("Deactivating logging to Jupyter notebook widget...")
-            logger.remove(experiment._bound_logger)
+            logger.remove(experiment._bound_logger)  # type: ignore
 
 
 async def wait_and_execute_procedure(

@@ -1,11 +1,6 @@
 from ..stdlib.pump import Pump
 from . import ureg
 
-try:
-    import serial
-except ImportError:
-    pass
-
 
 class VarianPump(Pump):
     """A Varian pump.
@@ -38,6 +33,7 @@ class VarianPump(Pump):
         self.pump_id = 0x80
 
     def __enter__(self):
+        import serial
 
         self.ser = serial.Serial(self.serial_port)
         self.ser.baudrate = 19200

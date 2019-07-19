@@ -1,5 +1,3 @@
-import serial
-
 from ..stdlib.sensor import Sensor
 
 
@@ -32,6 +30,8 @@ class ArduinoSensor(Sensor):
         self.command = command.encode(encoding="ASCII")
 
     def __enter__(self):
+        import serial
+
         self.ser = serial.Serial(
             self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1
         )
