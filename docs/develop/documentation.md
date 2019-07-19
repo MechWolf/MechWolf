@@ -71,14 +71,34 @@ To learn more about Python commenting, take a look at [this guide](https://realp
 ## Type annotations
 
 Type annotation, introduced in [PEP 484](https://www.python.org/dev/peps/pep-0484), is one of the major new features of Python 3.
-We are currently in the process of annotating all code in MechWolf.
-There are two primary reasons for this: first, it allows for better typehinting, which in turn makes developing the library require less cognitive burden.
-Many modern text editors and IDEs are able to take advantage of type hints to provide a better, faster development experience.
-Second (and more importantly), it allows for static code analysis to find bugs using tools such as [Mypy](https://github.com/python/mypy) and [Pyre](https://pyre-check.org).
-All new code, as well as changes to the existing code base require full type annotation.
-Eventually, we aim to achieve 100% type annotation coverage, at which point we will add type checking to our continuous integration system.
+In essence, type annotation allows bugs like this to be caught _before_ runtime:
 
-One particularly useful resource is the [Mypy Python 3 cheat sheet](https://mypy.readthedocs.io/en/latest/cheat_sheet_py3.html), which goes over type annotation by example.
+```python
+def foo(x, y):
+    return x + y
+
+foo(1, "two")
+```
+
+As you know, you can't add a string to an integer in Python, but the only way to find that out is to attempt to run the code.
+Because we don't want to be encountering errors in live code running hardware, we annotate what types of Python objects our functions require so that errors can automatically be detected:
+
+```python
+def foo(x: int, y: int) -> int:
+    return x + y
+
+foo(1, "two")
+```
+
+All code in MechWolf is fully type annotated in this manner.
+Another benefit comes of using type annotations: it allows for better typehinting, which in turn makes developing the library require less cognitive burden.
+Many modern text editors and IDEs are able to take advantage of type hints to provide a better, faster development experience.
+For example, VSCode shows the type of variables when they are hovered over by looking back at its type annotation.
+
+We rely on Python's official type checker, [Mypy](https://github.com/python/mypy) to validate MechWolf's source code.
+To run Mypy yourself, be sure to use the command `mypy mechwolf/ --ignore-missing-import` from the main directory (not the MechWolf folder).
+We currently ignore missing imports due to some modules we use not having declared type annotations.
+As type checking becomes common in the Python ecosystem, we hope to enable full type checking of imported modules.
 
 ## Release notes
 
