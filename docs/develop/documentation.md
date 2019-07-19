@@ -1,7 +1,7 @@
 # Documentation Guidelines
 
 MechWolf prides itself on clear, thorough documentation.
-We follow [established guidelines](doi.org/10.1371/journal.pcbi.1006561) for documentation of scientific software.
+We follow [established guidelines](https://doi.org/10.1371/journal.pcbi.1006561) for documentation of scientific software.
 As a rule, all new code must be documented in order to be merged.
 Specifically, this means:
 
