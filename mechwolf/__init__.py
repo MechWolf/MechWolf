@@ -2,8 +2,9 @@ from pint import UnitRegistry
 
 # unit registry for conversions
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)  # type: ignore
+import pkg_resources
 
-__version__ = "0.0.1"
+__version__ = pkg_resources.get_distribution("mechwolf").version
 
 # to avoid circular import
 from .core.apparatus import Apparatus
