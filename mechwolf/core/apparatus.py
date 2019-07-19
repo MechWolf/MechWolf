@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import Iterable, List, Optional, Set, Union
+from typing import Iterable, List, Mapping, Optional, Set, Union
 from warnings import warn
 
 import networkx as nx
@@ -138,41 +138,42 @@ class Apparatus(object):
         title: Union[bool, str] = True,
         label_tubes: bool = False,
         describe_vessels: bool = False,
-        node_attr: dict = {},
-        edge_attr: dict = {},
-        graph_attr: dict = dict(splines="ortho"),
+        rankdir: str = "LR",
+        node_attr: Optional[Mapping[str, str]] = None,
+        edge_attr: Optional[Mapping[str, str]] = None,
+        graph_attr: Optional[Mapping[str, str]] = None,
         file_format: str = "pdf",
         filename: Optional[str] = None,
+        **kwargs,
     ) -> Optional[Digraph]:
         """
-        Generates a visualization of the graph of an apparatus.
+        Generates a visualization of an apparatus's network graph.
 
-        For full list of acceptable Graphviz attributes for see [the graphviz.org docs](http://www.graphviz.org/doc/info/attrs.html) and [its Python API's docs](http://graphviz.readthedocs.io/en/stable/manual.html#attributes).
+        For full list of acceptable Graphviz attributes, see [the graphviz.org docs](http://www.graphviz.org/doc/info/attrs.html) and [its Python API's docs](http://graphviz.readthedocs.io/en/stable/manual.html#attributes).
 
         # Arguments
         - `title`: Whether to show the title in the output. Defaults to True. If a string, the title to use for the output.
         - `label_tubes`: Whether to label the tubes between components with the length, inner diameter, and outer diameter.
         - `describe_vessels`: Whether to display the names or content descriptions of `Vessel` components.
-        - `node_attr`: Controls the appearance of the nodes of the graph. Must be of the form `{"attribute": "value"}`.
-        - `edge_attr`: Controls the appearance of the edges of the graph. Must be of the form `{"attribute": "value"}`.
-        - `graph_attr`: Controls the appearance of the graph. Must be of the form `{"attribute": "value"}`. Defaults to orthogonal splines and a node separation of 1
+        - `rankdir`: The direction of the graph. Use `LR` for left to right and `TD` for top down.
+        - `node_attr`: Controls the appearance of the nodes (components) of the Apparatus. Must be of the form `{"attribute": "value"}`.
+        - `edge_attr`: Controls the appearance of the edges (tubes) of the Apparatus. Must be of the form `{"attribute": "value"}`.
+        - `graph_attr`: Controls the appearance of the Apparatus. Must be of the form `{"attribute": "value"}`. To get orthogonal splines (*i.e.* edges with sharp corners), pass `splines="ortho"`. To increase the separation between components, set `nodesep = "0.5"` or similar.
         - `file_format`: The output format of the graph, either "pdf" or "png".
         - `filename`: The name of the output file. Defaults to the name of the apparatus.
-
-        # Raises
-        - `ImportError`: When the visualization package is not installed.
         """
         f = Digraph(
             name=self.name,
             node_attr=node_attr,
             edge_attr=edge_attr,
-            graph_attr=graph_attr,
+            graph_attr=graph_attr if graph_attr is not None else {},
             format=file_format,
             filename=filename,
+            **kwargs,
         )
 
         # go from left to right adding components and their tubing connections
-        f.attr(rankdir="LR")
+        f.attr(rankdir=rankdir)
 
         for component in sorted(list(self.components), key=lambda x: x.name):
             f.attr("node", shape=component._visualization_shape)
