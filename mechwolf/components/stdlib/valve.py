@@ -1,6 +1,6 @@
 from typing import Mapping, Optional
 
-from .active_component import ActiveComponent
+from .active_component import ActiveComponent, Component
 
 
 class Valve(ActiveComponent):
@@ -15,7 +15,7 @@ class Valve(ActiveComponent):
 
     def __init__(
         self,
-        mapping: Optional[Mapping[ActiveComponent, int]] = None,
+        mapping: Optional[Mapping[Component, int]] = None,
         name: Optional[str] = None,
     ):
         super().__init__(name=name)
