@@ -30,11 +30,11 @@ setup(
     tests_require=["pytest"],
     setup_requires=["pytest-runner"],
     install_requires=[
+        "altair",
         "bokeh",
         "graphviz",
         "ipython>=7.0",
         "ipywidgets",
-        "Jinja2",
         "jupyter",
         "loguru",
         "networkx",
@@ -42,6 +42,7 @@ setup(
         "pyserial",
         "PyYAML",
         "terminaltables",
+        "vega",
         "xxhash",
     ],
     extras_require={

@@ -26,7 +26,8 @@ class Experiment(object):
         self,
         protocol: "Protocol",
         compiled_protocol: Mapping[
-            ActiveComponent, Iterable[Mapping[str, Union[float, Mapping[str, Any]]]]
+            ActiveComponent,
+            Iterable[Mapping[str, Union[float, str, Mapping[str, Any]]]],
         ],
         verbosity: str,
     ):

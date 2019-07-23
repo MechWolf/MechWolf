@@ -1,17 +1,16 @@
 import asyncio
 import json
-import tempfile
-import webbrowser
 from copy import deepcopy
 from datetime import timedelta
 from math import isclose
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from warnings import warn
 
+import altair as alt
+import pandas as pd
 import yaml
 from IPython import get_ipython
-from IPython.display import HTML, Code, display
-from jinja2 import Environment, PackageLoader, select_autoescape
+from IPython.display import Code, display
 from loguru import logger
 
 from .. import ureg
@@ -243,7 +242,7 @@ class Protocol(object):
 
     def compile(
         self, dry_run: bool = True, _visualization: bool = False
-    ) -> Dict[ActiveComponent, List[Dict[str, Union[float, Dict[str, Any]]]]]:
+    ) -> Dict[ActiveComponent, List[Dict[str, Union[float, str, Dict[str, Any]]]]]:
         """
         Compile the protocol into a dict of devices and their procedures.
 
@@ -403,39 +402,84 @@ class Protocol(object):
             return Code(compiled_json, language="json")
         return compiled_json
 
-    def visualize(self, browser: bool = True) -> Union[str, HTML]:
+    def visualize(
+        self, legend: bool = False, width=500, renderer: str = "notebook"
+    ) -> alt.vegalite.v3.api.LayerChart:
         """
         Generates a Gantt plot visualization of the protocol.
 
         # Arguments
-        - `browser`: Whether to open in the browser.
+        - `legend`: Whether to show a legend.
+        - `width`: The width of the Gantt chart.
+        - `renderer`: Which renderer to use. Defaults to "notebook" but can also be "jupyterlab", or "nteract", depending on the development environment.
+            If not in a Jupyter Notebook, this argument is ignored.
 
         # Returns
-        The html of the visualization. When in Jupyter, this string is wrapped in a `IPython.display.HTML` object for interactive display.
+        An interactive visualization of the protocol.
         """
 
-        # render the html
-        env = Environment(
-            autoescape=select_autoescape(["html", "xml"]),
-            loader=PackageLoader("mechwolf", "core/templates"),
-        )
-        visualization = env.get_template("viz_div.html").render(
-            procedures=self.procedures
-        )
-
-        # show it in Jupyter, if possible
+        # don't try to render a visualization to the notebook if we're not in one
         if get_ipython():
-            return HTML(visualization)
+            alt.renderers.enable(renderer)
 
-        template = env.get_template("visualizer.html")
-        visualization = template.render(title=self.name, visualization=visualization)
+        for component, procedures in self.compile(_visualization=True).items():
+            # generate a dict that will be a row in the dataframe
+            for procedure in procedures:
+                procedure["component"] = str(component)
+                procedure["start"] = pd.Timestamp(procedure["start"], unit="s")
+                procedure["stop"] = pd.Timestamp(procedure["stop"], unit="s")
 
-        if browser:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp:
-                tmp.write(visualization.encode("utf-8"))
-                webbrowser.open("file://" + tmp.name)
+                # hoist the params to the main dict
+                assert isinstance(procedure["params"], dict)  # needed for typing
+                for k, v in procedure["params"].items():
+                    procedure[k] = v
 
-        return visualization
+                # TODO: make this deterministic for color coordination
+                procedure["params"] = json.dumps(procedure["params"])
+
+            # prettyify the tooltips
+            tooltips = [
+                alt.Tooltip("utchoursminutesseconds(start):T", title="Start (h:m:s)"),
+                alt.Tooltip("utchoursminutesseconds(stop):T", title="Stop (h:m:s)"),
+                "component",
+            ]
+
+            # just add the params to the tooltip
+            tooltips.extend(
+                [
+                    x
+                    for x in procedures[0].keys()
+                    if x not in ["component", "start", "stop", "params"]
+                ]
+            )
+
+            # generate the component's graph
+            source = pd.DataFrame(procedures)
+            component_chart = (
+                alt.Chart(source, width=width)
+                .mark_bar()
+                .encode(
+                    x="utchoursminutesseconds(start):T",
+                    x2="utchoursminutesseconds(stop):T",
+                    y="component",
+                    color=alt.Color("params:N", legend=None)
+                    if not legend
+                    else "params",
+                    tooltip=tooltips,
+                )
+            )
+
+            # label the axes
+            component_chart.encoding.x.title = "Experiment Elapsed Time (h:m:s)"
+            component_chart.encoding.y.title = "Component"
+
+            # combine with the other charts
+            try:
+                chart += component_chart  # type: ignore
+            except NameError:
+                chart = component_chart
+
+        return chart.interactive()
 
     def execute(
         self,
