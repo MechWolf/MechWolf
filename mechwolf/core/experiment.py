@@ -1,5 +1,5 @@
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
 import ipywidgets as widgets
 from bokeh.io import output_notebook, push_notebook, show
@@ -44,7 +44,7 @@ class Experiment(object):
         self.experiment_id = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{xxh32(str(protocol.yaml())).hexdigest()}'
 
         # default values
-        self.start_time: float  # the experiment hasn't started until main() is called
+        self.start_time: Optional[float] = None  # hasn't started until main() is called
         self.end_time: float
         self.data: Dict[str, List[Datapoint]] = {}
         self.executed_procedures: List[
