@@ -86,6 +86,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
         # allow sensors to start monitoring again
         logger.debug("Stopping all sensors")
         for component in list(experiment.compiled_protocol.keys()):
+            component.update_from_params(component.base_state())  # reset object
             if isinstance(component, Sensor):
                 component._stop = True
 
