@@ -1,3 +1,5 @@
+from loguru import logger
+
 from .pump import Pump
 
 
@@ -18,4 +20,5 @@ class DummyPump(Pump):
         super().__init__(name=name)
 
     def update(self):
+        logger.trace(f"Set {self} rate to {self.rate}")
         pass
