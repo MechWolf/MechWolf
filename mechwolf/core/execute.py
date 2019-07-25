@@ -72,7 +72,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
             start_msg = f"{experiment} started at {datetime.utcfromtimestamp(experiment.start_time)} UTC"
             logger.success(start_msg)
             try:
-                await asyncio.gather(*tasks)
+                done, pending = await asyncio.wait(tasks, return_when = asyncio.FIRST_EXCEPTION)
 
                 # when this code block is reached, the tasks will have completed
                 experiment.end_time = time.time()
@@ -96,7 +96,13 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
         if experiment._bound_logger is not None:  # type: ignore
             logger.trace("Deactivating logging to Jupyter notebook widget...")
             logger.remove(experiment._bound_logger)  # type: ignore
-
+        
+        #Cancel all of the remaining tasks
+        for task in pending:
+            task.cancel()
+        #Raise the exception
+        for task in done:
+            task.result()
 
 async def wait_and_execute_procedure(
     procedure,
