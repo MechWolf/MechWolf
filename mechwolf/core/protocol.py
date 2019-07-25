@@ -402,9 +402,7 @@ class Protocol(object):
             return Code(compiled_json, language="json")
         return compiled_json
 
-    def visualize(
-        self, legend: bool = False, width=500, renderer: str = "notebook"
-    ) -> alt.vegalite.v3.api.LayerChart:
+    def visualize(self, legend: bool = False, width=500, renderer: str = "notebook"):
         """
         Generates a Gantt plot visualization of the protocol.
 
