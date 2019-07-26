@@ -88,7 +88,6 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 
                 # Cancel all of the remaining tasks
                 for task in pending:
-                    logger.info(f"Cancelled task {task}")
                     task.cancel()
                 # Raise exceptions, if any
                 for task in done:
