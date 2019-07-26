@@ -75,16 +75,20 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 done, pending = await asyncio.wait(
                     tasks, return_when=asyncio.FIRST_EXCEPTION
                 )
-
+                
+                # when this code block is reached, the tasks will have either all completed or
+                # an exception has occurred.
+                experiment.end_time = time.time()
+                
                 # Cancel all of the remaining tasks
                 for task in pending:
+                    logger.info(f"Cancelled task {task}")
                     task.cancel()
                 # Raise exceptions, if any
                 for task in done:
                     task.result()
 
                 # when this code block is reached, the tasks will have completed or have been cancelled.
-                experiment.end_time = time.time()
                 end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
                 logger.success(end_msg)
             except RuntimeError:
