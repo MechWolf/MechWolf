@@ -99,7 +99,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
             except RuntimeError:
                 logger.critical("Protocol execution is stopping NOW!")
             except ProtocolCancelled:
-                logger.critical("Stop button pressed. Protocol execution stopped.")
+                logger.exception("Stop button pressed. {experiment} stopped at {datetime.utcfromtimestamp(experiment.end_time)}")
             except:  # noqa
                 logger.exception("Failed to execute protocol due to uncaught error!")
     finally:
