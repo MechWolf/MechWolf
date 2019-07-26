@@ -12,6 +12,8 @@ from .experiment import Experiment
 
 Datapoint = namedtuple("Datapoint", ["data", "timestamp", "experiment_elapsed_time"])
 
+WAIT_DURATION = 0.5
+
 
 class ProtocolCancelled(Exception):
     pass
@@ -27,6 +29,8 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
         If an integer greater than zero, the dry run will execute at that many times speed.
     - `strict`: Whether to stop execution upon any errors.
     """
+
+    logger.warning("Support for pausing execution is EXPERIMENTAL!")
 
     tasks = []
 
@@ -61,13 +65,15 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                     )
 
                 # Add a task to monitor the stop button
-                tasks.append(check_if_cancelled(experiment))
+                tasks.append(check_if_cancelled(experiment, end_time))
 
                 # for sensors, add the monitor task
                 if isinstance(component, Sensor):
                     logger.debug(f"Creating sensor monitoring task for {component}")
                     monitor_task = monitor(component, experiment, bool(dry_run), strict)
-                    end_monitoring_task = end_monitoring(component, end_time, dry_run)
+                    end_monitoring_task = end_monitoring(
+                        component, end_time, dry_run, experiment
+                    )
                     tasks.extend((monitor_task, end_monitoring_task))
 
             # Add a reminder about FF
@@ -87,24 +93,34 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 # an exception has occurred.
                 experiment.end_time = time.time()
 
+                # when this code block is reached, the tasks will have completed or have been cancelled.
+                end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
+
                 # Cancel all of the remaining tasks
+                logger.trace("Cancelling all remaining tasks")
                 for task in pending:
                     task.cancel()
+
                 # Raise exceptions, if any
+                logger.trace("Raising exceptions, if any")
                 for task in done:
                     task.result()
 
-                # when this code block is reached, the tasks will have completed or have been cancelled.
-                end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
+                # we only reach this line if things went well
                 logger.success(end_msg)
-            except RuntimeError:
-                logger.critical("Protocol execution is stopping NOW!")
+
+            except RuntimeError as e:
+                logger.error(f"Got {repr(e)}")
+                logger.error("Protocol execution is stopping NOW!")
+                logger.critical(end_msg)
+
             except ProtocolCancelled:
-                logger.critical(
-                    f"Stop button pressed. {experiment} stopped at {datetime.utcfromtimestamp(experiment.end_time)}"
-                )
+                logger.error(f"Stop button pressed.")
+                logger.critical(end_msg)
+
             except:  # noqa
                 logger.exception("Failed to execute protocol due to uncaught error!")
+                logger.critical(end_msg)
     finally:
         # allow sensors to start monitoring again
         logger.debug("Stopping all sensors")
@@ -129,13 +145,20 @@ async def wait_and_execute_procedure(
     dry_run: Union[bool, int],
     strict: bool,
 ):
-
     # wait for the right moment
     execution_time = procedure["time"]
     if type(dry_run) == int:
-        await asyncio.sleep(execution_time / dry_run)
-    else:
-        await asyncio.sleep(execution_time)
+        execution_time /= dry_run
+
+    time_awaited = 0.0
+    while time_awaited < execution_time - WAIT_DURATION:
+        if not experiment.paused:
+            time_awaited += WAIT_DURATION
+        await asyncio.sleep(WAIT_DURATION)
+    logger.trace(
+        f"{component} is waiting a final {execution_time - time_awaited} seconds"
+    )
+    await asyncio.sleep(execution_time - time_awaited)
 
     component.update_from_params(
         procedure["params"]
@@ -154,11 +177,11 @@ async def wait_and_execute_procedure(
         try:
             component.update()  # NOTE: This does!
         except Exception as e:
-            logger.error(f"Failed to update {component}!")
+            logger.log(
+                "ERROR" if strict else "WARNING", f"Failed to update {component}!"
+            )
             if strict:
-                raise RuntimeError(
-                    f"Failed to update {component}. Got exception of type {type(e)} with message '{str(e)}'.'"
-                )
+                raise RuntimeError(str(e))
 
     record = {
         "timestamp": time.time(),
@@ -185,14 +208,14 @@ async def monitor(sensor: Sensor, experiment: Experiment, dry_run: bool, strict:
                 ),
             )
     except Exception as e:
-        logger.error(f"Failed to update {sensor}!")
+        logger.log("ERROR" if strict else "WARNING", f"Failed to read {sensor}!")
         if strict:
-            raise RuntimeError(
-                f"Failed to update {sensor}. Got exception of type {type(e)} with message {str(e)}"
-            )
+            raise RuntimeError(str(e))
 
 
-async def end_monitoring(sensor: Sensor, end_time: float, dry_run: Union[bool, int]):
+async def end_monitoring(
+    sensor: Sensor, end_time: float, dry_run: Union[bool, int], experiment: Experiment
+):
     """
     Creates a new async task that ends the monitoring for a `components.sensor.Sensor` when it is done for the protocol.
 
@@ -200,15 +223,24 @@ async def end_monitoring(sensor: Sensor, end_time: float, dry_run: Union[bool, i
     end_time (float): The end time for the sensor in EET.
     """
     if type(dry_run) == int:
-        await asyncio.sleep(end_time / dry_run)
-    else:
-        await asyncio.sleep(end_time)
+        end_time /= dry_run
+    time_awaited = 0.0
+
+    # spend most of the time checking to see if the protocol is paused
+    while time_awaited < end_time - WAIT_DURATION:
+        if not experiment.paused:
+            time_awaited += WAIT_DURATION
+        await asyncio.sleep(WAIT_DURATION)
+    await asyncio.sleep(end_time - time_awaited)
+
     logger.debug(f"Setting {sensor}._stop to True in order to stop monitoring")
     sensor._stop = True
 
 
-async def check_if_cancelled(experiment: Experiment):
-    while True:
-        await asyncio.sleep(0)
+async def check_if_cancelled(experiment: Experiment, end_time: float) -> None:
+    time_awaited = 0.0
+    while time_awaited < end_time:
+        await asyncio.sleep(WAIT_DURATION)
+        time_awaited += WAIT_DURATION
         if experiment.cancelled is True:
             raise ProtocolCancelled("protocol cancelled")

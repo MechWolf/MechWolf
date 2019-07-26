@@ -1,4 +1,3 @@
-from asyncio import CancelledError
 import time
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
@@ -31,7 +30,7 @@ class Experiment(object):
             Iterable[Mapping[str, Union[float, str, Mapping[str, Any]]]],
         ],
         verbosity: str,
-        cancelled: bool = False
+        cancelled: bool = False,
     ):
         """
         # Arguments
@@ -54,6 +53,7 @@ class Experiment(object):
             Dict[str, Union[float, Dict[str, Any], str, ActiveComponent]]
         ] = []
         self._plot_height = 300
+        self._paused = False
 
         # internal values (unstable!)
         self._charts = {}  # type: ignore
@@ -77,9 +77,15 @@ class Experiment(object):
             metadata += f"<li>{k}: {v}</li>"
         metadata += "</ul>"
 
+        # create pause button
+        self._pause_button = widgets.Button(description="Pause", icon="pause")
+        self._pause_button.on_click(self._on_pause_clicked)
+
         # create a stop button
-        self._stop = widgets.Button(description='STOP', button_style='danger')
-        self._stop.on_click(self.on_stop_clicked)
+        self._stop_button = widgets.Button(
+            description="Stop", button_style="danger", icon="stop"
+        )
+        self._stop_button.on_click(self._on_stop_clicked)
 
         # create the output tab widget with its children
         self._tab = widgets.Tab()
@@ -94,7 +100,11 @@ class Experiment(object):
             for i, sensor in enumerate(self._sensors):
                 self._tab.children[2].set_title(i, sensor.name)
         self._output_widget = widgets.VBox(
-            [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), self._stop, self._tab]
+            [
+                widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"),
+                widgets.HBox([self._pause_button, self._stop_button]),
+                self._tab,
+            ]
         )
 
         def _log(x):
@@ -114,6 +124,7 @@ class Experiment(object):
             level=verbosity,
             colorize=True,
             format="{level.icon} {message}",
+            enqueue=True,
         )
         logger.level("SUCCESS", icon="✅")
         logger.level("ERROR", icon="❌")
@@ -186,5 +197,23 @@ class Experiment(object):
             ]
             push_notebook(handle=target)
 
-    def on_stop_clicked(self, b):
+    def _on_stop_clicked(self, b):
         self.cancelled = True
+
+    def _on_pause_clicked(self, b):
+        self.paused = not self.paused
+
+    @property
+    def paused(self):
+        return self._paused
+
+    @paused.setter
+    def paused(self, paused):
+        if paused:
+            logger.warning(f"Paused execution.")
+        else:
+            logger.warning(f"Resumed execution.")
+        self._paused = paused
+        self._pause_button.description = "Resume" if paused else "Pause"
+        self._pause_button.button_style = "success" if paused else ""
+        self._pause_button.icon = "play" if paused else "pause"
