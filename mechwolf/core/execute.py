@@ -3,7 +3,6 @@ import time
 from collections import namedtuple
 from contextlib import ExitStack
 from datetime import datetime
-import signal
 from typing import Iterable, List, Union
 
 from loguru import logger
@@ -13,8 +12,10 @@ from .experiment import Experiment
 
 Datapoint = namedtuple("Datapoint", ["data", "timestamp", "experiment_elapsed_time"])
 
+
 class ProtocolCancelled(Exception):
     pass
+
 
 async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
     """
@@ -58,7 +59,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                             strict=strict,
                         )
                     )
-                
+
                 # Add a task to monitor the stop button
                 tasks.append(check_if_cancelled(experiment))
 
@@ -81,11 +82,11 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 done, pending = await asyncio.wait(
                     tasks, return_when=asyncio.FIRST_EXCEPTION
                 )
-                
+
                 # when this code block is reached, the tasks will have either all completed or
                 # an exception has occurred.
                 experiment.end_time = time.time()
-                
+
                 # Cancel all of the remaining tasks
                 for task in pending:
                     task.cancel()
@@ -99,7 +100,9 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
             except RuntimeError:
                 logger.critical("Protocol execution is stopping NOW!")
             except ProtocolCancelled:
-                logger.info(f"Stop button pressed. {experiment} stopped at {datetime.utcfromtimestamp(experiment.end_time)}")
+                logger.critical(
+                    f"Stop button pressed. {experiment} stopped at {datetime.utcfromtimestamp(experiment.end_time)}"
+                )
             except:  # noqa
                 logger.exception("Failed to execute protocol due to uncaught error!")
     finally:
@@ -203,8 +206,9 @@ async def end_monitoring(sensor: Sensor, end_time: float, dry_run: Union[bool, i
     logger.debug(f"Setting {sensor}._stop to True in order to stop monitoring")
     sensor._stop = True
 
+
 async def check_if_cancelled(experiment: Experiment):
     while True:
         await asyncio.sleep(0)
         if experiment.cancelled is True:
-            raise ProtocolCancelled('protocol cancelled')
+            raise ProtocolCancelled("protocol cancelled")
