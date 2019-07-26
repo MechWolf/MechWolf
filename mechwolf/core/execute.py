@@ -3,6 +3,7 @@ import time
 from collections import namedtuple
 from contextlib import ExitStack
 from datetime import datetime
+import signal
 from typing import Iterable, List, Union
 
 from loguru import logger
@@ -12,6 +13,8 @@ from .experiment import Experiment
 
 Datapoint = namedtuple("Datapoint", ["data", "timestamp", "experiment_elapsed_time"])
 
+class ProtocolCancelled(Exception):
+    pass
 
 async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
     """
@@ -55,6 +58,9 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                             strict=strict,
                         )
                     )
+                
+                # Add a task to monitor the stop button
+                tasks.append(check_if_cancelled(experiment))
 
                 # for sensors, add the monitor task
                 if isinstance(component, Sensor):
@@ -93,6 +99,8 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 logger.success(end_msg)
             except RuntimeError:
                 logger.critical("Protocol execution is stopping NOW!")
+            except ProtocolCancelled:
+                logger.critical("Stop button pressed. Protocol execution stopped.")
             except:  # noqa
                 logger.exception("Failed to execute protocol due to uncaught error!")
     finally:
@@ -195,3 +203,9 @@ async def end_monitoring(sensor: Sensor, end_time: float, dry_run: Union[bool, i
         await asyncio.sleep(end_time)
     logger.debug(f"Setting {sensor}._stop to True in order to stop monitoring")
     sensor._stop = True
+
+async def check_if_cancelled(experiment: Experiment):
+    while True:
+        await asyncio.sleep(0)
+        if experiment.cancelled is True:
+            raise ProtocolCancelled('protocol cancelled')

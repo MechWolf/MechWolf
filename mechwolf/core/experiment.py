@@ -1,3 +1,4 @@
+from asyncio import CancelledError
 import time
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
@@ -30,6 +31,7 @@ class Experiment(object):
             Iterable[Mapping[str, Union[float, str, Mapping[str, Any]]]],
         ],
         verbosity: str,
+        cancelled: bool = False
     ):
         """
         # Arguments
@@ -39,6 +41,7 @@ class Experiment(object):
         """
         self.protocol = protocol
         self.compiled_protocol = compiled_protocol
+        self.cancelled = cancelled
 
         # computed values
         self.experiment_id = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{xxh32(str(protocol.yaml())).hexdigest()}'
@@ -74,6 +77,10 @@ class Experiment(object):
             metadata += f"<li>{k}: {v}</li>"
         metadata += "</ul>"
 
+        # create a stop button
+        self._stop = widgets.Button(description='STOP', button_style='danger')
+        self._stop.on_click(self.on_stop_clicked)
+
         # create the output tab widget with its children
         self._tab = widgets.Tab()
         self._tab.children = [widgets.HTML(value=metadata), widgets.Output()]
@@ -87,11 +94,11 @@ class Experiment(object):
             for i, sensor in enumerate(self._sensors):
                 self._tab.children[2].set_title(i, sensor.name)
         self._output_widget = widgets.VBox(
-            [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), self._tab]
+            [widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"), self._stop, self._tab]
         )
 
         def _log(x):
-            with self._output_widget.children[1].children[1]:  # the log
+            with self._output_widget.children[2].children[1]:  # the log
                 pad_length = (
                     len(str(int(self.protocol._inferred_duration))) + 4
                 )  # .xxx in floats
@@ -134,10 +141,10 @@ class Experiment(object):
                 logger.trace(f"Initializing graph #{i+1} for {sensor}")
 
                 # bind the height of the graph to the selected plot height
-                self._output_widget.children[1].children[2].children[
+                self._output_widget.children[2].children[2].children[
                     i
                 ].layout.height = f"{self._plot_height}px"
-                with self._output_widget.children[1].children[2].children[i]:
+                with self._output_widget.children[2].children[2].children[i]:
 
                     # create the figure object
                     p = figure(
@@ -178,3 +185,6 @@ class Experiment(object):
                 "timestamps"
             ]
             push_notebook(handle=target)
+
+    def on_stop_clicked(self, b):
+        self.cancelled = True
