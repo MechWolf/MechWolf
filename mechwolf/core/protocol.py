@@ -518,7 +518,7 @@ class Protocol(object):
         verbosity: str = "info",
         confirm: bool = False,
         strict: bool = True,
-        log_file: Union[str, bool, os.PathLike[str]] = True,
+        log_file: Union[str, bool, os.PathLike] = True,
         log_file_verbosity: Optional[str] = None,
         log_file_compression: Optional[str] = None,
     ) -> Experiment:
@@ -588,7 +588,7 @@ class Protocol(object):
             logger.trace(f"File logger ID is {self._file_logger_id}")
 
             # for typing's sake
-            assert isinstance(log_file, Union[str, os.PathLike[str]])
+            assert isinstance(log_file, (str, os.PathLike))
 
             # determine the log file's path
             if log_file_compression is not None:
