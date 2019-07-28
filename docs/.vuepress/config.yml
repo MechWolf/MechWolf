@@ -58,7 +58,7 @@ themeConfig:
         children:
           - /api/components/contrib/arduino
           - /api/components/contrib/fc203
-          - /api/components/contrib/gsioc
+          # - /api/components/contrib/gsioc
           - /api/components/contrib/labjack
           - /api/components/contrib/varian
           - /api/components/contrib/vici

@@ -1,177 +1,64 @@
+# type: ignore
+
+import inspect
 from pathlib import Path
 
-
-def deindent(x, levels):
-    return "\n".join((line[4 * levels :] for line in x.split("\n")))  # noqa
+import mechwolf as mw
 
 
-class PyObj(object):
-    def __init__(self, source_code):
-        self.source_code = source_code.rstrip()
-
-        # calculate the object's name
-        name = source_code.lstrip().replace("def ", "").replace("class ", "")
-        open_paren_idx = name.index("(")
-        self.name = name[:open_paren_idx]
-
-    @property
-    def docstring(self):
-        try:
-            doctring_start_idx = self.source_code.index('"""')
-            docstring = self.source_code[
-                doctring_start_idx : self.source_code.index(  # noqa
-                    '"""', doctring_start_idx + 1
-                )
-            ][3:-3].rstrip()
-            return deindent(docstring, self.indentation_level)
-        except ValueError:
-            return ""
-
-    @property
-    def indentation_level(self):
-        indentation_level = 0
-        for letter in self.source_code:
-            if letter == " ":
-                indentation_level += 1
-            else:
-                break
-        if indentation_level % 4:
-            raise ValueError(
-                "Indentation level is not a multiple of four. Got "
-                + str(indentation_level)
-                + "spaces"
-            )
-
-        return int(float(indentation_level) / 4) + 1
-
-    @property
-    def is_internal(self):
-        return self.name.startswith("_") and not self.name.startswith("__")
+def obj_to_mw_doc(obj):
+    return (
+        "```python\n"
+        + obj.__name__
+        + str(inspect.signature(obj))
+        + "\n```\n\n"
+        + str(inspect.getdoc(obj))
+        + "\n\n"
+    )
 
 
-class Function(PyObj):
-    def __init__(self, source_code):
-        super().__init__(source_code)
-
-    def __repr__(self):
-        return "<Function " + self.name + ">"
-
-    @property
-    def signature(self):
-        return self.source_code[: self.source_code.index(":\n")].lstrip()
-
-
-class Class(PyObj):
-    def __init__(self, source_code):
-        super().__init__(source_code)
-        self.methods = []
-
-    def __repr__(self):
-        return "<Class " + self.name + ">"
-
-    @property
-    def parent(self):
-        open_paren_idx = self.source_code.index("(")
-        close_paren_idx = self.source_code.index(")")
-        return self.source_code[open_paren_idx + 1 : close_paren_idx]  # noqa
-
-
-def analyze_file(filename):
-    with open(filename) as f:
-        lines = f.readlines()
-        classes = []
-        for i, line in enumerate(lines):
-
-            # parse classes
-            if line.startswith("class "):
-                class_str = line
-                x = 1
-                try:
-                    while not lines[i + x].startswith("class "):
-                        class_str += lines[i + x]
-                        x += 1
-                except IndexError:
-                    pass
-                current_class = Class(class_str)
-                classes.append(current_class)
-
-            # parse out functions
-            elif line.lstrip().startswith("def "):
-                func_str = line
-                x = 1
-                try:
-                    while not lines[i + x].lstrip().startswith("def ") and not lines[
-                        i + x
-                    ].lstrip().startswith("@property"):
-                        func_str += lines[i + x]
-                        x += 1
-                except IndexError:
-                    pass
-                current_class.methods.append(Function(func_str))
-    if len([_class for _class in classes if not _class.is_internal]) > 1:
-        raise ValueError("More than one class per file!")
-    try:
-        return classes[0]
-    except IndexError:
-        pass
-
-
-def generate_markdown(_class):
-    if _class is None:
-        return ""
-    header = "---\neditLink: false\n---\n"
-
-    body = "# " + _class.name + "\n" + _class.docstring + "\n"
-
-    for method in sorted(
-        _class.methods, key=lambda x: x.name
-    ):  # alphabetize the methods
-        if method.is_internal:
+def document_class(cls):
+    res = "---\neditLink: false\n---\n"  # the YAML header
+    res += f"# {cls.__name__}\n\n"  # the title of the class
+    res += obj_to_mw_doc(cls) + "\n"  # get the docstring
+    for method in inspect.getmembers(cls):  # now repeat for the methods
+        if (
+            not inspect.isfunction(method[1])
+            or method[0][0] == "_"
+            or inspect.isdatadescriptor(method[1])
+        ):
             continue
-        try:
-            body += (
-                "## "
-                + method.name.replace("_", "\_")  # noqa
-                + "\n\n```python\n"
-                + deindent(method.signature, 1)
-                + "\n```\n"
-                + method.docstring.replace("#", "###")
-                + "\n\n"
-            )
-        except ValueError:
-            pass
-
-    return header + body
+        res += "## " + method[0] + "\n\n"
+        res += obj_to_mw_doc(method[1])
+    return res
 
 
-core = Path("../mechwolf/core/")
-for f in core.glob("*.py"):
-    if f.stem == "__init__":
-        continue
-    with open("api/core/" + f.stem + ".md", "w+") as _f:
-        print(generate_markdown(analyze_file(str(f))), file=_f)
+# first, do the main objects
+for cls in [mw.Apparatus, mw.Protocol, mw.Experiment]:
+    print(f"Generating docs for {cls.__name__}")
+    docs = document_class(cls)
+    Path("api/core/" + cls.__name__.lower() + ".md").write_text(docs)
 
-stdlib = Path("../mechwolf/components/stdlib")
-for f in stdlib.glob("*.py"):
-    if f.stem == "__init__":
-        continue
-    with open("api/components/stdlib/" + f.stem + ".md", "w+") as _f:
-        print(generate_markdown(analyze_file(str(f))), file=_f)
+for module in [mw.components.stdlib, mw.components.contrib]:
+    # find out what classes are part of the module
+    classes = inspect.getmembers(module)
 
+    # filter out internal modules
+    classes = [cls for cls in classes if cls[0][0] != "_" and inspect.isclass(cls[1])]
 
-contrib = Path("../mechwolf/components/contrib")
-for f in contrib.glob("*.py"):
-    if f.stem == "__init__":
-        continue
-    with open("api/components/contrib/" + f.stem + ".md", "w+") as _f:
-        print(generate_markdown(analyze_file(str(f))), file=_f)
+    # determine the directory name to put it in
+    print(f"Generating docs for {module.__name__}")
+    for cls in classes:
 
-# with open("api/stdlib_components.md", "w+") as f:
-#     results = {}
-#     for filename in [
-#         "../mechwolf/components/stdlib/component.py",
-#         "../mechwolf/components/stdlib/pump.py",
-#         "../mechwolf/components/stdlib/mixer.py",
-#     ]:
-#         results[filename] = analyze_file(filename)
-#     print(generate_markdown(results, "Component Standard Library"), file=f)
+        # a hack
+        if cls[0] == "UnitRegistry":
+            continue
+
+        # write it out
+        docs = document_class(cls[1])
+        Path(
+            inspect.getmodule(cls[1])
+            .__name__.replace(".", "/")
+            .replace("mechwolf", "api")
+            + ".md"
+        ).write_text(docs)
