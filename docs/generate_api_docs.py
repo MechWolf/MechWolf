@@ -30,6 +30,14 @@ def document_class(cls):
             continue
         res += "## " + method[0] + "\n\n"
         res += obj_to_mw_doc(method[1])
+    res = (
+        res.replace("Arguments:", "### Arguments")
+        .replace("Returns:", "### Returns")
+        .replace("Raises:", "### Raises")
+        .replace("Attributes:", "### Attributes")
+        .replace("Examples:", "### Examples")
+        .replace("Example:", "### Example")
+    )
     return res
 
 

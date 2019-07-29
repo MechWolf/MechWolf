@@ -7,15 +7,21 @@ from . import ureg
 class Tube(object):
     """A tube.
 
+    Arguments:
+    - `length`: The length of the tube as a str.
+    - `ID`: The inner diameter of the tube as a str.
+    - `OD`: The outer diameter of the tube as a str.
+    - `material`: The material of the tube.
+
     Attributes:
-    - `length` (`pint.Quantity`): The length of the tube.
-    - `ID` (`pint.Quantity`): The inner diameter of the tube.
-    - `OD` (`pint.Quantity`): The outer diameter of the tube.
-    - `volume` (`pint.Quantity`): The volume of the tube, as determined from the length and inner diameter.
-    - `material` (`str`): The material of the tube.
+    - `ID`: The inner diameter of the tube, converted to a `pint.Quantity`.
+    - `length`: The length of the tube, converted to a `pint.Quantity`.
+    - `material`: The material of the tube.
+    - `OD`: The outer diameter of the tube, converted to a `pint.Quantity`.
+    - `volume`: The volume of the tube, as determined from the length and inner diameter, converted to a `pint.Quantity`.
 
     Raises:
-        ValueError: When the outer diameter is less than the inner diameter of the tube.
+        - ValueError: When the outer diameter is less than the inner diameter of the tube.
     """
 
     def __init__(self, length: str, ID: str, OD: str, material: str):

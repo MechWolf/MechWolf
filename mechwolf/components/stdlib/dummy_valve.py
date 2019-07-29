@@ -13,10 +13,14 @@ class DummyValve(Valve):
     This component can be used in a real protocol, although it doesn't actually exist.
     :::
 
+    Arguments:
+    - `mapping`: The mapping from components to their integer port numbers.
+    - `name`: The name of the valve.
+
     Attributes:
-    - `mapping` (`dict`): The mapping from components to their integer port numbers.
-    - `name` (`str`, optional): The name of the Valve.
-    - `setting` (`int`): The position of the valve.
+    - `mapping`: The mapping from components to their integer port numbers.
+    - `name`: The name of the valve.
+    - `setting`: The position of the valve as an int (mapped via `mapping`).
     """
 
     def __init__(self, name: Optional[str] = None, mapping: dict = {}):

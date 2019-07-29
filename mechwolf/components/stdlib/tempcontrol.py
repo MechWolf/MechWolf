@@ -9,11 +9,15 @@ class TempControl(ActiveComponent):
     """
     A generic temperature controller.
 
+    Arguments:
+    - `internal_tubing`: The `Tube` inside the temperature controller.
+    - `name`: The component's name.
+
     Attributes:
-    - name (`str`): The name of the Sensor.
-    - internal_tubing (`Tube`): The tubing inside the temperature controller.
-    - temp (`pint.Quantity`): The temperature setting.
-    - active (`bool`): Whether the temperature controller is active.
+    - `active`: Whether the temperature controller is active.
+    - `internal_tubing`: The `Tube` inside the temperature controller.
+    - `name`: The name of the Sensor.
+    - `temp`: The temperature setting as a `pint.Quantity`.
     """
 
     def __init__(self, internal_tubing: Tube, name: Optional[str] = None):

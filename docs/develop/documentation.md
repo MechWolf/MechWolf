@@ -39,21 +39,30 @@ You can even include an example!
 hello world!
 ```
 
-Then, you should include arguments (for a function) or attributes (for a class).
+Then, you should include arguments (for a function) and/or attributes (for a class).
 
-Args:
+Arguments:
 
 - `arg1`: The first argument.
 - `arg2`: The second argument.
 
 Returns:
 
-A description of the return value, if a function.
+- A description of the return value, if a function.
+  This should be a list, even if its the only element.
+  Note that each sentence should also be on a separate line aligned with the first letter of the first line.
 
 Raises:
 
 - `RuntimeError`: A list of the errors that can be raised by the function, if applicable.
+  Also a list.
 ````
+
+To quote [PEP8](https://www.python.org/dev/peps/pep-0008/#a-foolish-consistency-is-the-hobgoblin-of-little-minds):
+
+> **Consistency within a project is more important. Consistency within one module or function is the most important.**
+
+When in doubt, please check the existing source code for examples, especially in the file being modified.
 
 ## Comments
 

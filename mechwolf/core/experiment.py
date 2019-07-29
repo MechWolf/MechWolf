@@ -20,6 +20,20 @@ if TYPE_CHECKING:
 class Experiment(object):
     """
     Experiments contain all data from execution of a protocol.
+
+    Arguments:
+    - `protocol`: The protocol for which the experiment was conducted
+    - `compiled_protocol`: The results of `protocol.compile()`.
+    - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
+
+    Attributes:
+    - `cancelled`: Whether the experiment was cancelled.
+    - `data`: A list of `Datapoint` namedtuples from the experiment's sensors.
+    - `end_time`: The Unix time of the experiment's end.
+    - `executed_procedures`: A list of the procedures that were executed during the experiment.
+    - `experiment_id`: The experiment's ID. By default, of the form `YYYY_MM_DD_HH_MM_SS_HASH`, where HASH is the 32-bit hexadecmial xxhash of the protocol's YAML.
+    - `paused`: Whether the experiment is currently paused.
+    - `start_time`: The Unix time of the experiment's start.
     """
 
     def __init__(
@@ -31,12 +45,7 @@ class Experiment(object):
         ],
         verbosity: str,
     ):
-        """
-        # Arguments
-        - `protocol`: The protocol for which the experiment was conducted
-        - `compiled_protocol`: The results of `protocol.compile()`.
-        - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
-        """
+        """See the main docstring."""
         self.protocol = protocol
         self.compiled_protocol = compiled_protocol
         self.cancelled = False

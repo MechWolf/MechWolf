@@ -23,10 +23,9 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
     """
     The function that actually does the execution of the protocol.
 
-    Args:
+    Arguments:
     - `experiment`: The experiment to execute.
-    - `dry_run`: Whether to simulate the experiment or actually perform it.
-        If an integer greater than zero, the dry run will execute at that many times speed.
+    - `dry_run`: Whether to simulate the experiment or actually perform it. If an integer greater than zero, the dry run will execute at that many times speed.
     - `strict`: Whether to stop execution upon any errors.
     """
 
@@ -215,12 +214,15 @@ async def monitor(sensor: Sensor, experiment: Experiment, dry_run: bool, strict:
 
 async def end_monitoring(
     sensor: Sensor, end_time: float, dry_run: Union[bool, int], experiment: Experiment
-):
+) -> None:
     """
     Creates a new async task that ends the monitoring for a `components.sensor.Sensor` when it is done for the protocol.
 
-    component (`components.sensor.Sensor`): A `components.sensor.Sensor` to end monitoring for.
-    end_time (float): The end time for the sensor in EET.
+    - `sensor`: The sensor to end monitoring for.
+    - `end_time`: The end time for the sensor in EET.
+    - `dry_run`: Whether a dry run is in progress.
+    - `experiment`: The experiment that's in progress.
+
     """
     if type(dry_run) == int:
         end_time /= dry_run

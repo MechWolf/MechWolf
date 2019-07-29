@@ -14,8 +14,11 @@ class ActiveComponent(Component):
     Users should not directly instantiate an `ActiveComponent` because it is an abstract base class, not a functioning laboratory instrument.
     :::
 
+    Arguments:
+    - `name`: The name of the component.
+
     Attributes:
-    - name (str): The name of the component.
+    - `name`: The name of the component.
 
     """
 
@@ -28,7 +31,7 @@ class ActiveComponent(Component):
         """
         Updates the attributes of the object from a dict.
 
-        # Arguments
+        Arguments:
         - `params`: A dict whose keys are the strings of attribute names and values are the new values of the attribute.
 
         """
@@ -45,16 +48,15 @@ class ActiveComponent(Component):
         All subclasses of `ActiveComponent` must implement a function that returns a dict of its base state.
         At the end of a protocol, the component will return to this state.
 
-        # Returns
-        A dict that has values which can be parsed into compatible units of the object's attributes, if applicable.
+        Returns:
+        - A dict that has values which can be parsed into compatible units of the object's attributes, if applicable.
 
-        # Example
+        Example:
 
         ```python
         >>> Pump.base_state()
         {"rate": "0 ml/min"}
         ```
-
         """
         raise NotImplementedError(
             f"Please implement a base_state() method for {self} that returns a dict."
@@ -67,13 +69,12 @@ class ActiveComponent(Component):
         """
         Checks if a component's class is valid.
 
-        # Arguments
-        - `dry_run`: Whether this is a validation check for a dry run.
-        Ignores the actual executability of the component.
+        Arguments:
+        - `dry_run`: Whether this is a validation check for a dry run. Ignores the actual executability of the component.
 
 
-        # Returns
-        Whether the component is valid or not.
+        Returns:
+        - Whether the component is valid or not.
         """
 
         logger.debug(f"Validating {self.name}...")

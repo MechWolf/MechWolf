@@ -9,8 +9,12 @@ class Dummy(ActiveComponent):
     This component *can* be used in a non-dry run protocol execution. It does not do anything.
     :::
 
+    Arguments:
+    - `name`: The component's name.
+
     Attributes:
-    - `active` (bool): Whether the component is active. This doesn't actually mean anything.
+    - `name`: The component's name.
+    - `active`: Whether the component is active. This doesn't actually mean anything.
     """
 
     def __init__(self, name=None):

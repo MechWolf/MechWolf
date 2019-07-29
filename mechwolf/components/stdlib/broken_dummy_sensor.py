@@ -11,7 +11,7 @@ class BrokenDummySensor(Sensor):
     Using this component during real protocol execution will result in a failure.
     :::
 
-    # Attributes:
+    Attributes:
     - `name` (str, optional): The name of the Sensor.
     - `rate` (Quantity): Data collection rate in Hz. A rate of 0 Hz corresponds to the sensor being off.
     """

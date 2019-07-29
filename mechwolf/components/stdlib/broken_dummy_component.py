@@ -9,8 +9,11 @@ class BrokenDummyComponent(Dummy):
     Using this component during real protocol execution will result in a failure.
     :::
 
+    Arguments:
+    - `name`: The name of the component.
+
     Attributes:
-    - `active` (bool): Whether the component is active. This doesn't actually mean anything.
+    - `active`: Whether the component is active. This doesn't actually mean anything.
     """
 
     def __init__(self, name=None):

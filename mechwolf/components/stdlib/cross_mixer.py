@@ -7,8 +7,11 @@ class CrossMixer(Mixer):
 
     This is an alias of `Component`.
 
+    Arguments:
+    - `name`: The name of the mixer.
+
     Attributes:
-    - `name` (`str`, optional): The name of the mixer.
+    - `name`: The name of the mixer.
     """
 
     def __init__(self, name=None):

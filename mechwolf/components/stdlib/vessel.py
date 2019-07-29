@@ -7,9 +7,13 @@ class Vessel(Component):
     """
     A generic vessel.
 
+    Arguments:
+    - `description`: The contents of the vessel.
+    - `name`: The name of the vessel, if different from the description.
+
     Attributes:
-    - `description` (`str`): The contents of the vessel.
-    - `name` (`str`): The name of the vessel, if different from the description.
+    - `description`: The contents of the vessel.
+    - `name`: The name of the vessel, if different from the description.
     """
 
     def __init__(self, description: Optional[str] = None, name=None):

@@ -30,9 +30,18 @@ class Protocol(object):
     The same `Apparatus` object can create multiple distinct `Protocol` objects.
     :::
 
-    Attributes:
+    Arguments:
     - `apparatus`: The apparatus for which the protocol is being defined.
     - `name`: The name of the protocol. Defaults to "Protocol_X" where *X* is protocol count.
+    - `description`: A longer description of the protocol.
+
+    Attributes:
+    - `apparatus`: The apparatus for which the protocol is being defined.
+    - `description`: A longer description of the protocol.
+    - `is_executing`: Whether the protocol is executing.
+    - `name`: The name of the protocol. Defaults to "Protocol_X" where *X* is protocol count.
+    - `procedures`: A list of the procedures for the protocol in which each procedure is a dict.
+    - `was_executed`: Whether the protocol was executed.
     """
 
     _id_counter = 0
@@ -43,6 +52,7 @@ class Protocol(object):
         name: Optional[str] = None,
         description: Optional[str] = None,
     ):
+        """See main docstring."""
         # type checking
         if not isinstance(apparatus, Apparatus):
             raise TypeError(
@@ -67,7 +77,7 @@ class Protocol(object):
 
         # default values
         self.procedures: List[
-            MutableMapping[str, Union[float, None, ActiveComponent, Mapping[str, Any]]]
+            Dict[str, Union[float, None, ActiveComponent, Dict[str, Any]]]
         ] = []
         self.is_executing = False
         self.was_executed = False
@@ -203,14 +213,14 @@ class Protocol(object):
         If stop and duration are both `None`, the procedure's stop time will be inferred as the end of the protocol.
         :::
 
-        # Arguments
+        Arguments:
         - `component_added`: The component(s) for which the procedure being added. If an interable, all components will have the same parameters.
         - `start`: The start time of the procedure relative to the start of the protocol, such as `"5 seconds"`. May also be a `datetime.timedelta`. Defaults to `"0 seconds"`, *i.e.* the beginning of the protocol.
         - `stop`: The stop time of the procedure relative to the start of the protocol, such as `"30 seconds"`. May also be a `datetime.timedelta`. May not be given if `duration` is used.
         duration: The duration of the procedure, such as "1 hour". May not be used if `stop` is used.
         - `**kwargs`: The state of the component for the procedure.
 
-        # Raises
+        Raises:
         - `TypeError`: A component is not of the correct type (*i.e.* a Component object)
         - `ValueError`: An error occurred when attempting to parse the kwargs.
         - `RuntimeError`: Stop time of procedure is unable to be determined or invalid component.
@@ -246,10 +256,11 @@ class Protocol(object):
         """
         Compile the protocol into a dict of devices and their procedures.
 
-        # Returns
-        A dict with components as the values and lists of their procedures as the value. The elements of the list of procedures are dicts with two keys: "time" in seconds, and "params", whose value is a dict of parameters for the procedure.
+        Returns:
+        - A dict with components as the values and lists of their procedures as the value.
+        The elements of the list of procedures are dicts with two keys: "time" in seconds, and "params", whose value is a dict of parameters for the procedure.
 
-        # Raises
+        Raises:
         - `RuntimeError`: When compilation fails.
         """
         output = {}
@@ -379,8 +390,9 @@ class Protocol(object):
 
         Internally, this is a conversion of the output of `Protocol.json` for the purpose of enhanced human readability.
 
-        # Returns:
-        YAML of the procedure list. When in Jupyter, this string is wrapped in an `IPython.display.Code` object for nice syntax highlighting.
+        Returns:
+        - YAML of the procedure list.
+        When in Jupyter, this string is wrapped in an `IPython.display.Code` object for nice syntax highlighting.
 
         """
         compiled_yaml = yaml.safe_dump(self.to_list(), default_flow_style=False)
@@ -393,8 +405,9 @@ class Protocol(object):
         """
         Outputs the uncompiled procedures to JSON.
 
-        # Returns
-        JSON of the protocol. When in Jupyter, this string is wrapped in a `IPython.display.Code` object for nice syntax highlighting.
+        Returns:
+        - JSON of the protocol.
+          When in Jupyter, this string is wrapped in a `IPython.display.Code` object for nice syntax highlighting.
         """
         compiled_json = json.dumps(self.to_list(), sort_keys=True, indent=4)
 
@@ -406,14 +419,13 @@ class Protocol(object):
         """
         Generates a Gantt plot visualization of the protocol.
 
-        # Arguments
+        Arguments:
         - `legend`: Whether to show a legend.
+        - `renderer`: Which renderer to use. Defaults to "notebook" but can also be "jupyterlab", or "nteract", depending on the development environment. If not in a Jupyter Notebook, this argument is ignored.
         - `width`: The width of the Gantt chart.
-        - `renderer`: Which renderer to use. Defaults to "notebook" but can also be "jupyterlab", or "nteract", depending on the development environment.
-            If not in a Jupyter Notebook, this argument is ignored.
 
-        # Returns
-        An interactive visualization of the protocol.
+        Returns:
+        - An interactive visualization of the protocol.
         """
 
         # don't try to render a visualization to the notebook if we're not in one
@@ -489,17 +501,25 @@ class Protocol(object):
         """
         Executes the procedure.
 
-        # Arguments
-        - `dry_run`: Whether to simulate the experiment or actually perform it. Defaults to `False`, which means executing the protocol on real hardware. If an integer greater than zero, the dry run will execute at that many times speed.
-        - `verbosity`: The level of logging verbosity. One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity. "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
+        Arguments:
         - `confirm`: Whether to bypass the manual confirmation message before execution.
-        - `strict`: Whether to stop execution upon encountering any errors. If False, errors will be noted but ignored.
+        - `dry_run`: Whether to simulate the experiment or actually perform it.
+          Defaults to `False`, which means executing the protocol on real hardware.
+          If an integer greater than zero, the dry run will execute at that many times speed.
+        - `strict`: Whether to stop execution upon encountering any errors.
+          If False, errors will be noted but ignored.
+        - `verbosity`: The level of logging verbosity.
+          One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity.
+          "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information.
+          However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
 
-        # Returns
-        An `Experiment` object. In a Jupyter notebook, the object yields an interactive visualization. If protocol execution fails for any reason that does not raise an error, the return type is None.
+        Returns:
+        - An `Experiment` object.
+          In a Jupyter notebook, the object yields an interactive visualization.
+          If protocol execution fails for any reason that does not raise an error, the return type is None.
 
-        # Raises
-        `RuntimeError`: When attempting to execute a protocol on invalid components.
+        Raises:
+        - `RuntimeError`: When attempting to execute a protocol on invalid components.
         """
 
         # If protocol is executing, return an error

@@ -8,9 +8,12 @@ class Pump(ActiveComponent):
     """
     A generic pumping device whose primary feature is that it moves fluid.
 
+    Arguments:
+    - `name`: The name of the pump.
+
     Attributes:
-    - `name` (`str`): The name of the pump.
-    - `rate` (`pint.Quantity`): The flow rate of the pump. Must be of the dimensionality of volume/time.
+    - `name`: The name of the pump.
+    - `rate`: The flow rate of the pump as a `pint.Quantity`. Must be of the dimensionality of volume/time.
     """
 
     def __init__(self, name: Optional[str] = None):

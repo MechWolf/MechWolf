@@ -7,11 +7,14 @@ class Component(object):
     """
     One of the individial, irreducible parts of a flow chemistry setup.
 
-    All components in an `Apparatus` must be of type `Component`. However, it is unlikely that a user will directly
-    instantiate a `Component`.
+    All components in an `Apparatus` must be of type `Component`.
+    However, it is unlikely that a user will directly instantiate a `Component`.
+
+    Arguments:
+    - `name`: The name of the component.
 
     Attributes:
-    - name (str, optional): The name of the component.
+    - `name`: The name of the component.
     """
 
     _id_counter = 0

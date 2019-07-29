@@ -7,10 +7,14 @@ class Valve(ActiveComponent):
     """
     A generic valve.
 
+    Arguments:
+    - `mapping`: The mapping from components to their integer port numbers.
+    - `name`: The name of the valve.
+
     Attributes:
-    - `mapping` (`dict`): The mapping from components to their integer port numbers.
-    - `name` (`str`, optional): The name of the Valve.
-    - `setting` (`int`): The position of the valve.
+    - `mapping`: The mapping from components to their integer port numbers.
+    - `name`: The name of the valve.
+    - `setting`: The position of the valve as an int (mapped via `mapping`).
     """
 
     def __init__(
@@ -25,7 +29,7 @@ class Valve(ActiveComponent):
 
     def base_state(self) -> dict:
         """
-        Default to the first setting.
+        Default to `setting=1`.
 
         This is an arbitrary choice but is guaranteed to be a valid setting.
         """

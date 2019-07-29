@@ -22,20 +22,22 @@ class Apparatus(object):
     The same components may be organized into multiple distinct apparatuses, depending on the connections between them.
     :::
 
-    Attributes:
-    - `network`: A list of tuples in the form `(from_component, to_component, tube)` describing the configuration of the apparatus.
-    - `components` (set): The components that make up the apparatus.
+    Arguments:
+    - `name`: The name of the apparatus. Defaults to "Apparatus_X" where *X* is apparatus count. This should be short and sweet.
+    - `description`: A description of the apparatus. Can be as long and wordy as you want.
 
-    See also the arguments of `__init__()` for more attributes.
+    Attributes:
+    - `components`: A set containing the components that make up the apparatus.
+    - `description`: A description of the apparatus. Can be as long and wordy as you want.
+    - `name`: The name of the apparatus. Defaults to "Apparatus_X" where *X* is apparatus count. This should be short and sweet.
+    - `network`: A list of tuples in the form `(from_component, to_component, tube)` describing the configuration of the apparatus.
     """
 
     _id_counter = 0
 
     def __init__(self, name: Optional[str] = None, description: Optional[str] = None):
         """
-        # Arguments
-        - `name`: The name of the apparatus. Defaults to "Apparatus_X" where *X* is apparatus count. This should be short and sweet.
-        - `description`: A description of the apparatus. Can be as long and wordy as you want.
+        See the main docstring.
         """
         self.network: List[Connection] = []
         self.components: Set[Component] = set()
@@ -96,14 +98,15 @@ class Apparatus(object):
         tube: Tube,
     ) -> None:
         """
-        Adds connections to the apparatus. If both `from_component` and `to_component` are iterables, then their Cartesian product will be added to the apparatus.
+        Adds connections to the apparatus.
+        If both `from_component` and `to_component` are iterables, then their Cartesian product will be added to the apparatus.
 
-        # Arguments
+        Arguments:
         - `from_component`: The `Component` from which the flow is originating. If an iterable, all items in the iterable will be connected to the same component.
         - `to_component`: The `Component` where the flow is going. If an iterable, all items in the iterable will be connected to the same component.
         - `tube`: `Tube` that connects the components.
 
-        # Raises
+        Raises:
         - `ValueError`: When the connection being added is invalid.
         """
 
@@ -151,16 +154,16 @@ class Apparatus(object):
 
         For full list of acceptable Graphviz attributes, see [the graphviz.org docs](http://www.graphviz.org/doc/info/attrs.html) and [its Python API's docs](http://graphviz.readthedocs.io/en/stable/manual.html#attributes).
 
-        # Arguments
-        - `title`: Whether to show the title in the output. Defaults to True. If a string, the title to use for the output.
-        - `label_tubes`: Whether to label the tubes between components with the length, inner diameter, and outer diameter.
+        Arguments:
         - `describe_vessels`: Whether to display the names or content descriptions of `Vessel` components.
-        - `rankdir`: The direction of the graph. Use `LR` for left to right and `TD` for top down.
-        - `node_attr`: Controls the appearance of the nodes (components) of the Apparatus. Must be of the form `{"attribute": "value"}`.
         - `edge_attr`: Controls the appearance of the edges (tubes) of the Apparatus. Must be of the form `{"attribute": "value"}`.
-        - `graph_attr`: Controls the appearance of the Apparatus. Must be of the form `{"attribute": "value"}`. To get orthogonal splines (*i.e.* edges with sharp corners), pass `splines="ortho"`. To increase the separation between components, set `nodesep = "0.5"` or similar.
         - `file_format`: The output format of the graph, either "pdf" or "png".
         - `filename`: The name of the output file. Defaults to the name of the apparatus.
+        - `graph_attr`: Controls the appearance of the Apparatus. Must be of the form `{"attribute": "value"}`. To get orthogonal splines (*i.e.* edges with sharp corners), pass `splines="ortho"`. To increase the separation between components, set `nodesep = "0.5"` or similar.
+        - `label_tubes`: Whether to label the tubes between components with the length, inner diameter, and outer diameter.
+        - `node_attr`: Controls the appearance of the nodes (components) of the Apparatus. Must be of the form `{"attribute": "value"}`.
+        - `rankdir`: The direction of the graph. Use `LR` for left to right and `TD` for top down.
+        - `title`: Whether to show the title in the output. Defaults to True. If a string, the title to use for the output.
         """
         f = Digraph(
             name=self.name,
@@ -215,11 +218,11 @@ class Apparatus(object):
         """
         Prints a summary table of the apparatus.
 
-        # Arguments
+        Arguments:
         - `style`: Either `gfm` for GitHub-flavored Markdown or `ascii`. If equal to `gfm` and in a Jupyter notebook, returns a rendered HTML version of the GFM table.
 
-        # Returns
-        In Jupyter, a nice HTML table. Otherwise, the output is printed to the terminal.
+        Returns:
+        - In Jupyter, a nice HTML table. Otherwise, the output is printed to the terminal.
         """
 
         if style == "ascii":
@@ -308,8 +311,8 @@ class Apparatus(object):
         Calling this function yourself is likely unnecessary because the `Protocol` class calls it upon instantiation.
         :::
 
-        # Returns
-        Whether the apparatus is valid.
+        Returns:
+        - Whether the apparatus is valid.
         """
 
         # make sure that all of the components are connected
@@ -359,10 +362,10 @@ class Apparatus(object):
         """
         Generates a human-readable description of the apparatus.
 
-        # Returns
-        - `str`: A description of apparatus. When in Jupyter, this string is wrapped in a `IPython.display.Markdown` object for nicer display.
+        Returns:
+        - A description of apparatus. When in Jupyter, this string is wrapped in a `IPython.display.Markdown` object for nicer display.
 
-        # Raises
+        Raises:
         - `RuntimeError`: When a component cannot be described.
         """
 

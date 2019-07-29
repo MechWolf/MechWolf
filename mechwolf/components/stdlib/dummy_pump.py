@@ -11,6 +11,9 @@ class DummyPump(Pump):
     Users should not instantiate a `DummyPump` for use in a `Protocol` because it is not an actual laboratory instrument.
     :::
 
+    Arguments:
+    - `name`: The name of the pump.
+
     Attributes:
     - `name` (`str`): The name of the pump.
     - `rate` (`pint.Quantity`): The flow rate of the pump. Must be of the dimensionality of volume/time.

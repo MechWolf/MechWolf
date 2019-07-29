@@ -14,8 +14,8 @@ class Sensor(ActiveComponent):
     A generic sensor.
 
     Attributes:
-    - name (`str`): The name of the Sensor.
-    - rate (`pint.Quantity`): Data collection rate in Hz. A rate of 0 Hz corresponds to the sensor being off.
+    - `name`: The name of the Sensor.
+    - `rate`: Data collection rate in Hz as a `pint.Quantity`. A rate of 0 Hz corresponds to the sensor being off.
     """
 
     def __init__(self, name: Optional[str] = None):
