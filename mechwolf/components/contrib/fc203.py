@@ -1,6 +1,4 @@
 from ..stdlib.active_component import ActiveComponent
-from .gsioc import GsiocComponent
-
 
 class GilsonFC203(ActiveComponent):
     """
@@ -27,18 +25,25 @@ class GilsonFC203(ActiveComponent):
         self.serial_port = serial_port
         self.unit_id = unit_id
         self.position = 1
+        self.prev_position = 1
 
     def __enter__(self):
+
+        from .gsioc import GsiocInterface
+
         # create the serial connection
-        self.gsioc = GsiocComponent(serial_port=self.serial_port, unit_id=self.unit_id)
+        self.gsioc = GsiocInterface(serial_port=self.serial_port, unit_id=self.unit_id)
 
         self.lock()
         self.gsioc.buffered_command("W1        MechWolf")
-        self.gsioc.buffered_command("W2        ")
+        self.gsioc.buffered_command("W2                ")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        self.gsioc.buffered_command("W1        MechWolf")
+        self.gsioc.buffered_command("W2          Done!   ")
         self.unlock()
+        del self.gsioc
 
     def lock(self):
         self.gsioc.buffered_command("L0")
@@ -46,25 +51,44 @@ class GilsonFC203(ActiveComponent):
     def unlock(self):
         self.gsioc.buffered_command("L1")
 
-    def goto(self, position):
+    async def goto(self, position):
         goto_command = "T" + str(int(position)).zfill(3)
-        print(goto_command)
-        self.gsioc.buffered_command(goto_command)
-        self.gsioc.buffered_command("W2       Collect " + str(position))
+        await self.gsioc.buffered_command_async(goto_command)
+        await self.gsioc.buffered_command_async("W2       Collect " + str(position))
 
-    def drain(self):
-        drain_command = "Y0000"
-        print(drain_command)
-        self.gsioc.buffered_command(drain_command)
-        self.gsioc.buffered_command("W2         Drain")
+    async def drain(self, drain):
+        """
+        Switch to drain.
 
-    def update(self):
-        if self.position == 0:
-            self.drain()
-        else:
-            self.goto(self.position)
+        This moves the head to the drain funnel.
+        """
+
+        if drain :
+            self.prev_position = await self.gsioc.immediate_command_async('T')
+            # Move head to drain rail
+            # Note that this might contaminate samples.
+            await self.gsioc.buffered_command_async("Y0000")
+            await self.gsioc.buffered_command_async("W2         Drain")
+        else :
+            await self.goto(int(self.prev_position))
+
+    async def divert(self, drain):
+        """
+        Activate diverter valve
+
+        Activates the diverter valve.
+        """
+
+        if drain:
+            await self.gsioc.buffered_command_async("V1")
+        else :
+            await self.gsioc.buffered_command_async("V0")
+
+    async def update(self):
+
+        await self.goto(self.position)
 
     def base_state(self):
         """We assume that the collector starts at the drain position.
         """
-        return dict(position=0)
+        return dict(position=1)

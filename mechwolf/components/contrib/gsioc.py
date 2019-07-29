@@ -1,10 +1,20 @@
 try:
-    import serial
+    import aioserial
+    import asyncio
 except ImportError:
     pass
 
+class GsiocInterface(object):
+    """
+    An implementation of GSIOC serial communications protocol.
 
-class GsiocComponent(object):
+    GSIOC is used by many devices made by Gilson and other manufacturers.
+    It runs on the RS-422/485 standard and works well with USB to RS-422
+    adapters by FTDI, e.g. https://www.ftdichip.com/Products/Cables/USBRS422.htm
+
+    For protocol details please see Gilson document LT2181: GSIOC Technical Manual.
+    """
+
     metadata = {
         "author": [
             {
@@ -20,27 +30,37 @@ class GsiocComponent(object):
     }
 
     def __init__(self, serial_port=None, unit_id=0):
-        self.ser = serial.Serial(
+        self.ser = aioserial.AioSerial(
             serial_port, baudrate=19200, parity="E", stopbits=1, timeout=0.02
         )
 
+        # Unit id encodig is offset by 128 per GSIOC specification
         self.gsioc_id = 0x80 + unit_id
 
-        self.version = self.immediate_command("%")
+    def identify(self):
+        """Ask device to identify itself."""
 
-    def __del__(self):
-        self.ser.close()
+        return self.immediate_command("%")
 
-    def reset(self):
-        self.immediate_command("$")
+    async def reset(self):
+        """Send standard reset command."""
+
+        await self.immediate_command("$")
 
     def connect(self):
+        """
+        Connect to a GSIOC device
 
-        # disconnect all slaves
+        Since GSIOC was designed around multiple slaves, even if we have
+        a single device on the bus, we still have to 'connect' to a specific
+        unit_id every time we send out a command.
+        """
+
+        # Disconnect all slaves
         self.ser.write([0xFF])
         self.ser.reset_input_buffer()
 
-        # connect slave with this ID
+        # Connect slave with this ID
         max_try = 3
         for i in range(max_try):
             self.ser.write([self.gsioc_id])
@@ -49,47 +69,131 @@ class GsiocComponent(object):
                 return True
 
         raise RuntimeError(
-            "Device with ID {} did not respond.".format(self.gsioc_id - 128)
+            "GSIOC device with ID {} did not respond.".format(self.gsioc_id - 128)
         )
 
     def immediate_command(self, command):
+        """
+        Send immediate command
+
+        Immediate commands query GSIOC devices for information.
+        """
+
         self.connect()
-        response = ""
 
         self.ser.write(command.encode(encoding="ascii"))
 
         char = self.ser.read()
 
-        while char < b"\x80":
-            response += char.decode(encoding="ascii")
+        response= b''
+        while char < b'\x80':
+            response += char
+            # we ACK the character to get the next one
             self.ser.write([0x06])
             char = self.ser.read()
 
-        return response
+        #Shift the last char down by 128
+        response += bytes([char[0]-128])
+
+        return response.decode(encoding="ascii")
 
     def buffered_command(self, command):
+        """
+        Send buffered command.
+
+        Buffered commands send instructions to a slave device.
+
+        """
+
         self.connect()
 
-        response = b""
+        # Making sure slave is ready
+        echo = b''
+        while echo != b'\n' :
+            self.ser.write(b'\n')
+            echo = self.ser.read()
 
-        # waiting for slave to be ready
-        while response != b"\n":
-            self.ser.write([0x0A])
-            response = self.ser.read()
+        if echo != b'\n' :
+            raise RuntimeError("GSIOC device not ready for buffered command.")
 
-        # slave should echo each char back to us
-        # we terminate command with a \r
 
-        for char in command + "\r":
-            byte = char.encode(encoding="ascii")
+        # Command terminates with a \r
+        for char in command + '\r' :
+            byte = char.encode(encoding='ascii')
             self.ser.write(byte)
-            char = self.ser.read()
+            # Slave should echo each character back per GSIOC spec.
+            echo = self.ser.read()
 
-            if len(char) < 1 or char != byte:
-                raise RuntimeError(
-                    "Device did not respond to buffered command.".format(
-                        self.gsioc_id - 128
-                    )
-                )
+            if echo != byte :
+                raise RuntimeError("GSIOC device did not respond to buffered command.")
 
-        return response
+
+    async def connect_async(self):
+        """
+        Async implementation of GsiocInterface.connect()
+        """
+
+        # Disconnect all slaves
+        await self.ser.write_async([0xFF])
+        self.ser.reset_input_buffer()
+
+        # Connect slave with this ID
+        max_try = 3
+        for i in range(max_try):
+            await self.ser.write_async([self.gsioc_id])
+            response = await self.ser.read_async()
+            if response == bytes([self.gsioc_id]):
+                return True
+
+        raise RuntimeError(
+            "GSIOC device with ID {} did not respond.".format(self.gsioc_id - 128)
+        )
+
+    async def immediate_command_async(self, command):
+        """
+        Async implementation of GsiocInterface.immediate_command()
+        """
+
+        await self.connect_async()
+
+        await self.ser.write_async(command.encode(encoding="ascii"))
+
+        char = await self.ser.read_async()
+
+        response= b''
+        while char < b'\x80':
+            response += char
+            # we ACK the character to get the next one
+            await self.ser.write_async([0x06])
+            char = await self.ser.read_async()
+
+        #Shift the last char down by 128
+        response += bytes([char[0]-128])
+        
+        return response.decode(encoding="ascii")
+
+    async def buffered_command_async(self, command):
+        """
+        Async implementation of GsiocInterface.buffered_command()
+        """
+
+        await self.connect_async()
+
+        # Making sure slave is ready
+        echo = b''
+        while echo != b'\n':
+            await self.ser.write_async(b'\n')
+            echo = await self.ser.read_async()
+
+        if echo != b'\n' :
+            raise RuntimeError("GSIOC device not ready for buffered command.")
+
+        # Command terminates with a \r
+        for char in command + '\r' :
+            byte = char.encode(encoding='ascii')
+            await self.ser.write_async(byte)
+            # Slave should echo each character back per GSIOC spec.
+            echo = await self.ser.read_async()
+
+            if echo != byte :
+                raise RuntimeError("GSIOC device did not respond to buffered command.")
