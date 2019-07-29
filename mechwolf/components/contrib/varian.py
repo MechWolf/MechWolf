@@ -40,7 +40,8 @@ class VarianPump(Pump):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.rate = ureg.parse_expression("0 mL/min")
-        self.update()
+        # Stop pump
+        self.gsioc.buffered_command('X000000')
         self.unlock()
         del self.gsioc
 
