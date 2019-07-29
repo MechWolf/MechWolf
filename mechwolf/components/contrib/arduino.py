@@ -30,10 +30,10 @@ class ArduinoSensor(Sensor):
         self.command = command.encode(encoding="ASCII")
 
     def __enter__(self):
-        import serial
+        import aioserial
 
-        self.ser = serial.Serial(
-            self.serial_port, 115200, parity=serial.PARITY_NONE, stopbits=1
+        self.ser = aioserial.AioSerial(
+            self.serial_port, 115200, parity=aioserial.PARITY_NONE, stopbits=1
         )
 
         # Listen to sensor's self-introduction
@@ -43,19 +43,20 @@ class ArduinoSensor(Sensor):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        # close the serial connection
-        self.ser.close()
+        # Delete the serial object to the object remains pickleable
+        # when it is out of context
+        del self.ser
 
-    def read(self):
+    async def read(self):
 
         # flush in buffer in case we have stale data
-        if self.ser.in_waiting:
-            self.ser.reset_input_buffer()
+        self.ser.reset_input_buffer()
 
         # send the command
-        self.ser.write(self.command)
+        await self.ser.write_async(self.command)
         # read the data and sanitize
-        data = self.ser.readline().decode(encoding="ASCII").strip()
+        data = await self.ser.readline_async()
+        data = data.decode(encoding="ASCII").strip()
 
         try:
             # maybe it is a nice integer (straight from ADC)

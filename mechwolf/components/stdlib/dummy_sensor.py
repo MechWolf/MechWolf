@@ -21,7 +21,7 @@ class DummySensor(Sensor):
         self._unit = "Dimensionless"
         self.counter = 0.0
 
-    def read(self) -> float:
+    async def read(self) -> float:
         """Collect the data."""
         self.counter += (random.random() * 2) - 1
         return self.counter
