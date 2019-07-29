@@ -20,7 +20,7 @@ class GsiocInterface(object):
             {
                 "first_name": "Murat",
                 "last_name": "Ozturk",
-                "email": "hello@littleblack.fish",
+                "email": "muzcuk@gmail.com",
                 "institution": "Indiana University, School of Informatics, Computing and Engineering",
                 "github_username": "littleblackfish",
             }
@@ -34,7 +34,7 @@ class GsiocInterface(object):
             serial_port, baudrate=19200, parity="E", stopbits=1, timeout=0.02
         )
 
-        # Unit id encodig is offset by 128 per GSIOC specification
+        # Unit id encoding is offset by 128 per GSIOC specification
         self.gsioc_id = 0x80 + unit_id
 
     def identify(self):
@@ -169,7 +169,7 @@ class GsiocInterface(object):
 
         #Shift the last char down by 128
         response += bytes([char[0]-128])
-        
+
         return response.decode(encoding="ascii")
 
     async def buffered_command_async(self, command):

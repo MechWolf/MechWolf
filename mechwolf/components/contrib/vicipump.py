@@ -3,10 +3,11 @@ from . import ureg
 
 
 class ViciPump(Pump):
-    """A Vici M50 pump.
+    """
+    A Vici M50 pump
+
     This pump is characterized by the volume of fluid dispensed per revolution
-    which can be found on the certificate of conformance
-    This is specified in ml now, we can perhaps make it a ureg later
+    which can be found on the certificate of conformance.
     """
 
     metadata = {
@@ -14,7 +15,7 @@ class ViciPump(Pump):
             {
                 "first_name": "Murat",
                 "last_name": "Ozturk",
-                "email": "hello@littleblack.fish",
+                "email": "muzcuk@gmail.com",
                 "institution": "Indiana University, School of Informatics, Computing and Engineering",
                 "github_username": "littleblackfish",
             }

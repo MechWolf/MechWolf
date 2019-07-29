@@ -2,7 +2,7 @@ from ..stdlib.active_component import ActiveComponent
 
 class GilsonFC203(ActiveComponent):
     """
-    Controls a Gilson FC203B Fraction collector
+    A Gilson FC203B Fraction collector
     """
 
     metadata = {
@@ -10,7 +10,7 @@ class GilsonFC203(ActiveComponent):
             {
                 "first_name": "Murat",
                 "last_name": "Ozturk",
-                "email": "hello@littleblack.fish",
+                "email": "muzcuk@gmail.com",
                 "institution": "Indiana University, School of Informatics, Computing and Engineering",
                 "github_username": "littleblackfish",
             }
@@ -28,7 +28,6 @@ class GilsonFC203(ActiveComponent):
         self.prev_position = 1
 
     def __enter__(self):
-
         from .gsioc import GsiocInterface
 
         # create the serial connection

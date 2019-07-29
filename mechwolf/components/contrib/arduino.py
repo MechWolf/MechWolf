@@ -1,9 +1,9 @@
 from ..stdlib.sensor import Sensor
 
-
 class ArduinoSensor(Sensor):
     """
     Generic driver for an Arduino based sensor
+
     These devices connect through serial at 115200 baud
     They spit some information upon first connect/reset
     Then they listen for a single byte command
@@ -15,7 +15,7 @@ class ArduinoSensor(Sensor):
             {
                 "first_name": "Murat",
                 "last_name": "Ozturk",
-                "email": "hello@littleblack.fish",
+                "email": "muzcuk@gmail.com",
                 "institution": "Indiana University, School of Informatics, Computing and Engineering",
                 "github_username": "littleblackfish",
             }

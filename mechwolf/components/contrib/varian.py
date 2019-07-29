@@ -2,9 +2,11 @@ from ..stdlib.pump import Pump
 from . import ureg
 
 class VarianPump(Pump):
-    """A Varian pump.
+    """
+    A Varian pump
 
     This is the GSIOC based Varian pump driver.
+    This pump is characterized by the maximum flow rate of the installed head. 
     """
 
     metadata = {
@@ -12,7 +14,7 @@ class VarianPump(Pump):
             {
                 "first_name": "Murat",
                 "last_name": "Ozturk",
-                "email": "hello@littleblack.fish",
+                "email": "muzcuk@gmail.com",
                 "institution": "Indiana University, School of Informatics, Computing and Engineering",
                 "github_username": "littleblackfish",
             }
@@ -29,7 +31,6 @@ class VarianPump(Pump):
         self.unit_id=unit_id
 
     def __enter__(self):
-
         from .gsioc import GsiocInterface
 
         self.gsioc = GsiocInterface(serial_port=self.serial_port, unit_id=self.unit_id)

@@ -8,7 +8,7 @@ class ViciValve(Valve):
             {
                 "first_name": "Murat",
                 "last_name": "Ozturk",
-                "email": "hello@littleblack.fish",
+                "email": "muzcuk@gmail.com",
                 "institution": "Indiana University, School of Informatics, Computing and Engineering",
                 "github_username": "littleblackfish",
             }
@@ -31,8 +31,8 @@ class ViciValve(Valve):
             parity=aioserial.PARITY_NONE,
             stopbits=1,
             timeout=0.2,
-            write_timeout=0.1,
-        )
+            write_timeout=0.1 )
+
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
