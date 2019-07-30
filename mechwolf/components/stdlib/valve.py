@@ -23,6 +23,10 @@ class Valve(ActiveComponent):
         name: Optional[str] = None,
     ):
         super().__init__(name=name)
+
+        # check the mapping's type
+        if not isinstance(mapping, (type(None), Mapping)):
+            raise TypeError(f"Invalid mapping type {type(mapping)} for {repr(self)}.")
         self.mapping = mapping
         self.setting = 1
         self._visualization_shape = "parallelogram"

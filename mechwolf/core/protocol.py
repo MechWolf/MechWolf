@@ -109,17 +109,33 @@ class Protocol(object):
 
         # perform the mapping for valves
         if isinstance(component, Valve) and isinstance(component.mapping, Mapping):
-            try:
-                kwargs["setting"] = component.mapping[kwargs["setting"]]
-            except KeyError:
-                # allow direct specification of valve settings
-                if not isinstance(kwargs["setting"], int):
-                    raise ValueError(f"Invalid setting {kwargs['setting']} for {self}.")
+            setting = kwargs["setting"]
+
+            # the component itself was given
+            if setting in component.mapping:
+                logger.trace(f"{setting} in {repr(component)}'s mapping.")
+                kwargs["setting"] = component.mapping[setting]
+
+            # the component's name was given
+            # in this case, we get the mapped component with that name
+            # we don't have to worry about duplicate names since that's checked later
+            elif setting in [c.name for c in component.mapping]:
+                logger.trace(f"{setting} in {repr(component)}'s mapping.")
+                mapped_component = [c for c in component.mapping if c.name == setting]
+                kwargs["setting"] = component.mapping[mapped_component[0]]
+
+            # the user gave the actual port mapping number
+            elif setting in component.mapping.items() and isinstance(setting, int):
+                logger.trace(f"User supplied manual setting for {component}")
+            else:
+                raise ValueError(f"Invalid setting {setting} for {repr(self)}.")
 
         # don't let users give empty procedures
         if not kwargs:
             raise RuntimeError(
-                "No kwargs supplied. This will not manipulate the state of your sythesizer. Ensure your call to add() is valid."
+                "No kwargs supplied. "
+                "This will not manipulate the state of your sythesizer. "
+                "Ensure your call to add() is valid."
             )
 
         # make sure the component and keywords are valid
@@ -146,8 +162,8 @@ class Protocol(object):
                 component.__dict__[kwarg], type(value)
             ) and not isinstance(component.__dict__[kwarg], ureg.Quantity):
                 raise ValueError(
-                    f"Bad type matching. Expected {kwarg} to be {type(component.__dict__[kwarg])} "
-                    f"but got {value}, which is of type {type(value)}"
+                    f"Bad type matching. Expected '{kwarg}' to be {type(component.__dict__[kwarg])} "
+                    f"but got {repr(value)}, which is of type {type(value)}"
                 )
 
         if stop is not None and duration is not None:
@@ -265,13 +281,8 @@ class Protocol(object):
         """
         output = {}
 
-        if len({c.name for c in self.apparatus._active_components}) != len(
-            self.apparatus._active_components
-        ):
-            raise RuntimeError("Found ActiveComponents with duplicate names.")
-
         # deal only with compiling active components
-        for component in self.apparatus._active_components:
+        for component in self.apparatus[ActiveComponent]:
             # determine the procedures for each component
             component_procedures: List[MutableMapping] = sorted(
                 [x for x in self.procedures if x["component"] == component],

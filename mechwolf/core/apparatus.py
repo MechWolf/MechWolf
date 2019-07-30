@@ -9,7 +9,7 @@ from IPython.display import Markdown
 from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 
 from .. import ureg
-from ..components import ActiveComponent, Component, Tube, Valve, Vessel
+from ..components import Component, Tube, Valve, Vessel
 
 Connection = namedtuple("Connection", ["from_component", "to_component", "tube"])
 
@@ -55,9 +55,21 @@ class Apparatus(object):
     def __str__(self):
         return f"Apparatus {self.name}"
 
-    @property
-    def _active_components(self) -> set:
-        return {x for x in self.components if isinstance(x, ActiveComponent)}
+    def __getitem__(self, item):
+        # when you pass a class
+        if isinstance(item, type):
+            return [
+                component
+                for component in self.components
+                if isinstance(component, item)
+            ]
+        elif isinstance(item, str):
+            try:
+                return [
+                    component for component in self.components if component.name == item
+                ][0]
+            except IndexError:
+                raise KeyError(f"No component named '{item}' in network.")
 
     def _add_single(
         self, from_component: Component, to_component: Component, tube: Tube
@@ -66,12 +78,24 @@ class Apparatus(object):
 
         For args, see add().
         """
-        if not issubclass(from_component.__class__, Component):
-            raise ValueError("From component must be a subclass of Component")
-        if not issubclass(to_component.__class__, Component):
-            raise ValueError("To component must be a subclass of Component")
-        if not issubclass(tube.__class__, Tube):
+        if not isinstance(from_component, Component):
+            raise ValueError("From component must be an instance of Component")
+        if not isinstance(to_component, Component):
+            raise ValueError("To component must be an instance of Component")
+        if not isinstance(tube, Tube):
             raise ValueError("Tube must be an instance of Tube")
+
+        # check for duplicate names
+        try:
+            if self[from_component.name] is not from_component:
+                raise ValueError(f"Component {from_component} has duplicated name")
+        except KeyError:
+            pass
+        try:
+            if self[to_component.name] is not to_component:
+                raise ValueError(f"Component {to_component} has duplicated name")
+        except KeyError:
+            pass
 
         if (
             Connection(
