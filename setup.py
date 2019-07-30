@@ -44,7 +44,6 @@ setup(
         "terminaltables",
         "vega",
         "xxhash",
-        "aioserial",
     ],
     extras_require={
         "dev": [
