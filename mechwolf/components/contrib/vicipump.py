@@ -24,7 +24,7 @@ class ViciPump(Pump):
         "supported": True,
     }
 
-    def __init__(self, name, serial_port, volume_per_rev):
+    def __init__(self, serial_port, volume_per_rev, name=None):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
         self.serial_port = serial_port

@@ -6,7 +6,7 @@ class VarianPump(Pump):
     A Varian pump
 
     This is the GSIOC based Varian pump driver.
-    This pump is characterized by the maximum flow rate of the installed head. 
+    This pump is characterized by the maximum flow rate of the installed head.
     """
 
     metadata = {
@@ -23,7 +23,7 @@ class VarianPump(Pump):
         "supported": True,
     }
 
-    def __init__(self, name, serial_port=None, max_rate="0 mL/min", unit_id=0):
+    def __init__(self, serial_port, max_rate, unit_id=0, name=None ):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
         self.max_rate = ureg.parse_expression(max_rate)

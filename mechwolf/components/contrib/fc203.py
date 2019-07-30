@@ -19,7 +19,7 @@ class GilsonFC203(ActiveComponent):
         "supported": True,
     }
 
-    def __init__(self, name=None, serial_port=None, unit_id=1):
+    def __init__(self, serial_port, name=None, unit_id=1):
         super().__init__(name=name)
 
         self.serial_port = serial_port

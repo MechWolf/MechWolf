@@ -17,7 +17,7 @@ class ViciValve(Valve):
         "supported": True,
     }
 
-    def __init__(self, name=None, mapping={}, serial_port=None):
+    def __init__(self, serial_port, mapping, name=None):
         super().__init__(name=name, mapping=mapping)
         self.serial_port = serial_port
 
