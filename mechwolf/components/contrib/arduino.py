@@ -17,7 +17,7 @@ class ArduinoSensor(Sensor):
 
     Returns:
 
-    ArduinoSensor.read() returns the parsed response, type can be int or float. 
+    ArduinoSensor.read() returns the parsed response, type can be int or float.
 
     """
 

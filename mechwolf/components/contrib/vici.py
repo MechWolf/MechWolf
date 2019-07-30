@@ -1,4 +1,6 @@
-from ..stdlib.valve import Valve
+from typing import Mapping
+
+from ..stdlib import Component, Valve
 
 
 class ViciValve(Valve):
@@ -11,7 +13,7 @@ class ViciValve(Valve):
     Arguments:
 
     - `serial_port`: Serial port through which device is connected
-    - `mapping`: A dict that maps vessels to valve inputs 
+    - `mapping`: A dict that maps vessels to valve inputs
 
     """
 
@@ -29,7 +31,7 @@ class ViciValve(Valve):
         "supported": True,
     }
 
-    def __init__(self, serial_port, mapping, name=None):
+    def __init__(self, serial_port, mapping: Mapping[Component, int], name=None):
         super().__init__(name=name, mapping=mapping)
         self.serial_port = serial_port
 

@@ -12,8 +12,7 @@ class VarianPump(Pump):
     Arguments:
     - `serial_port`: Serial port through which device is connected
     - `max_rate`: Maximum flow rate (of the installed head) e.g. '5 ml/min'
-    - `unit_id` : The GSIOC unit ID set on device (0 by default)
-    
+    - `unit_id`: The GSIOC unit ID set on device (0 by default)
     """
 
     metadata = {

@@ -1,14 +1,11 @@
 import asyncio
 import time
 from typing import Any, AsyncGenerator, Dict, Optional
-from warnings import warn
 
 from loguru import logger
 
 from . import ureg
 from .active_component import ActiveComponent
-
-from IPython import get_ipython
 
 
 class Sensor(ActiveComponent):

@@ -1,9 +1,3 @@
-try:
-    import asyncio
-except ImportError:
-    pass
-
-
 class GsiocInterface(object):
     """
     An implementation of GSIOC serial communications protocol.
@@ -30,6 +24,8 @@ class GsiocInterface(object):
     }
 
     def __init__(self, serial_port=None, unit_id=0):
+        import aioserial
+
         self.ser = aioserial.AioSerial(
             serial_port, baudrate=19200, parity="E", stopbits=1, timeout=0.02
         )

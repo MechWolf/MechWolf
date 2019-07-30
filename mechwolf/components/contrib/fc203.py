@@ -6,10 +6,14 @@ class GilsonFC203(ActiveComponent):
     A Gilson FC203B Fraction collector.
 
     Arguments:
-
     - `serial_port`: Serial port through which device is connected
-    - `unit_id` : The GSIOC unit ID set on device (1 by default)
+    - `unit_id`: The GSIOC unit ID set on device
 
+    Attributes:
+    - `serial_port`: Serial port through which device is connected
+    - `unit_id`: The GSIOC unit ID set on device
+    - `postion`: The fraction collector's current position
+    - `prev_position`:
     """
 
     metadata = {
@@ -58,8 +62,7 @@ class GilsonFC203(ActiveComponent):
         self._gsioc.buffered_command("L1")
 
     async def _goto(self, position):
-        goto_command = "T" + str(int(position)).zfill(3)
-        await self._gsioc.buffered_command_async(goto_command)
+        await self._gsioc.buffered_command_async("T" + str(int(position)).zfill(3))
         await self._gsioc.buffered_command_async("W2       Collect " + str(position))
 
     async def _drain(self, drain):
