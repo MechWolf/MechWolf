@@ -30,6 +30,7 @@ setup(
     tests_require=["pytest"],
     setup_requires=["pytest-runner"],
     install_requires=[
+        "aioserial",
         "altair",
         "bokeh",
         "graphviz",
@@ -39,7 +40,6 @@ setup(
         "loguru",
         "networkx",
         "Pint",
-        "pyserial",
         "PyYAML",
         "terminaltables",
         "vega",
