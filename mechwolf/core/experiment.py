@@ -76,8 +76,8 @@ class Experiment(object):
         self._paused = False
 
         # don't do any of the UI stuff if not in the notebook
-        if get_ipython() is None:
-            return
+        # if get_ipython() is None:
+        #     return
 
         # create pause button
         self._pause_button = widgets.Button(description="Pause", icon="pause")
@@ -146,9 +146,6 @@ class Experiment(object):
             colorize=True,
             format="{level.icon} {message}",
         )
-        logger.level("SUCCESS", icon="✅")
-        logger.level("ERROR", icon="❌")
-        logger.level("TRACE", icon="🔍")
 
     def __str__(self):
         return f"Experiment {self.experiment_id}"

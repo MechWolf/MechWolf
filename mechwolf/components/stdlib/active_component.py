@@ -1,3 +1,5 @@
+import asyncio
+
 from loguru import logger
 
 from . import ureg
@@ -62,7 +64,7 @@ class ActiveComponent(Component):
             f"Please implement a base_state() method for {self} that returns a dict."
         )
 
-    def update(self):
+    async def update(self):
         raise NotImplementedError(f"Please implement an update() method for {self}.")
 
     def validate(self, dry_run: bool) -> None:
@@ -118,9 +120,10 @@ class ActiveComponent(Component):
         # once we've checked everything, it should be good
         if not dry_run:
             self.update_from_params(self.base_state())
-        #        logger.trace(f"Attempting to call update() for {self}. Entering context")
-        #        with self:
-        #            if self.update() is not None:
-        #                raise ValueError("Received return value from update.")
+            logger.trace(f"Attempting to call update() for {self}. Entering context")
+            with self:
+                res = asyncio.run(self.update())
+                if res is not None:
+                    raise ValueError(f"Received return value {res} from update.")
 
         logger.debug(f"{self} is valid")

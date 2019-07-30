@@ -38,6 +38,7 @@ setup(
         "ipywidgets",
         "jupyter",
         "loguru",
+        "nest_asyncio",
         "networkx",
         "Pint",
         "PyYAML",

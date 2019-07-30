@@ -1,6 +1,7 @@
 import asyncio
 import time
 from typing import Any, AsyncGenerator, Dict, Optional
+from warnings import warn
 
 from loguru import logger
 
@@ -64,12 +65,12 @@ class Sensor(ActiveComponent):
             logger.trace("Entering context...")
             with self:
                 logger.trace("Context entered")
-        #            res = task.result()
-        #        if not res:
-        #            warn(
-        #                "Sensor reads should probably return data. "
-        #                f"Currently, {self}.read() does not return anything."
-        #            )
+                res = asyncio.run(self.read())
+                if not res:
+                    warn(
+                        "Sensor reads should probably return data. "
+                        f"Currently, {self}.read() does not return anything."
+                    )
         logger.trace("Performing general component checks...")
         super().validate(dry_run=dry_run)
 

@@ -24,7 +24,7 @@ class Dummy(ActiveComponent):
     def base_state(self) -> dict:
         return dict(active=False)
 
-    def update(self) -> None:
+    async def update(self) -> None:
         if self.active:
             print("Active!")
         else:
