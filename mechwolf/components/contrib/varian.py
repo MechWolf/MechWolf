@@ -33,28 +33,28 @@ class VarianPump(Pump):
     def __enter__(self):
         from .gsioc import GsiocInterface
 
-        self.gsioc = GsiocInterface(serial_port=self.serial_port, unit_id=self.unit_id)
+        self._gsioc = GsiocInterface(serial_port=self.serial_port, unit_id=self.unit_id)
 
-        self.lock()
+        self._lock()
 
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.rate = ureg.parse_expression("0 mL/min")
         # Stop pump
-        self.gsioc.buffered_command('X000000')
-        self.unlock()
-        del self.gsioc
+        self._gsioc.buffered_command('X000000')
+        self._unlock()
+        del self._gsioc
 
-    def lock(self):
-        self.gsioc.buffered_command('L')
-        self.gsioc.buffered_command('W0=        MechWolf')
+    def _lock(self):
+        self._gsioc.buffered_command('L')
+        self._gsioc.buffered_command('W0=        MechWolf')
 
-    def unlock(self) :
-        self.gsioc.buffered_command('U') # unlock keypad
-        self.gsioc.buffered_command('W') # release display
+    def _unlock(self) :
+        self._gsioc.buffered_command('U') # unlock keypad
+        self._gsioc.buffered_command('W') # release display
 
-    async def set_flow(self, flow_rate):
+    async def _set_flow(self, flow_rate):
 
         max_rate = self.max_rate.to(ureg.ml / ureg.min).magnitude
 
@@ -64,11 +64,11 @@ class VarianPump(Pump):
 
         flow_command = 'X'+str(int(percentage)).zfill(6)
 
-        await self.gsioc.buffered_command_async(flow_command)
+        await self._gsioc.buffered_command_async(flow_command)
 
-        await self.gsioc.buffered_command_async('W1=       {} ml/min'.format(flow_rate))
+        await self._gsioc.buffered_command_async('W1=       {} ml/min'.format(flow_rate))
 
 
     async def update(self) -> None:
         new_rate = self.rate.to(ureg.ml / ureg.min).magnitude
-        await self.set_flow(new_rate)
+        await self._set_flow(new_rate)

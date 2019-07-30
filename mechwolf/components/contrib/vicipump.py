@@ -33,7 +33,7 @@ class ViciPump(Pump):
     def __enter__(self):
         import aioserial
 
-        self.ser = aioserial.AioSerial(
+        self._ser = aioserial.AioSerial(
             self.serial_port,
             9600,
             parity=aioserial.PARITY_NONE,
@@ -45,10 +45,10 @@ class ViciPump(Pump):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.rate = ureg.parse_expression("0 mL/min")
-        self.ser.write(b'SL 0\r\n') # Stop pump
-        del self.ser
+        self._ser.write(b'SL 0\r\n') # Stop pump
+        del self._ser
 
-    async def set_flow(self, flow_rate):
+    async def _set_flow(self, flow_rate):
 
         steps_per_rev = 51200
         gear_ratio = 9.86
@@ -60,9 +60,9 @@ class ViciPump(Pump):
 
         flow_command = "SL {}\r\n".format(steps_per_second)
 
-        await self.ser.write_async(flow_command.encode(encoding="ascii"))
+        await self._ser.write_async(flow_command.encode(encoding="ascii"))
 
-        self.ser.reset_input_buffer()
+        self._ser.reset_input_buffer()
 
     async def update(self):
-        await self.set_flow(self.rate)
+        await self._set_flow(self.rate)

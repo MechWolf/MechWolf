@@ -25,7 +25,7 @@ class ViciValve(Valve):
         import aioserial
 
         # create the serial connection
-        self.ser = aioserial.AioSerial(
+        self._ser = aioserial.AioSerial(
             self.serial_port,
             9600,
             parity=aioserial.PARITY_NONE,
@@ -37,9 +37,9 @@ class ViciValve(Valve):
 
     def __exit__(self, exc_type, exc_value, traceback):
         # close the serial connection
-        del self.ser
+        del self._ser
 
-    def get_position(self):
+    def _get_position(self):
         """Returns the position of the valve.
 
         Note:
@@ -50,19 +50,19 @@ class ViciValve(Valve):
         Returns:
             int: The position of the valve.
         """
-        self.ser.reset_input_buffer()
+        self._ser.reset_input_buffer()
 
-        self.ser.write(b'CP\r')
-        response = self.ser.readline()
+        self._ser.write(b'CP\r')
+        response = self._ser.readline()
 
         if response:
             position = int(response[2:4])  # Response is in the form 'CPXX\r'
             return position
         return False
 
-    async def go(self, position) :
+    async def _go(self, position) :
         command = f"GO{position}\r"
-        await self.ser.write_async(command.encode())
+        await self._ser.write_async(command.encode())
 
     async def update(self):
-        await self.go(self.setting)
+        await self._go(self.setting)
