@@ -69,7 +69,7 @@ class GsiocInterface(object):
                 return True
 
         raise RuntimeError(
-            "GSIOC device with ID {} did not respond.".format(self.gsioc_id - 128)
+            f"Unable to connect device with GSIOC unit ID {self.gsioc_id - 128}. Check 'Unit ID' setting on device."
         )
 
     def immediate_command(self, command):
