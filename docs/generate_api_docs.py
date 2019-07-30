@@ -19,8 +19,53 @@ def obj_to_mw_doc(obj):
 
 def document_class(cls):
     res = "---\neditLink: false\n---\n"  # the YAML header
-    res += f"# {cls.__name__}\n\n"  # the title of the class
+    res += f"# {cls.__name__}"  # the title of the class
+
+    # add badges, if applicable
+    try:
+        if cls.metadata["stability"] == "stable" and cls["supported"]:
+            res += ' <Badge text="Supported" type="tip"/>'
+        if cls.metadata["stability"] == "beta":
+            res += ' <Badge text="Beta" type="warn"/>'
+        if not cls.metadata["supported"]:
+            res += ' <Badge text="Unsupported" type="error"/>'
+        res += "\n\n"
+    # core and stdlib classes don't have metadata right now
+    except AttributeError:
+        res += "\n\n"
+
     res += obj_to_mw_doc(cls) + "\n"  # get the docstring
+
+    # add contact info, if possible
+    try:
+        cls.metadata
+        res += f"""This component was built and {"is" if cls.metadata["supported"] else "was"} maintained by:
+
+<table>
+  <tr>
+    <th>Author</th>
+    <th>Institution</th>
+    <th>GitHub</th>
+  </tr>
+"""
+        for author in cls.metadata["author"]:
+            res += f"""
+<tr>
+  <td>
+    <a href='mailto:{author['email']}?subject={cls.__name__}'>{author['first_name']} {author['last_name']}</a>
+  </td>
+  <td>
+    {author["institution"]}
+  </td>
+  <td>
+    <a href="https://github.com/{author["github_username"]}">@{author["github_username"]}</a>
+  </td>
+</tr>
+"""
+        res += "</table>\n\n"
+    except AttributeError:
+        pass
+
     for method in inspect.getmembers(cls):  # now repeat for the methods
         if (
             not inspect.isfunction(method[1])
