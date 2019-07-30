@@ -36,9 +36,9 @@ class ActiveComponent(Component):
 
         """
         for key, value in params.items():
-            try:
+            if isinstance(getattr(self, key), ureg.Quantity):
                 setattr(self, key, ureg.parse_expression(value))
-            except BaseException:
+            else:
                 setattr(self, key, value)
 
     def base_state(self) -> dict:
