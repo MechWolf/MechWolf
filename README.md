@@ -5,12 +5,13 @@ MechWolf
 </h1>
 
 <div align="center">
-<a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.7-blue.svg?style=flat-square" alt="Python version" /></a>
-<a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/chat-on%20gitter-brightgreen.svg?style=flat-square" alt="Gitter chat" /></a>
-<a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/DOI-to%20be%20determined-brightgreen.svg?style=flat-square" alt="DOI" /></a>
-<a href="https://github.com/Benjamin-Lee/MechWolf/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat-square" alt="GPLv3 license" /></a>
-<img src="https://img.shields.io/travis/Benjamin-Lee/MechWolf.svg?style=flat-square" alt="Python version"/>
-<a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square"></a>
+<a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.7-blue.svg" alt="Python version" /></a>
+<a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/chat-on%20gitter-brightgreen.svg" alt="Gitter chat" /></a>
+<a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/DOI-to%20be%20determined-brightgreen.svg" alt="DOI" /></a>
+<a href="https://github.com/Benjamin-Lee/MechWolf/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GPLv3 license" /></a>
+<img src="https://img.shields.io/travis/Benjamin-Lee/MechWolf.svg" alt="Travis status"/>
+<a href="https://mechwolf.netlify.com"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeveloper.oswaldlabs.com%2Fnetlify-status%2F39a2d45e-f621-4e8d-afed-3ae2ee4b9364" alt="Netlify"/></a>
+<a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
 </div>
 <br>
