@@ -117,8 +117,8 @@ class Apparatus(object):
 
     def add(
         self,
-        from_component: Union[Component, Iterable],
-        to_component: Union[Component, Iterable],
+        from_component: Union[Component, Iterable[Component]],
+        to_component: Union[Component, Iterable[Component]],
         tube: Tube,
     ) -> None:
         """
