@@ -1,5 +1,4 @@
 try:
-    import aioserial
     import asyncio
 except ImportError:
     pass
