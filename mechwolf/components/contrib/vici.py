@@ -2,7 +2,18 @@ from ..stdlib.valve import Valve
 
 
 class ViciValve(Valve):
-    """Controls a VICI Valco Valve"""
+    """
+    A VICI Universal Electric Actuator
+
+    This is used with VICI switching valves.
+    Please see: https://www.vici.com/act/ua.php
+
+    Arguments:
+
+    - `serial_port`: Serial port through which device is connected
+    - `mapping`: A dict that maps vessels to valve inputs 
+
+    """
 
     metadata = {
         "author": [

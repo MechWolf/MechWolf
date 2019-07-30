@@ -6,8 +6,13 @@ class ViciPump(Pump):
     """
     A Vici M50 pump
 
-    This pump is characterized by the volume of fluid dispensed per revolution
-    which can be found on the certificate of conformance.
+    Please see : https://www.vici.com/liqhand/m6.php
+
+
+    - `serial_port`: Serial port through which device is connected
+    - `volume_per_rev`: Volume of fluid dispensed per revolution which can be
+    found on the certificate of conformance. e.g.
+
     """
 
     metadata = {

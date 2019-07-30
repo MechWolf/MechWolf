@@ -3,7 +3,13 @@ from ..stdlib.active_component import ActiveComponent
 
 class GilsonFC203(ActiveComponent):
     """
-    A Gilson FC203B Fraction collector
+    A Gilson FC203B Fraction collector.
+
+    Arguments:
+
+    - `serial_port`: Serial port through which device is connected
+    - `unit_id` : The GSIOC unit ID set on device (1 by default)
+
     """
 
     metadata = {

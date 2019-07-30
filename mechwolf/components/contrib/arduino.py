@@ -3,12 +3,22 @@ from ..stdlib.sensor import Sensor
 
 class ArduinoSensor(Sensor):
     """
-    Generic driver for an Arduino based sensor
+    Generic driver for an Arduino based sensor.
 
     These devices connect through serial at 115200 baud
-    They spit some information upon first connect/reset
-    Then they listen for a single byte command
-    They spit out some data in ASCII in return.
+    They introduce themselves upon first connect/reset
+    They listen for a single byte command in the main loop().
+    When commanded, they respond with some ASCII data.
+
+    Arguments:
+
+    - `serial_port`: Serial port through which device is connected
+    - `command` : Command to be sent to device to request reading. '*' by default.
+
+    Returns:
+
+    ArduinoSensor.read() returns the parsed response, type can be int or float. 
+
     """
 
     metadata = {
