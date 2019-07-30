@@ -39,13 +39,14 @@ class ViciPump(Pump):
             parity=aioserial.PARITY_NONE,
             stopbits=1,
             timeout=0.1,
-            write_timeout=0.1 )
+            write_timeout=0.1,
+        )
 
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.rate = ureg.parse_expression("0 mL/min")
-        self._ser.write(b'SL 0\r\n') # Stop pump
+        self._ser.write(b"SL 0\r\n")  # Stop pump
         del self._ser
 
     async def _set_flow(self, flow_rate):

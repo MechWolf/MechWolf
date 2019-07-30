@@ -1,6 +1,7 @@
 from ..stdlib.pump import Pump
 from . import ureg
 
+
 class VarianPump(Pump):
     """
     A Varian pump
@@ -23,12 +24,12 @@ class VarianPump(Pump):
         "supported": True,
     }
 
-    def __init__(self, serial_port, max_rate, unit_id=0, name=None ):
+    def __init__(self, serial_port, max_rate, unit_id=0, name=None):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
         self.max_rate = ureg.parse_expression(max_rate)
         self.serial_port = serial_port
-        self.unit_id=unit_id
+        self.unit_id = unit_id
 
     def __enter__(self):
         from .gsioc import GsiocInterface
@@ -42,17 +43,17 @@ class VarianPump(Pump):
     def __exit__(self, exc_type, exc_value, traceback):
         self.rate = ureg.parse_expression("0 mL/min")
         # Stop pump
-        self._gsioc.buffered_command('X000000')
+        self._gsioc.buffered_command("X000000")
         self._unlock()
         del self._gsioc
 
     def _lock(self):
-        self._gsioc.buffered_command('L')
-        self._gsioc.buffered_command('W0=        MechWolf')
+        self._gsioc.buffered_command("L")
+        self._gsioc.buffered_command("W0=        MechWolf")
 
-    def _unlock(self) :
-        self._gsioc.buffered_command('U') # unlock keypad
-        self._gsioc.buffered_command('W') # release display
+    def _unlock(self):
+        self._gsioc.buffered_command("U")  # unlock keypad
+        self._gsioc.buffered_command("W")  # release display
 
     async def _set_flow(self, flow_rate):
 
@@ -62,12 +63,13 @@ class VarianPump(Pump):
         # where 100000 = 100% of the maximum pump flow rate.
         percentage = 100000 * flow_rate / max_rate
 
-        flow_command = 'X'+str(int(percentage)).zfill(6)
+        flow_command = "X" + str(int(percentage)).zfill(6)
 
         await self._gsioc.buffered_command_async(flow_command)
 
-        await self._gsioc.buffered_command_async('W1=       {} ml/min'.format(flow_rate))
-
+        await self._gsioc.buffered_command_async(
+            "W1=       {} ml/min".format(flow_rate)
+        )
 
     async def update(self) -> None:
         new_rate = self.rate.to(ureg.ml / ureg.min).magnitude

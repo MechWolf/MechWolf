@@ -1,5 +1,6 @@
 from ..stdlib.valve import Valve
 
+
 class ViciValve(Valve):
     """Controls a VICI Valco Valve"""
 
@@ -31,7 +32,8 @@ class ViciValve(Valve):
             parity=aioserial.PARITY_NONE,
             stopbits=1,
             timeout=0.2,
-            write_timeout=0.1 )
+            write_timeout=0.1,
+        )
 
         return self
 
@@ -52,7 +54,7 @@ class ViciValve(Valve):
         """
         self._ser.reset_input_buffer()
 
-        self._ser.write(b'CP\r')
+        self._ser.write(b"CP\r")
         response = self._ser.readline()
 
         if response:
@@ -60,7 +62,7 @@ class ViciValve(Valve):
             return position
         return False
 
-    async def _go(self, position) :
+    async def _go(self, position):
         command = f"GO{position}\r"
         await self._ser.write_async(command.encode())
 

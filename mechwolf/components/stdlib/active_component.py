@@ -118,9 +118,9 @@ class ActiveComponent(Component):
         # once we've checked everything, it should be good
         if not dry_run:
             self.update_from_params(self.base_state())
-    #        logger.trace(f"Attempting to call update() for {self}. Entering context")
-    #        with self:
-    #            if self.update() is not None:
-    #                raise ValueError("Received return value from update.")
+        #        logger.trace(f"Attempting to call update() for {self}. Entering context")
+        #        with self:
+        #            if self.update() is not None:
+        #                raise ValueError("Received return value from update.")
 
         logger.debug(f"{self} is valid")

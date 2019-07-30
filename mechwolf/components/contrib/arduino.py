@@ -1,5 +1,6 @@
 from ..stdlib.sensor import Sensor
 
+
 class ArduinoSensor(Sensor):
     """
     Generic driver for an Arduino based sensor

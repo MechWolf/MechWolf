@@ -10,6 +10,7 @@ from .active_component import ActiveComponent
 
 from IPython import get_ipython
 
+
 class Sensor(ActiveComponent):
     """
     A generic sensor.
@@ -66,12 +67,12 @@ class Sensor(ActiveComponent):
             logger.trace("Entering context...")
             with self:
                 logger.trace("Context entered")
-    #            res = task.result()
-    #        if not res:
-    #            warn(
-    #                "Sensor reads should probably return data. "
-    #                f"Currently, {self}.read() does not return anything."
-    #            )
+        #            res = task.result()
+        #        if not res:
+        #            warn(
+        #                "Sensor reads should probably return data. "
+        #                f"Currently, {self}.read() does not return anything."
+        #            )
         logger.trace("Performing general component checks...")
         super().validate(dry_run=dry_run)
 

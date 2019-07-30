@@ -1,5 +1,6 @@
 from ..stdlib.active_component import ActiveComponent
 
+
 class GilsonFC203(ActiveComponent):
     """
     A Gilson FC203B Fraction collector
@@ -62,13 +63,13 @@ class GilsonFC203(ActiveComponent):
         This moves the head to the drain funnel.
         """
 
-        if drain :
-            self.prev_position = await self._gsioc.immediate_command_async('T')
+        if drain:
+            self.prev_position = await self._gsioc.immediate_command_async("T")
             # Move head to drain rail
             # Note that this might contaminate samples.
             await self._gsioc.buffered_command_async("Y0000")
             await self._gsioc.buffered_command_async("W2         Drain")
-        else :
+        else:
             await self._goto(int(self.prev_position))
 
     async def _divert(self, drain):
@@ -80,7 +81,7 @@ class GilsonFC203(ActiveComponent):
 
         if drain:
             await self._gsioc.buffered_command_async("V1")
-        else :
+        else:
             await self._gsioc.buffered_command_async("V0")
 
     async def update(self):

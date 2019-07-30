@@ -4,6 +4,7 @@ try:
 except ImportError:
     pass
 
+
 class GsiocInterface(object):
     """
     An implementation of GSIOC serial communications protocol.
@@ -85,15 +86,15 @@ class GsiocInterface(object):
 
         char = self.ser.read()
 
-        response= b''
-        while char < b'\x80':
+        response = b""
+        while char < b"\x80":
             response += char
             # we ACK the character to get the next one
             self.ser.write([0x06])
             char = self.ser.read()
 
-        #Shift the last char down by 128
-        response += bytes([char[0]-128])
+        # Shift the last char down by 128
+        response += bytes([char[0] - 128])
 
         return response.decode(encoding="ascii")
 
@@ -108,25 +109,23 @@ class GsiocInterface(object):
         self.connect()
 
         # Making sure slave is ready
-        echo = b''
-        while echo != b'\n' :
-            self.ser.write(b'\n')
+        echo = b""
+        while echo != b"\n":
+            self.ser.write(b"\n")
             echo = self.ser.read()
 
-        if echo != b'\n' :
+        if echo != b"\n":
             raise RuntimeError("GSIOC device not ready for buffered command.")
 
-
         # Command terminates with a \r
-        for char in command + '\r' :
-            byte = char.encode(encoding='ascii')
+        for char in command + "\r":
+            byte = char.encode(encoding="ascii")
             self.ser.write(byte)
             # Slave should echo each character back per GSIOC spec.
             echo = self.ser.read()
 
-            if echo != byte :
+            if echo != byte:
                 raise RuntimeError("GSIOC device did not respond to buffered command.")
-
 
     async def connect_async(self):
         """
@@ -160,15 +159,15 @@ class GsiocInterface(object):
 
         char = await self.ser.read_async()
 
-        response= b''
-        while char < b'\x80':
+        response = b""
+        while char < b"\x80":
             response += char
             # we ACK the character to get the next one
             await self.ser.write_async([0x06])
             char = await self.ser.read_async()
 
-        #Shift the last char down by 128
-        response += bytes([char[0]-128])
+        # Shift the last char down by 128
+        response += bytes([char[0] - 128])
 
         return response.decode(encoding="ascii")
 
@@ -180,20 +179,20 @@ class GsiocInterface(object):
         await self.connect_async()
 
         # Making sure slave is ready
-        echo = b''
-        while echo != b'\n':
-            await self.ser.write_async(b'\n')
+        echo = b""
+        while echo != b"\n":
+            await self.ser.write_async(b"\n")
             echo = await self.ser.read_async()
 
-        if echo != b'\n' :
+        if echo != b"\n":
             raise RuntimeError("GSIOC device not ready for buffered command.")
 
         # Command terminates with a \r
-        for char in command + '\r' :
-            byte = char.encode(encoding='ascii')
+        for char in command + "\r":
+            byte = char.encode(encoding="ascii")
             await self.ser.write_async(byte)
             # Slave should echo each character back per GSIOC spec.
             echo = await self.ser.read_async()
 
-            if echo != byte :
+            if echo != byte:
                 raise RuntimeError("GSIOC device did not respond to buffered command.")
