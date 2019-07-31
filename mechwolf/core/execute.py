@@ -199,7 +199,7 @@ async def monitor(sensor: Sensor, experiment: Experiment, dry_run: bool, strict:
     sensor._stop = False
     try:
         async for result in sensor.monitor(dry_run=dry_run):
-            experiment.update(
+            await experiment.update(
                 device=sensor.name,
                 datapoint=Datapoint(
                     data=result["data"],

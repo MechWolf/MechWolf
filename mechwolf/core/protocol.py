@@ -97,6 +97,7 @@ class Protocol(object):
         self._file_logger_id: Optional[int] = None
         self._is_executing = False
         self._log_file: Union[IO, str, None, os.PathLike] = None
+        self._data_file: Optional[os.PathLike] = None
 
     def __repr__(self):
         return f"<{self.__str__()}>"
@@ -296,6 +297,9 @@ class Protocol(object):
             # ensure that an execution without logging after one with it doesn't break
             self._log_file = None
             self._file_logger_id = None
+        if not is_executing and self._data_file:
+            logger.info("Wrote data to " + str(self._data_file.absolute()))
+            logger._data_file = None
         logger.debug(f"{repr(self)}.is_executing is now {is_executing}")
         self._is_executing = is_executing
 
@@ -544,26 +548,23 @@ class Protocol(object):
         log_file: Union[str, bool, os.PathLike] = True,
         log_file_verbosity: Optional[str] = None,
         log_file_compression: Optional[str] = None,
+        data_file: Union[str, bool, os.PathLike] = True,
     ) -> Experiment:
         """
         Executes the procedure.
 
         Arguments:
         - `confirm`: Whether to bypass the manual confirmation message before execution.
-        - `dry_run`: Whether to simulate the experiment or actually perform it.
-          Defaults to `False`, which means executing the protocol on real hardware.
-          If an integer greater than zero, the dry run will execute at that many times speed.
-        - `strict`: Whether to stop execution upon encountering any errors.
-          If False, errors will be noted but ignored.
-        - `verbosity`: The level of logging verbosity.
-          One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity.
-          "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information.
-          However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
+        - `dry_run`: Whether to simulate the experiment or actually perform it. Defaults to `False`, which means executing the protocol on real hardware. If an integer greater than zero, the dry run will execute at that many times speed.
+        - `strict`: Whether to stop execution upon encountering any errors. If False, errors will be noted but ignored.
+        - `verbosity`: The level of logging verbosity. One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity. "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
+        - `log_file`: The file to write the logs to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.log.jsonl`.
+        - `log_file_verbosity`: How verbose the logs in file should be. By default, it is the same as `verbosity`.
+        - `log_file_compression`: Whether to compress the log file after the experiment.
+        - `data_file`: The file to write the experimental data to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.data.jsonl`.
 
         Returns:
-        - An `Experiment` object.
-          In a Jupyter notebook, the object yields an interactive visualization.
-          If protocol execution fails for any reason that does not raise an error, the return type is None.
+        - An `Experiment` object. In a Jupyter notebook, the object yields an interactive visualization. If protocol execution fails for any reason that does not raise an error, the return type is None.
 
         Raises:
         - `RuntimeError`: When attempting to execute a protocol on invalid components.
@@ -630,6 +631,24 @@ class Protocol(object):
             else:
                 self._log_file = Path(log_file)
 
+        if data_file:
+            # automatically log to the mw directory
+            if data_file is True:
+                mw_path = Path("~/.mechwolf").expanduser()
+                try:
+                    mw_path.mkdir()
+                except FileExistsError:
+                    pass
+                E._data_file = mw_path / Path(E.experiment_id + ".data.jsonl")
+            elif isinstance(data_file, (str, os.PathLike)):
+                E._data_file = Path(data_file)
+            else:
+                raise TypeError(
+                    f"Invalid type {type(data_file)} for data file."
+                    "Expected str or os.PathLike (such as a pathlib.Path object)."
+                )
+
+            self._data_file = E._data_file
         logger.debug("Initiating async execution")
         if get_ipython():
             asyncio.ensure_future(main(experiment=E, dry_run=dry_run, strict=strict))

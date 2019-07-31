@@ -1,6 +1,9 @@
+import json
+import os
 import time
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
+import aiofiles
 import ipywidgets as widgets
 from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
@@ -74,6 +77,7 @@ class Experiment(object):
         self._bound_logger = None
         self._plot_height = 300
         self._paused = False
+        self._data_file: Optional[os.PathLike] = None
 
         # don't do any of the UI stuff if not in the notebook
         # if get_ipython() is None:
@@ -153,12 +157,25 @@ class Experiment(object):
     def __repr__(self):
         return f"<Experiment {self.experiment_id}>"
 
-    def update(self, device: str, datapoint):
+    async def update(self, device: str, datapoint):
 
         # If a chart has been registered to the device, update it.
         if device not in self.data:
             self.data[device] = []
         self.data[device].append(datapoint)
+
+        if self._data_file is not None:
+            line = json.dumps(
+                {
+                    "device": device,
+                    "timestamp": datapoint.timestamp,
+                    "experiment_elapsed_time": datapoint.experiment_elapsed_time,
+                    "data": datapoint.data,
+                    "unit": self.protocol.apparatus[device]._unit,
+                }
+            )
+            async with aiofiles.open(self._data_file, "a+") as f:
+                await f.write(line + "\n")
 
         if get_ipython() is None:
             return

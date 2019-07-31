@@ -30,6 +30,7 @@ setup(
     tests_require=["pytest"],
     setup_requires=["pytest-runner"],
     install_requires=[
+        "aiofiles",
         "aioserial",
         "altair",
         "bokeh",
