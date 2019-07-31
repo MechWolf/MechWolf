@@ -141,7 +141,7 @@ class Protocol(object):
                 kwargs["setting"] = component.mapping[mapped_component[0]]
 
             # the user gave the actual port mapping number
-            elif setting in component.mapping.items() and isinstance(setting, int):
+            elif setting in component.mapping.values() and isinstance(setting, int):
                 logger.trace(f"User supplied manual setting for {component}")
             else:
                 raise ValueError(f"Invalid setting {setting} for {repr(component)}.")
