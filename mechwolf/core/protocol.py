@@ -144,7 +144,7 @@ class Protocol(object):
             elif setting in component.mapping.items() and isinstance(setting, int):
                 logger.trace(f"User supplied manual setting for {component}")
             else:
-                raise ValueError(f"Invalid setting {setting} for {repr(self)}.")
+                raise ValueError(f"Invalid setting {setting} for {repr(component)}.")
 
         # don't let users give empty procedures
         if not kwargs:
