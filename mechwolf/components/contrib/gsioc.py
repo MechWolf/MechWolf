@@ -60,7 +60,7 @@ class GsiocInterface(object):
         max_try = 3
         for i in range(max_try):
             self.ser.write([self.gsioc_id])
-            response = self.ser._read()
+            response = self.ser.read()
             if response == bytes([self.gsioc_id]):
                 return True
 
@@ -79,14 +79,14 @@ class GsiocInterface(object):
 
         self.ser.write(command.encode(encoding="ascii"))
 
-        char = self.ser._read()
+        char = self.ser.read()
 
         response = b""
         while char < b"\x80":
             response += char
             # we ACK the character to get the next one
             self.ser.write([0x06])
-            char = self.ser._read()
+            char = self.ser.read()
 
         # Shift the last char down by 128
         response += bytes([char[0] - 128])
@@ -107,7 +107,7 @@ class GsiocInterface(object):
         echo = b""
         while echo != b"\n":
             self.ser.write(b"\n")
-            echo = self.ser._read()
+            echo = self.ser.read()
 
         if echo != b"\n":
             raise RuntimeError("GSIOC device not ready for buffered command.")
@@ -117,7 +117,7 @@ class GsiocInterface(object):
             byte = char.encode(encoding="ascii")
             self.ser.write(byte)
             # Slave should echo each character back per GSIOC spec.
-            echo = self.ser._read()
+            echo = self.ser.read()
 
             if echo != byte:
                 raise RuntimeError("GSIOC device did not respond to buffered command.")
