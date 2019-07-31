@@ -31,7 +31,7 @@ class Sensor(ActiveComponent):
         """
         return dict(rate="0 Hz")
 
-    def read(self):
+    async def read(self):
         """
         Collects the data.
         In the generic `Sensor` implementation, this raises a `NotImplementedError`.
@@ -53,7 +53,7 @@ class Sensor(ActiveComponent):
                 await asyncio.sleep(0.1)  # try again in 100 ms
             else:
                 if not dry_run:
-                    yield {"data": self.read(), "timestamp": time.time()}
+                    yield {"data": await self.read(), "timestamp": time.time()}
                 else:
                     yield {"data": "simulated read", "timestamp": time.time()}
                 await asyncio.sleep(1 / self.rate.to_base_units().magnitude)
@@ -65,16 +65,15 @@ class Sensor(ActiveComponent):
             logger.trace("Entering context...")
             with self:
                 logger.trace("Context entered")
-                res = self.read()
-                logger.trace("Read successful")
-            if not res:
-                warn(
-                    "Sensor reads should probably return data. "
-                    f"Currently, {self}.read() does not return anything."
-                )
+                res = asyncio.run(self.read())
+                if not res:
+                    warn(
+                        "Sensor reads should probably return data. "
+                        f"Currently, {self}.read() does not return anything."
+                    )
         logger.trace("Performing general component checks...")
         super().validate(dry_run=dry_run)
 
-    def update(self) -> None:
+    async def update(self) -> None:
         # sensors don't have an update method; they implement read
         pass

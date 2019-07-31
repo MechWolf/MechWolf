@@ -3,7 +3,16 @@ from . import ureg
 
 
 class VarianPump(Pump):
-    """A Varian pump.
+    """
+    A Varian pump
+
+    This is the GSIOC based Varian pump driver.
+    This pump is characterized by the maximum flow rate of the installed head.
+
+    Arguments:
+    - `serial_port`: Serial port through which device is connected
+    - `max_rate`: Maximum flow rate (of the installed head) e.g. '5 ml/min'
+    - `unit_id`: The GSIOC unit ID set on device (0 by default)
     """
 
     metadata = {
@@ -11,7 +20,7 @@ class VarianPump(Pump):
             {
                 "first_name": "Murat",
                 "last_name": "Ozturk",
-                "email": "hello@littleblack.fish",
+                "email": "muzcuk@gmail.com",
                 "institution": "Indiana University, School of Informatics, Computing and Engineering",
                 "github_username": "littleblackfish",
             }
@@ -20,52 +29,53 @@ class VarianPump(Pump):
         "supported": True,
     }
 
-    def __init__(
-        self, name=None, unit_id="0x80", serial_port=None, max_rate="0 mL/min"
-    ):
+    def __init__(self, serial_port, max_rate, unit_id=0, name=None):
         super().__init__(name=name)
         self.rate = ureg.parse_expression("0 ml/min")
         self.max_rate = ureg.parse_expression(max_rate)
         self.serial_port = serial_port
-
-        # VARIAN PUMP SPECIFIC OPTIONS
-        # TODO: MAKE THIS A CONGFIGURABLE OPTION
-        self.pump_id = 0x80
+        self.unit_id = unit_id
 
     def __enter__(self):
-        import serial
+        from .gsioc import GsiocInterface
 
-        self.ser = serial.Serial(self.serial_port)
-        self.ser.baudrate = 19200
-        self.ser.parity = "E"
-        self.ser.stopbits = 1
-        self.ser.timeout = 1
-        self.lock()
+        self._gsioc = GsiocInterface(serial_port=self.serial_port, unit_id=self.unit_id)
+
+        self._lock()
+
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.rate = ureg.parse_expression("0 mL/min")
-        self.update()
-        self.ser.close()
+        # Stop pump
+        self._gsioc.buffered_command("X000000")
+        self._unlock()
+        del self._gsioc
 
-    def lock(self):
-        lock_command = [0xFF, self.pump_id, 0x0A, 0x4C, 0x0D]
-        self.ser.write(lock_command)
-        # print(self.ser.read_all())
+    def _lock(self):
+        self._gsioc.buffered_command("L")
+        self._gsioc.buffered_command("W0=        MechWolf")
 
-    def set_flow(self, flow_rate):
+    def _unlock(self):
+        self._gsioc.buffered_command("U")  # unlock keypad
+        self._gsioc.buffered_command("W")  # release display
+
+    async def _set_flow(self, flow_rate):
 
         max_rate = self.max_rate.to(ureg.ml / ureg.min).magnitude
-        # print(f"rate {flow_rate} max_rate {max_rate}")
-        # Flow rate must be supplied as an string from 000000 to 100000, where 100000 = 100% of the maximum pump flow rate.
-        percentage = 100000 * flow_rate / max_rate
-        # print(f"percentage {percentage}")
-        flow_command = [0xFF, self.pump_id, 0x0A, 0x58]
-        flow_command.extend(list(str(int(percentage)).zfill(6).encode()))
-        flow_command.append(0x0D)
-        # print(flow_command)
-        self.ser.write(flow_command)
 
-    def update(self) -> None:
+        # Flow rate must be supplied as a string from 000000 to 100000
+        # where 100000 = 100% of the maximum pump flow rate.
+        percentage = 100000 * flow_rate / max_rate
+
+        flow_command = "X" + str(int(percentage)).zfill(6)
+
+        await self._gsioc.buffered_command_async(flow_command)
+
+        await self._gsioc.buffered_command_async(
+            "W1=       {} ml/min".format(flow_rate)
+        )
+
+    async def update(self) -> None:
         new_rate = self.rate.to(ureg.ml / ureg.min).magnitude
-        self.set_flow(new_rate)
+        await self._set_flow(new_rate)

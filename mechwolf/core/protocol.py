@@ -559,10 +559,7 @@ class Protocol(object):
         )
         display(E._output_widget)  # type: ignore
 
-        if get_ipython():
-            asyncio.ensure_future(main(experiment=E, dry_run=dry_run, strict=strict))
-        else:
-            asyncio.run(main(experiment=E, dry_run=dry_run, strict=strict))
+        asyncio.run(main(experiment=E, dry_run=dry_run, strict=strict))
 
         return E
 

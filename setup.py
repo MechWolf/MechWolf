@@ -30,6 +30,7 @@ setup(
     tests_require=["pytest"],
     setup_requires=["pytest-runner"],
     install_requires=[
+        "aioserial",
         "altair",
         "bokeh",
         "graphviz",
@@ -37,9 +38,9 @@ setup(
         "ipywidgets",
         "jupyter",
         "loguru",
+        "nest_asyncio",
         "networkx",
         "Pint",
-        "pyserial",
         "PyYAML",
         "terminaltables",
         "vega",

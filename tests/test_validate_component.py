@@ -21,7 +21,7 @@ def test_empty_base_state():
             super().__init__(name=None)
             self.active = False
 
-        def update(self):
+        async def update(self):
             return True
 
         def base_state(self):
@@ -38,7 +38,7 @@ def test_invalid_base_state():
             super().__init__(name=None)
             self.active = False
 
-        def update(self):
+        async def update(self):
             return True
 
         def base_state(self):
@@ -55,7 +55,7 @@ def test_wrong_base_state_dimensionality():
             super().__init__(name=None)
             self.rate = mw.ureg.parse_expression("10 mL/min")
 
-        def update(self):
+        async def update(self):
             return True
 
         def base_state(self):
@@ -72,7 +72,7 @@ def test_passing_class():
             self.active = False
             self.serial_port = serial_port
 
-        def update(self):
+        async def update(self):
             pass
 
         def base_state(self):
@@ -91,7 +91,7 @@ def test_base_state_type():
             self.active = False
             self.serial_port = serial_port
 
-        def update(self):
+        async def update(self):
             return True
 
         def base_state(self):
@@ -107,7 +107,7 @@ def test_base_state_type():
             self.active = False
             self.serial_port = serial_port
 
-        def update(self):
+        async def update(self):
             return True
 
         def base_state(self):
@@ -134,11 +134,59 @@ def test_update_must_return_none():
             super().__init__(name=None)
             self.active = False
 
-        def update(self):
+        async def update(self):
             return False
 
         def base_state(self):
             return dict(active=False)
+
+    Test().validate(dry_run=True)
+    with pytest.raises(ValueError):
+        Test().validate(dry_run=False)
+
+
+def test_default_update():
+    class Test(mw.ActiveComponent):
+        def __init__(self):
+            super().__init__(name=None)
+            self.active = False
+
+        def base_state(self):
+            return dict(active=False)
+
+    Test().validate(dry_run=True)
+    with pytest.raises(NotImplementedError):
+        Test().validate(dry_run=False)
+
+
+def test_sync_update():
+    class Test(mw.ActiveComponent):
+        def __init__(self):
+            super().__init__(name=None)
+            self.active = False
+
+        def update(self):
+            pass
+
+        def base_state(self):
+            return dict(active=False)
+
+    Test().validate(dry_run=True)
+    with pytest.raises(ValueError):
+        Test().validate(dry_run=False)
+
+
+def test_sync_read():
+    class Test(mw.Sensor):
+        def __init__(self, serial_port=None):
+            super().__init__(name=None)
+            self.serial_port = serial_port
+
+        def read(self):
+            return 1
+
+        async def update(self):
+            pass
 
     Test().validate(dry_run=True)
     with pytest.raises(ValueError):
@@ -151,10 +199,10 @@ def test_validate_sensor_with_failing_read():
             super().__init__(name=None)
             self.serial_port = serial_port
 
-        def read(self):
+        async def read(self):
             raise RuntimeError("This component is broken!")
 
-        def update(self):
+        async def update(self):
             pass
 
     Test().validate(dry_run=True)

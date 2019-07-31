@@ -19,7 +19,7 @@ class BrokenDummyComponent(Dummy):
     def __init__(self, name=None):
         super().__init__(name=name)
 
-    def update(self) -> None:
+    async def update(self) -> None:
         if self.active:
             raise RuntimeError
 

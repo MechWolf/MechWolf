@@ -174,7 +174,7 @@ async def wait_and_execute_procedure(
             f" at {procedure['time']}s"
         )
         try:
-            component.update()  # NOTE: This does!
+            await component.update()  # NOTE: This does!
         except Exception as e:
             logger.log(
                 "ERROR" if strict else "WARNING", f"Failed to update {component}!"
