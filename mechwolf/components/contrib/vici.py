@@ -79,5 +79,5 @@ class ViciValve(Valve):
         command = f"GO{position}\r"
         await self._ser.write_async(command.encode())
 
-    async def update(self):
+    async def _update(self):
         await self._go(self.setting)

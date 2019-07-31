@@ -31,7 +31,7 @@ class Valve(ActiveComponent):
         self.setting = 1
         self._visualization_shape = "parallelogram"
 
-    def base_state(self) -> dict:
+    def _base_state(self) -> dict:
         """
         Default to `setting=1`.
 
@@ -39,7 +39,7 @@ class Valve(ActiveComponent):
         """
         return {"setting": 1}
 
-    def validate(self, dry_run):
+    def _validate(self, dry_run):
         if not self.mapping:
             raise ValueError(f"{self} requires a mapping. None provided.")
-        return super().validate(dry_run)
+        return super()._validate(dry_run)

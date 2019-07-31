@@ -21,7 +21,7 @@ class BrokenDummySensor(Sensor):
         self._unit = "Dimensionless"
         self.counter = 0
 
-    async def read(self) -> int:
+    async def _read(self) -> int:
         """Collect the data."""
         self.counter += 1
         if self.counter > 15 and self.rate:

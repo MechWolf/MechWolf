@@ -1,6 +1,6 @@
 from typing import Optional
 
-from . import ureg
+from . import _ureg
 from .active_component import ActiveComponent
 
 
@@ -18,10 +18,10 @@ class Pump(ActiveComponent):
 
     def __init__(self, name: Optional[str] = None):
         super().__init__(name=name)
-        self.rate = ureg.parse_expression("0 ml/min")
+        self.rate = _ureg.parse_expression("0 ml/min")
         self._visualization_shape = "box3d"
 
-    def base_state(self) -> dict:
+    def _base_state(self) -> dict:
         """
         A pump's base state is a flow rate of 0 mL/min.
         """

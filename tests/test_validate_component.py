@@ -9,9 +9,9 @@ def test_validate_component():
         def __init__(self):
             super().__init__()
 
-    Test().validate(dry_run=True)
+    Test()._validate(dry_run=True)
     with pytest.raises(RuntimeError):
-        Test().validate(dry_run=False)
+        Test()._validate(dry_run=False)
 
 
 def test_empty_base_state():
@@ -21,14 +21,14 @@ def test_empty_base_state():
             super().__init__(name=None)
             self.active = False
 
-        async def update(self):
+        async def _update(self):
             return True
 
-        def base_state(self):
+        def _base_state(self):
             return {}
 
     with pytest.raises(ValueError):
-        Test().validate(dry_run=True)
+        Test()._validate(dry_run=True)
 
 
 def test_invalid_base_state():
@@ -38,14 +38,14 @@ def test_invalid_base_state():
             super().__init__(name=None)
             self.active = False
 
-        async def update(self):
+        async def _update(self):
             return True
 
-        def base_state(self):
+        def _base_state(self):
             return dict(rate="10 mL")
 
     with pytest.raises(ValueError):
-        Test().validate(dry_run=True)
+        Test()._validate(dry_run=True)
 
 
 def test_wrong_base_state_dimensionality():
@@ -53,16 +53,16 @@ def test_wrong_base_state_dimensionality():
     class Test(mw.ActiveComponent):
         def __init__(self):
             super().__init__(name=None)
-            self.rate = mw.ureg.parse_expression("10 mL/min")
+            self.rate = mw._ureg.parse_expression("10 mL/min")
 
-        async def update(self):
+        async def _update(self):
             return True
 
-        def base_state(self):
+        def _base_state(self):
             return dict(rate="10 mL")
 
     with pytest.raises(ValueError):
-        Test().validate(dry_run=True)
+        Test()._validate(dry_run=True)
 
 
 def test_passing_class():
@@ -72,15 +72,15 @@ def test_passing_class():
             self.active = False
             self.serial_port = serial_port
 
-        async def update(self):
+        async def _update(self):
             pass
 
-        def base_state(self):
+        def _base_state(self):
             return dict(active=False)
 
     # should pass both as a dry run and as a real run (since update doesn't do anything)
-    Test().validate(dry_run=True)
-    Test().validate(dry_run=False)
+    Test()._validate(dry_run=True)
+    Test()._validate(dry_run=False)
 
 
 def test_base_state_type():
@@ -91,14 +91,14 @@ def test_base_state_type():
             self.active = False
             self.serial_port = serial_port
 
-        async def update(self):
+        async def _update(self):
             return True
 
-        def base_state(self):
+        def _base_state(self):
             return dict(active="10 mL")
 
     with pytest.raises(ValueError):
-        Test().validate(dry_run=True)
+        Test()._validate(dry_run=True)
 
     # not right base_state value type
     class Test(mw.ActiveComponent):
@@ -107,14 +107,14 @@ def test_base_state_type():
             self.active = False
             self.serial_port = serial_port
 
-        async def update(self):
+        async def _update(self):
             return True
 
-        def base_state(self):
+        def _base_state(self):
             return "not a dict"
 
     with pytest.raises(ValueError):
-        Test().validate(dry_run=True)
+        Test()._validate(dry_run=True)
 
 
 def test_validate_sensor_without_read():
@@ -124,8 +124,8 @@ def test_validate_sensor_without_read():
             self.serial_port = serial_port
 
     with pytest.raises(NotImplementedError):
-        Test().validate(dry_run=False)
-    Test().validate(dry_run=True)  # should pass during a dry run
+        Test()._validate(dry_run=False)
+    Test()._validate(dry_run=True)  # should pass during a dry run
 
 
 def test_update_must_return_none():
@@ -134,15 +134,15 @@ def test_update_must_return_none():
             super().__init__(name=None)
             self.active = False
 
-        async def update(self):
+        async def _update(self):
             return False
 
-        def base_state(self):
+        def _base_state(self):
             return dict(active=False)
 
-    Test().validate(dry_run=True)
+    Test()._validate(dry_run=True)
     with pytest.raises(ValueError):
-        Test().validate(dry_run=False)
+        Test()._validate(dry_run=False)
 
 
 def test_default_update():
@@ -151,12 +151,12 @@ def test_default_update():
             super().__init__(name=None)
             self.active = False
 
-        def base_state(self):
+        def _base_state(self):
             return dict(active=False)
 
-    Test().validate(dry_run=True)
+    Test()._validate(dry_run=True)
     with pytest.raises(NotImplementedError):
-        Test().validate(dry_run=False)
+        Test()._validate(dry_run=False)
 
 
 def test_sync_update():
@@ -165,15 +165,15 @@ def test_sync_update():
             super().__init__(name=None)
             self.active = False
 
-        def update(self):
+        def _update(self):
             pass
 
-        def base_state(self):
+        def _base_state(self):
             return dict(active=False)
 
-    Test().validate(dry_run=True)
+    Test()._validate(dry_run=True)
     with pytest.raises(ValueError):
-        Test().validate(dry_run=False)
+        Test()._validate(dry_run=False)
 
 
 def test_sync_read():
@@ -182,15 +182,15 @@ def test_sync_read():
             super().__init__(name=None)
             self.serial_port = serial_port
 
-        def read(self):
+        def _read(self):
             return 1
 
-        async def update(self):
+        async def _update(self):
             pass
 
-    Test().validate(dry_run=True)
+    Test()._validate(dry_run=True)
     with pytest.raises(ValueError):
-        Test().validate(dry_run=False)
+        Test()._validate(dry_run=False)
 
 
 def test_validate_sensor_with_failing_read():
@@ -199,12 +199,12 @@ def test_validate_sensor_with_failing_read():
             super().__init__(name=None)
             self.serial_port = serial_port
 
-        async def read(self):
+        async def _read(self):
             raise RuntimeError("This component is broken!")
 
-        async def update(self):
+        async def _update(self):
             pass
 
-    Test().validate(dry_run=True)
+    Test()._validate(dry_run=True)
     with pytest.raises(RuntimeError):
-        Test().validate(dry_run=False)
+        Test()._validate(dry_run=False)

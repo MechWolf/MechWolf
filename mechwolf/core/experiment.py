@@ -26,7 +26,7 @@ class Experiment(object):
 
     Arguments:
     - `protocol`: The protocol for which the experiment was conducted
-    - `compiled_protocol`: The results of `protocol.compile()`.
+    - `compiled_protocol`: The results of `protocol._compile()`.
     - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
 
     Attributes:
@@ -157,7 +157,7 @@ class Experiment(object):
     def __repr__(self):
         return f"<Experiment {self.experiment_id}>"
 
-    async def update(self, device: str, datapoint):
+    async def _update(self, device: str, datapoint):
 
         # If a chart has been registered to the device, update it.
         if device not in self.data:

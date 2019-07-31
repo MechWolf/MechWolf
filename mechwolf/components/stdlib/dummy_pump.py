@@ -22,6 +22,6 @@ class DummyPump(Pump):
     def __init__(self, name=None):
         super().__init__(name=name)
 
-    async def update(self):
+    async def _update(self):
         logger.trace(f"Set {self} rate to {self.rate}")
         pass

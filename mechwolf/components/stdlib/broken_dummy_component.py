@@ -3,7 +3,7 @@ from .dummy import Dummy
 
 class BrokenDummyComponent(Dummy):
     """
-    A fake component, used internally for testing. Its `update()` method always returns `True` during a dry run but always returns `False` in a real run.
+    A fake component, used internally for testing. Its `_update()` method always returns `True` during a dry run but always returns `False` in a real run.
 
     ::: danger
     Using this component during real protocol execution will result in a failure.
@@ -19,9 +19,9 @@ class BrokenDummyComponent(Dummy):
     def __init__(self, name=None):
         super().__init__(name=name)
 
-    async def update(self) -> None:
+    async def _update(self) -> None:
         if self.active:
             raise RuntimeError
 
-    def validate(self, dry_run):
+    def _validate(self, dry_run):
         return True

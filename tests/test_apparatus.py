@@ -32,15 +32,15 @@ def test_add_multiple():
     assert B.network == [(a, d, t), (b, d, t), (c, d, t)]
 
 
-def test_validate():
+def test__validate():
     # test network connectivity checking
-    assert A.validate()
+    assert A._validate()
     with pytest.warns(UserWarning, match="connect"):
         A.add(a, b, t)
         A.add(c, d, t)
-        A.validate()  # not fully connected
+        A._validate()  # not fully connected
     A.add(b, d, t)  # fully connected
-    assert A.validate()
+    assert A._validate()
 
 
 def test_describe():

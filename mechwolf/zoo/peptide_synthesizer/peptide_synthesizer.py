@@ -144,7 +144,7 @@ def create_apparatus(
 
     A.add(mixer, output, thin_rxn_tube)
 
-    A.validate()  # just an extra safety check (ya never know)
+    A._validate()  # just an extra safety check (ya never know)
 
     return A
 

@@ -82,7 +82,7 @@ def test_add():
 def test_compile():
     P = mw.Protocol(A)
     P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
-    assert P.compile() == {
+    assert P._compile() == {
         pump1: [
             {"params": {"rate": "10 mL/min"}, "time": 0},
             {"params": {"rate": "0 mL/min"}, "time": 300},
@@ -90,7 +90,7 @@ def test_compile():
         pump2: [
             {
                 "params": {"rate": "10 mL/min"},
-                "time": mw.ureg.parse_expression("0 seconds"),
+                "time": mw._ureg.parse_expression("0 seconds"),
             },
             {"params": {"rate": "0 mL/min"}, "time": 300},
         ],
@@ -100,19 +100,19 @@ def test_compile():
     P = mw.Protocol(A)
     P.add([pump1, pump2], rate="10 mL/min")
     with pytest.raises(RuntimeError):
-        P.compile()
+        P._compile()
 
     # raise warning if component not used
     P = mw.Protocol(A)
     P.add(pump1, rate="10 mL/min", duration="5 min")
     with pytest.warns(UserWarning, match="not used"):
-        P.compile()
+        P._compile()
 
     # check switching between rates
     P = mw.Protocol(A)
     P.add([pump1, pump2], rate="10 mL/min", duration="5 min")
     P.add(pump1, rate="5 mL/min", start="5 min", stop="10 min")
-    assert P.compile() == {
+    assert P._compile() == {
         pump1: [
             {"params": {"rate": "10 mL/min"}, "time": 0},
             {"params": {"rate": "5 mL/min"}, "time": 300},

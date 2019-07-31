@@ -1,6 +1,6 @@
 from typing import Optional
 
-from . import ureg
+from . import _ureg
 from .active_component import ActiveComponent
 from .tube import Tube
 
@@ -24,10 +24,10 @@ class TempControl(ActiveComponent):
         super().__init__(name=name)
         if not isinstance(internal_tubing, Tube):
             raise TypeError("TempControl must have internal_tubing of type Tube.")
-        self.temp = ureg.parse_expression("0 degC")
+        self.temp = _ureg.parse_expression("0 degC")
         self.active = False
 
-    def base_state(self) -> dict:
+    def _base_state(self) -> dict:
         """
         Default to being inactive.
         """
