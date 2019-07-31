@@ -5,7 +5,7 @@ from warnings import warn
 
 from loguru import logger
 
-from . import ureg
+from . import _ureg
 from .active_component import ActiveComponent
 
 
@@ -20,18 +20,18 @@ class Sensor(ActiveComponent):
 
     def __init__(self, name: Optional[str] = None):
         super().__init__(name=name)
-        self.rate = ureg.parse_expression("0 Hz")
+        self.rate = _ureg.parse_expression("0 Hz")
         self._visualization_shape = "ellipse"
-        self._unit = ""
-        self._stop = False
+        self._unit: str = ""
+        self._stop: bool = False
 
-    def base_state(self) -> Dict[str, Any]:
+    def _base_state(self) -> Dict[str, Any]:
         """
         Default to being inactive.
         """
         return dict(rate="0 Hz")
 
-    async def read(self):
+    async def _read(self):
         """
         Collects the data.
         In the generic `Sensor` implementation, this raises a `NotImplementedError`.
@@ -39,7 +39,7 @@ class Sensor(ActiveComponent):
         """
         raise NotImplementedError
 
-    async def monitor(self, dry_run: bool = False) -> AsyncGenerator:
+    async def _monitor(self, dry_run: bool = False) -> AsyncGenerator:
         """
         If data collection is off and needs to be turned on, turn it on.
         If data collection is on and needs to be turned off, turn off and return data.
@@ -53,27 +53,27 @@ class Sensor(ActiveComponent):
                 await asyncio.sleep(0.1)  # try again in 100 ms
             else:
                 if not dry_run:
-                    yield {"data": await self.read(), "timestamp": time.time()}
+                    yield {"data": await self._read(), "timestamp": time.time()}
                 else:
                     yield {"data": "simulated read", "timestamp": time.time()}
                 await asyncio.sleep(1 / self.rate.to_base_units().magnitude)
 
-    def validate(self, dry_run: bool) -> None:
+    def _validate(self, dry_run: bool) -> None:
         logger.debug(f"Perfoming sensor specific checks for {self}...")
         if not dry_run:
             logger.trace(f"Executing Sensor-specific checks...")
             logger.trace("Entering context...")
             with self:
                 logger.trace("Context entered")
-                res = asyncio.run(self.read())
+                res = asyncio.run(self._read())
                 if not res:
                     warn(
                         "Sensor reads should probably return data. "
-                        f"Currently, {self}.read() does not return anything."
+                        f"Currently, {self}._read() does not return anything."
                     )
         logger.trace("Performing general component checks...")
-        super().validate(dry_run=dry_run)
+        super()._validate(dry_run=dry_run)
 
-    async def update(self) -> None:
+    async def _update(self) -> None:
         # sensors don't have an update method; they implement read
         pass

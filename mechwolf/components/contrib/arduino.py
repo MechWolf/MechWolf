@@ -17,7 +17,7 @@ class ArduinoSensor(Sensor):
 
     Returns:
 
-    ArduinoSensor.read() returns the parsed response, type can be int or float.
+    ArduinoSensor._read() returns the parsed response, type can be int or float.
 
     """
 
@@ -58,7 +58,7 @@ class ArduinoSensor(Sensor):
         # when it is out of context
         del self.ser
 
-    async def read(self):
+    async def _read(self):
 
         # flush in buffer in case we have stale data
         self.ser.reset_input_buffer()

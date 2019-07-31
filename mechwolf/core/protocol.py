@@ -25,7 +25,7 @@ from IPython import get_ipython
 from IPython.display import Code, display
 from loguru import logger
 
-from .. import ureg
+from .. import _ureg
 from ..components import ActiveComponent, TempControl, Valve
 from .apparatus import Apparatus
 from .execute import main
@@ -73,7 +73,7 @@ class Protocol(object):
             )
 
         # ensure apparatus is valid
-        if not apparatus.validate():
+        if not apparatus._validate():
             raise ValueError("Apparaus is not valid.")
 
         # store the passed args
@@ -165,19 +165,19 @@ class Protocol(object):
                 )
 
             if (
-                isinstance(component.__dict__[kwarg], ureg.Quantity)
-                and ureg.parse_expression(value).dimensionality
+                isinstance(component.__dict__[kwarg], _ureg.Quantity)
+                and _ureg.parse_expression(value).dimensionality
                 != component.__dict__[kwarg].dimensionality
             ):
                 raise ValueError(
                     f"Bad dimensionality of {kwarg} for {component}. "
                     f"Expected dimensionality of {component.__dict__[kwarg].dimensionality} "
-                    f"but got {ureg.parse_expression(value).dimensionality}."
+                    f"but got {_ureg.parse_expression(value).dimensionality}."
                 )
 
             elif not isinstance(
                 component.__dict__[kwarg], type(value)
-            ) and not isinstance(component.__dict__[kwarg], ureg.Quantity):
+            ) and not isinstance(component.__dict__[kwarg], _ureg.Quantity):
                 raise ValueError(
                     f"Bad type matching. Expected '{kwarg}' to be {type(component.__dict__[kwarg])} "
                     f"but got {repr(value)}, which is of type {type(value)}"
@@ -189,18 +189,18 @@ class Protocol(object):
         # parse the start time if given
         if isinstance(start, timedelta):
             start = str(start.total_seconds()) + " seconds"
-        start = ureg.parse_expression(start)
+        start = _ureg.parse_expression(start)
 
         # parse duration if given
         if duration is not None:
             if isinstance(duration, timedelta):
                 duration = str(duration.total_seconds()) + " seconds"
-            stop = start + ureg.parse_expression(duration)
+            stop = start + _ureg.parse_expression(duration)
         elif stop is not None:
             if isinstance(stop, timedelta):
                 stop = str(stop.total_seconds()) + " seconds"
             if isinstance(stop, str):
-                stop = ureg.parse_expression(stop)
+                stop = _ureg.parse_expression(stop)
 
         if start is not None and stop is not None and start > stop:
             raise ValueError("Procedure beginning is after procedure end.")
@@ -303,7 +303,7 @@ class Protocol(object):
         logger.debug(f"{repr(self)}.is_executing is now {is_executing}")
         self._is_executing = is_executing
 
-    def compile(
+    def _compile(
         self, dry_run: bool = True, _visualization: bool = False
     ) -> Dict[ActiveComponent, List[Dict[str, Union[float, str, Dict[str, Any]]]]]:
         """
@@ -336,7 +336,7 @@ class Protocol(object):
 
             # validate each component
             try:
-                component.validate(dry_run=dry_run)
+                component._validate(dry_run=dry_run)
             except Exception as e:
                 raise RuntimeError(f"{component} isn't valid. Got error: '{str(e)}'.")
 
@@ -412,7 +412,7 @@ class Protocol(object):
 
                     # otherwise, go back to base state
                     compiled.append(
-                        dict(time=procedure["stop"], params=component.base_state())
+                        dict(time=procedure["stop"], params=component._base_state())
                     )
 
             output[component] = compiled
@@ -421,7 +421,7 @@ class Protocol(object):
         return output
 
     def to_dict(self):
-        compiled = deepcopy(self.compile(dry_run=True))
+        compiled = deepcopy(self._compile(dry_run=True))
         compiled = {k.name: v for (k, v) in compiled.items()}
         return compiled
 
@@ -480,7 +480,7 @@ class Protocol(object):
         if get_ipython():
             alt.renderers.enable(renderer)
 
-        for component, procedures in self.compile(_visualization=True).items():
+        for component, procedures in self._compile(_visualization=True).items():
             # generate a dict that will be a row in the dataframe
             for procedure in procedures:
                 procedure["component"] = str(component)
@@ -576,7 +576,7 @@ class Protocol(object):
 
         logger.info(f"Compiling protocol with dry_run = {dry_run}")
         try:
-            compiled_protocol = self.compile(dry_run=bool(dry_run))
+            compiled_protocol = self._compile(dry_run=bool(dry_run))
         except RuntimeError as e:
             # add an execution-specific message
             raise (RuntimeError(str(e).rstrip() + " Aborting execution..."))

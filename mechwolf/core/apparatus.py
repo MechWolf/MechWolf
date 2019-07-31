@@ -8,7 +8,7 @@ from IPython import get_ipython
 from IPython.display import Markdown
 from terminaltables import AsciiTable, GithubFlavoredMarkdownTable
 
-from .. import ureg
+from .. import _ureg
 from ..components import Component, Tube, Valve, Vessel
 
 Connection = namedtuple("Connection", ["from_component", "to_component", "tube"])
@@ -277,8 +277,8 @@ class Apparatus(object):
         ]  # header row
 
         # store and calculate the computed totals for tubing
-        total_length = 0 * ureg.mm
-        total_volume = 0 * ureg.ml
+        total_length = 0 * _ureg.mm
+        total_volume = 0 * _ureg.ml
         for connection in self.network:
             total_length += connection.tube.length
             total_volume += connection.tube.volume
@@ -327,7 +327,7 @@ class Apparatus(object):
         print(tubing_table.table)
         return None
 
-    def validate(self) -> bool:
+    def _validate(self) -> bool:
         """
         Checks that the apparatus is valid.
 

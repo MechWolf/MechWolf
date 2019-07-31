@@ -93,10 +93,10 @@ class GilsonFC203(ActiveComponent):
         else:
             await self._gsioc.buffered_command_async("V0")
 
-    async def update(self):
+    async def _update(self):
         await self._goto(self.position)
 
-    def base_state(self):
+    def _base_state(self):
         """We assume that the collector starts at the drain position.
         """
         return dict(position=1)

@@ -69,7 +69,9 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 # for sensors, add the monitor task
                 if isinstance(component, Sensor):
                     logger.debug(f"Creating sensor monitoring task for {component}")
-                    monitor_task = monitor(component, experiment, bool(dry_run), strict)
+                    monitor_task = _monitor(
+                        component, experiment, bool(dry_run), strict
+                    )
                     end_monitoring_task = end_monitoring(
                         component, end_time, dry_run, experiment
                     )
@@ -98,7 +100,9 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 # Stop all of the sensors and exit the read loops
                 logger.debug("Stopping all sensors")
                 for component in list(experiment.compiled_protocol.keys()):
-                    component.update_from_params(component.base_state())  # reset object
+                    component._update_from_params(
+                        component._base_state()
+                    )  # reset object
                     if isinstance(component, Sensor):
                         component._stop = True
 
@@ -160,9 +164,9 @@ async def wait_and_execute_procedure(
     )
     await asyncio.sleep(execution_time - time_awaited)
 
-    component.update_from_params(
+    component._update_from_params(
         procedure["params"]
-    )  # NOTE: this doesn't actually call the update() method
+    )  # NOTE: this doesn't actually call the _update() method
 
     if dry_run:
         logger.info(
@@ -175,7 +179,7 @@ async def wait_and_execute_procedure(
             f" at {procedure['time']}s"
         )
         try:
-            await component.update()  # NOTE: This does!
+            await component._update()  # NOTE: This does!
         except Exception as e:
             logger.log(
                 "ERROR" if strict else "WARNING", f"Failed to update {component}!"
@@ -194,12 +198,12 @@ async def wait_and_execute_procedure(
     experiment.executed_procedures.append(record)
 
 
-async def monitor(sensor: Sensor, experiment: Experiment, dry_run: bool, strict: bool):
+async def _monitor(sensor: Sensor, experiment: Experiment, dry_run: bool, strict: bool):
     logger.debug(f"Started monitoring {sensor.name}")
     sensor._stop = False
     try:
-        async for result in sensor.monitor(dry_run=dry_run):
-            await experiment.update(
+        async for result in sensor._monitor(dry_run=dry_run):
+            await experiment._update(
                 device=sensor.name,
                 datapoint=Datapoint(
                     data=result["data"],

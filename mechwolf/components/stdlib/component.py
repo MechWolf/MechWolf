@@ -43,7 +43,7 @@ class Component(object):
         logger.trace(f"Exiting context for {self}")
         pass
 
-    def validate(self, dry_run):
+    def _validate(self, dry_run):
         """Components are valid for dry runs, but not for real runs."""
         if not dry_run:
             raise RuntimeError

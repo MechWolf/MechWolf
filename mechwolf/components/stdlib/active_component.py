@@ -2,7 +2,7 @@ import asyncio
 
 from loguru import logger
 
-from . import ureg
+from . import _ureg
 from .component import Component
 
 
@@ -29,7 +29,7 @@ class ActiveComponent(Component):
     def __init__(self, name=None):
         super().__init__(name=name)
 
-    def update_from_params(self, params: dict) -> None:
+    def _update_from_params(self, params: dict) -> None:
         """
         Updates the attributes of the object from a dict.
 
@@ -38,12 +38,12 @@ class ActiveComponent(Component):
 
         """
         for key, value in params.items():
-            if isinstance(getattr(self, key), ureg.Quantity):
-                setattr(self, key, ureg.parse_expression(value))
+            if isinstance(getattr(self, key), _ureg.Quantity):
+                setattr(self, key, _ureg.parse_expression(value))
             else:
                 setattr(self, key, value)
 
-    def base_state(self) -> dict:
+    def _base_state(self) -> dict:
         """
         A placeholder method for the base state of the component.
 
@@ -56,18 +56,18 @@ class ActiveComponent(Component):
         Example:
 
         ```python
-        >>> Pump.base_state()
+        >>> Pump._base_state()
         {"rate": "0 ml/min"}
         ```
         """
         raise NotImplementedError(
-            f"Please implement a base_state() method for {self} that returns a dict."
+            f"Please implement a _base_state() method for {self} that returns a dict."
         )
 
-    async def update(self):
-        raise NotImplementedError(f"Please implement an update() method for {self}.")
+    async def _update(self):
+        raise NotImplementedError(f"Please implement an _update() method for {self}.")
 
-    def validate(self, dry_run: bool) -> None:
+    def _validate(self, dry_run: bool) -> None:
         """
         Checks if a component's class is valid.
 
@@ -82,15 +82,15 @@ class ActiveComponent(Component):
         logger.debug(f"Validating {self.name}...")
 
         # the base_state dict must not be empty
-        if not self.base_state():
+        if not self._base_state():
             raise ValueError("base_state method dict must not be empty")
 
         # base_state method must return a dict
-        elif not isinstance(self.base_state(), dict):
+        elif not isinstance(self._base_state(), dict):
             raise ValueError("base_state method does not return a dict")
 
         # validate the base_state dict
-        for k, v in self.base_state().items():
+        for k, v in self._base_state().items():
             if not hasattr(self, k):
                 raise ValueError(
                     f"base_state sets {k} for {self} but {k} is not an attribute of {self}. "
@@ -99,18 +99,18 @@ class ActiveComponent(Component):
 
             # dimensionality checking
             if (
-                isinstance(self.__dict__[k], ureg.Quantity)
-                and ureg.parse_expression(v).dimensionality
+                isinstance(self.__dict__[k], _ureg.Quantity)
+                and _ureg.parse_expression(v).dimensionality
                 != self.__dict__[k].dimensionality
             ):
                 raise ValueError(
                     f"Invalid dimensionality in base_state for {self}. "
-                    f"Got {ureg.parse_expression(v).dimensionality} for {k}, "
+                    f"Got {_ureg.parse_expression(v).dimensionality} for {k}, "
                     f"expected {self.__dict__[k].dimensionality}"
                 )
 
             # if not dimensional, do type matching
-            if not isinstance(self.__dict__[k], ureg.Quantity):
+            if not isinstance(self.__dict__[k], _ureg.Quantity):
                 if not isinstance(self.__dict__[k], type(v)):
                     raise ValueError(
                         f"Bad type matching for {k} in base_state dict. "
@@ -119,10 +119,10 @@ class ActiveComponent(Component):
 
         # once we've checked everything, it should be good
         if not dry_run:
-            self.update_from_params(self.base_state())
-            logger.trace(f"Attempting to call update() for {self}. Entering context")
+            self._update_from_params(self._base_state())
+            logger.trace(f"Attempting to call _update() for {self}. Entering context")
             with self:
-                res = asyncio.run(self.update())
+                res = asyncio.run(self._update())
                 if res is not None:
                     raise ValueError(f"Received return value {res} from update.")
 

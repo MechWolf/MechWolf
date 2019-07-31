@@ -1,7 +1,4 @@
-from .. import ureg as _ureg
-from pint import UnitRegistry
-
-ureg: UnitRegistry = _ureg  # type: ignore
+from .. import _ureg
 
 from .component import Component
 from .active_component import ActiveComponent

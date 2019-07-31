@@ -26,5 +26,5 @@ class DummyValve(Valve):
     def __init__(self, name: Optional[str] = None, mapping: dict = {}):
         super().__init__(name=name, mapping=mapping)
 
-    async def update(self) -> None:
+    async def _update(self) -> None:
         logger.trace(f"Switching {self.name} to position {self.setting}")

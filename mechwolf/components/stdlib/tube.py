@@ -1,7 +1,7 @@
 from math import pi
 from warnings import warn
 
-from . import ureg
+from . import _ureg
 
 
 class Tube(object):
@@ -32,13 +32,13 @@ class Tube(object):
         The arguments to __init__ are `str`s, not `pint.Quantity`s.
         :::
         """
-        self.length = ureg.parse_expression(length)
-        self.ID = ureg.parse_expression(ID)
-        self.OD = ureg.parse_expression(OD)
+        self.length = _ureg.parse_expression(length)
+        self.ID = _ureg.parse_expression(ID)
+        self.OD = _ureg.parse_expression(OD)
 
         # check to make sure units are valid
         for measurement in [self.length, self.ID, self.OD]:
-            if measurement.dimensionality != ureg.mm.dimensionality:
+            if measurement.dimensionality != _ureg.mm.dimensionality:
                 raise ValueError(
                     f"{measurement.units} is an invalid unit of measurement for length."
                 )

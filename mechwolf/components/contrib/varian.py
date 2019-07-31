@@ -1,5 +1,5 @@
 from ..stdlib.pump import Pump
-from . import ureg
+from . import _ureg
 
 
 class VarianPump(Pump):
@@ -31,8 +31,8 @@ class VarianPump(Pump):
 
     def __init__(self, serial_port, max_rate, unit_id=0, name=None):
         super().__init__(name=name)
-        self.rate = ureg.parse_expression("0 ml/min")
-        self.max_rate = ureg.parse_expression(max_rate)
+        self.rate = _ureg.parse_expression("0 ml/min")
+        self.max_rate = _ureg.parse_expression(max_rate)
         self.serial_port = serial_port
         self.unit_id = unit_id
 
@@ -46,7 +46,7 @@ class VarianPump(Pump):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.rate = ureg.parse_expression("0 mL/min")
+        self.rate = _ureg.parse_expression("0 mL/min")
         # Stop pump
         self._gsioc.buffered_command("X000000")
         self._unlock()
@@ -62,7 +62,7 @@ class VarianPump(Pump):
 
     async def _set_flow(self, flow_rate):
 
-        max_rate = self.max_rate.to(ureg.ml / ureg.min).magnitude
+        max_rate = self.max_rate.to(_ureg.ml / _ureg.min).magnitude
 
         # Flow rate must be supplied as a string from 000000 to 100000
         # where 100000 = 100% of the maximum pump flow rate.
@@ -76,6 +76,6 @@ class VarianPump(Pump):
             "W1=       {} ml/min".format(flow_rate)
         )
 
-    async def update(self) -> None:
-        new_rate = self.rate.to(ureg.ml / ureg.min).magnitude
+    async def _update(self) -> None:
+        new_rate = self.rate.to(_ureg.ml / _ureg.min).magnitude
         await self._set_flow(new_rate)
