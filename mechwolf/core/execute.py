@@ -101,7 +101,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                     component.update_from_params(component.base_state())  # reset object
                     if isinstance(component, Sensor):
                         component._stop = True
-                
+
                 # Cancel all of the remaining tasks
                 logger.trace("Cancelling all remaining tasks")
                 for task in pending:
