@@ -8,5 +8,5 @@ script:
   - pytest
   - black --check mechwolf
   - flake8
-  - mypy mechwolf/ --ignore-missing-import
+  - mypy mechwolf/ --ignore-missing-import --no-implicit-optional
 cache: pip

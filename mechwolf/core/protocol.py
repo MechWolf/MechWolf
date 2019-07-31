@@ -1,9 +1,21 @@
 import asyncio
 import json
+import os
 from copy import deepcopy
 from datetime import timedelta
 from math import isclose
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from pathlib import Path
+from typing import (
+    IO,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Union,
+)
 from warnings import warn
 
 import altair as alt
@@ -79,8 +91,12 @@ class Protocol(object):
         self.procedures: List[
             Dict[str, Union[float, None, ActiveComponent, Dict[str, Any]]]
         ] = []
-        self.is_executing = False
         self.was_executed = False
+
+        # internal values
+        self._file_logger_id: Optional[int] = None
+        self._is_executing = False
+        self._log_file: Union[IO, str, None, os.PathLike] = None
 
     def __repr__(self):
         return f"<{self.__str__()}>"
@@ -265,6 +281,23 @@ class Protocol(object):
                 'Must define stop or duration for at least one procedure to use duration="auto".'
             )
         return computed_durations[-1]
+
+    @property
+    def is_executing(self):
+        return self._is_executing
+
+    @is_executing.setter
+    def is_executing(self, is_executing):
+        if not is_executing and self._file_logger_id is not None:
+            logger.info("Wrote logs to " + str(self._log_file.absolute()))
+            logger.trace(f"Removing generated file logger {self._file_logger_id}")
+            logger.remove(self._file_logger_id)
+            logger.trace("File logger removed")
+            # ensure that an execution without logging after one with it doesn't break
+            self._log_file = None
+            self._file_logger_id = None
+        logger.debug(f"{repr(self)}.is_executing is now {is_executing}")
+        self._is_executing = is_executing
 
     def compile(
         self, dry_run: bool = True, _visualization: bool = False
@@ -508,6 +541,9 @@ class Protocol(object):
         verbosity: str = "info",
         confirm: bool = False,
         strict: bool = True,
+        log_file: Union[str, bool, os.PathLike] = True,
+        log_file_verbosity: Optional[str] = None,
+        log_file_compression: Optional[str] = None,
     ) -> Experiment:
         """
         Executes the procedure.
@@ -559,6 +595,42 @@ class Protocol(object):
         )
         display(E._output_widget)  # type: ignore
 
+        # handle logging to a file
+        if log_file:
+            # automatically log to the mw directory
+            if log_file is True:
+                mw_path = Path("~/.mechwolf").expanduser()
+                try:
+                    mw_path.mkdir()
+                except FileExistsError:
+                    pass
+                log_file = mw_path / Path(E.experiment_id + ".log.jsonl")
+
+            # automatically configure a logger to persist the logs
+            self._file_logger_id = logger.add(
+                log_file,
+                level=verbosity.upper()
+                if log_file_verbosity is None
+                else log_file_verbosity.upper(),
+                compression=log_file_compression,
+                serialize=True,
+                enqueue=True,
+            )
+            logger.trace(f"File logger ID is {self._file_logger_id}")
+
+            # for typing's sake
+            assert isinstance(log_file, (str, os.PathLike))
+
+            # determine the log file's path
+            if log_file_compression is not None:
+                self._log_file = Path(log_file)
+                self._log_file = self._log_file.with_suffix(
+                    self._log_file.suffix + "." + log_file_compression
+                )
+            else:
+                self._log_file = Path(log_file)
+
+        logger.debug("Initiating async execution")
         if get_ipython():
             asyncio.ensure_future(main(experiment=E, dry_run=dry_run, strict=strict))
         else:
