@@ -11,11 +11,11 @@ class LabJack(Sensor):
     metadata = {
         "author": [
             {
-                "first_name": "Murat",
-                "last_name": "Ozturk",
-                "email": "hello@littleblack.fish",
-                "institution": "Indiana University, School of Informatics, Computing and Engineering",
-                "github_username": "littleblackfish",
+                "first_name": "Alex",
+                "last_name": "Mijalis",
+                "email": "Alex Mijalis <Alexander_Mijalis@hms.harvard.edu>",
+                "institution": "Harvard Medical School",
+                "github_username": "amijalis",
             }
         ],
         "stability": "beta",
