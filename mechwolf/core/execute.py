@@ -95,6 +95,13 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 # when this code block is reached, the tasks will have completed or have been cancelled.
                 end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
 
+                # Stop all of the sensors and exit the read loops
+                logger.debug("Stopping all sensors")
+                for component in list(experiment.compiled_protocol.keys()):
+                    component.update_from_params(component.base_state())  # reset object
+                    if isinstance(component, Sensor):
+                        component._stop = True
+                
                 # Cancel all of the remaining tasks
                 logger.trace("Cancelling all remaining tasks")
                 for task in pending:
@@ -121,12 +128,6 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 logger.exception("Failed to execute protocol due to uncaught error!")
                 logger.critical(end_msg)
     finally:
-        # allow sensors to start monitoring again
-        logger.debug("Stopping all sensors")
-        for component in list(experiment.compiled_protocol.keys()):
-            component.update_from_params(component.base_state())  # reset object
-            if isinstance(component, Sensor):
-                component._stop = True
 
         # set some protocol metadata
         experiment.protocol.is_executing = False
