@@ -5,17 +5,7 @@ from copy import deepcopy
 from datetime import timedelta
 from math import isclose
 from pathlib import Path
-from typing import (
-    IO,
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Union,
-)
+from typing import IO, Any, Dict, Iterable, List, MutableMapping, Optional, Union
 from warnings import warn
 
 import altair as alt
@@ -105,47 +95,81 @@ class Protocol(object):
     def __str__(self):
         return f"Protocol {self.name} defined over {repr(self.apparatus)}"
 
+    def _check_added_valve_mapping(self, valve: Valve, **kwargs) -> dict:
+        setting = kwargs["setting"]
+
+        if valve.mapping is None:
+            raise ValueError(f"{repr(valve)} does not have a mapping.")
+
+        # the valve itself was given
+        if setting in valve.mapping:
+            logger.trace(f"{setting} in {repr(valve)}'s mapping.")
+            kwargs["setting"] = valve.mapping[setting]
+
+        # the valve's name was given
+        # in this case, we get the mapped valve with that name
+        # we don't have to worry about duplicate names since that's checked later
+        elif setting in [c.name for c in valve.mapping]:
+            logger.trace(f"{setting} in {repr(valve)}'s mapping.")
+            mapped_component = [c for c in valve.mapping if c.name == setting]
+            kwargs["setting"] = valve.mapping[mapped_component[0]]
+
+        # the user gave the actual port mapping number
+        elif setting in valve.mapping.values() and isinstance(setting, int):
+            logger.trace(f"User supplied manual setting for {valve}")
+        else:
+            raise ValueError(f"Invalid setting {setting} for {repr(valve)}.")
+
+        return kwargs
+
+    def _check_component_kwargs(self, component: ActiveComponent, **kwargs) -> None:
+        """Checks that the given keyword arguments are valid for a component."""
+        for kwarg, value in kwargs.items():
+            # check that the component even has the attribute
+            if not hasattr(component, kwarg):
+                # id nor determine valid attrs for the error message
+                valid_attrs = [x for x in vars(component).keys()]
+                # we don't care about the name attr
+                valid_attrs = [x for x in valid_attrs if x != "name"]
+                # or internal ones
+                valid_attrs = [x for x in valid_attrs if not x.startswith("_")]
+
+                msg = f"Invalid attribute {kwarg} for {component}. "
+                msg += f"Valid attributes are {valid_attrs}"
+                raise ValueError(msg)
+
+            # for kwargs that will be converted later, just check that the units match
+            if isinstance(component.__dict__[kwarg], _ureg.Quantity):
+                try:
+                    value_dim = _ureg.parse_expression(value).dimensionality
+                except AttributeError:
+                    value_dim = type(value)
+                kwarg_dim = component.__dict__[kwarg].dimensionality
+
+                # perform the check
+                if value_dim != kwarg_dim:
+                    msg = f"Bad dimensionality of {kwarg} for {component}. "
+                    msg += f"Expected {kwarg_dim} but got {value_dim}."
+                    raise ValueError(msg)
+
+            # if it's not a quantity, check the types
+            elif not isinstance(value, type(component.__dict__[kwarg])):
+                expected_type = type(component.__dict__[kwarg])
+                msg = "Bad type matching. "
+                msg += f"Expected '{kwarg}' to an instance of {expected_type} but got"
+                msg += f"{repr(value)}, which is of type {type(value)}."
+                raise ValueError(msg)
+
     def _add_single(
-        self,
-        component: ActiveComponent,
-        start="0 seconds",
-        stop=None,
-        duration=None,
-        **kwargs,
+        self, component: ActiveComponent, start=None, stop=None, duration=None, **kwargs
     ) -> None:
         """Adds a single procedure to the protocol.
 
         See add() for full documentation.
         """
 
-        # make sure that the component being added to the protocol is part of the apparatus
-        if component not in self.apparatus.components:
-            raise ValueError(
-                f"{component} is not a component of {self.apparatus.name}."
-            )
-
-        # perform the mapping for valves
-        if isinstance(component, Valve) and isinstance(component.mapping, Mapping):
-            setting = kwargs["setting"]
-
-            # the component itself was given
-            if setting in component.mapping:
-                logger.trace(f"{setting} in {repr(component)}'s mapping.")
-                kwargs["setting"] = component.mapping[setting]
-
-            # the component's name was given
-            # in this case, we get the mapped component with that name
-            # we don't have to worry about duplicate names since that's checked later
-            elif setting in [c.name for c in component.mapping]:
-                logger.trace(f"{setting} in {repr(component)}'s mapping.")
-                mapped_component = [c for c in component.mapping if c.name == setting]
-                kwargs["setting"] = component.mapping[mapped_component[0]]
-
-            # the user gave the actual port mapping number
-            elif setting in component.mapping.values() and isinstance(setting, int):
-                logger.trace(f"User supplied manual setting for {component}")
-            else:
-                raise ValueError(f"Invalid setting {setting} for {repr(component)}.")
+        # make sure that the component being added is part of the apparatus
+        self.apparatus[component]
 
         # don't let users give empty procedures
         if not kwargs:
@@ -155,33 +179,12 @@ class Protocol(object):
                 "Ensure your call to add() is valid."
             )
 
+        # perform the mapping for valves
+        if isinstance(component, Valve):
+            kwargs = self._check_added_valve_mapping(component, **kwargs)
+
         # make sure the component and keywords are valid
-        for kwarg, value in kwargs.items():
-
-            if not hasattr(component, kwarg):
-                raise ValueError(
-                    f"Invalid attribute {kwarg} for {component}."
-                    f" Valid attributes are {[x for x in vars(component).keys() if x != 'name' and not x.startswith('_')]}."
-                )
-
-            if (
-                isinstance(component.__dict__[kwarg], _ureg.Quantity)
-                and _ureg.parse_expression(value).dimensionality
-                != component.__dict__[kwarg].dimensionality
-            ):
-                raise ValueError(
-                    f"Bad dimensionality of {kwarg} for {component}. "
-                    f"Expected dimensionality of {component.__dict__[kwarg].dimensionality} "
-                    f"but got {_ureg.parse_expression(value).dimensionality}."
-                )
-
-            elif not isinstance(
-                component.__dict__[kwarg], type(value)
-            ) and not isinstance(component.__dict__[kwarg], _ureg.Quantity):
-                raise ValueError(
-                    f"Bad type matching. Expected '{kwarg}' to be {type(component.__dict__[kwarg])} "
-                    f"but got {repr(value)}, which is of type {type(value)}"
-                )
+        self._check_component_kwargs(component, **kwargs)
 
         if stop is not None and duration is not None:
             raise RuntimeError("Must provide one of stop and duration, not both.")
@@ -189,6 +192,8 @@ class Protocol(object):
         # parse the start time if given
         if isinstance(start, timedelta):
             start = str(start.total_seconds()) + " seconds"
+        elif start is None:  # default to the beginning of the protocol
+            start = "0 seconds"
         start = _ureg.parse_expression(start)
 
         # parse duration if given
@@ -202,11 +207,11 @@ class Protocol(object):
             if isinstance(stop, str):
                 stop = _ureg.parse_expression(stop)
 
-        if start is not None and stop is not None and start > stop:
+        if stop is not None and start > stop:
             raise ValueError("Procedure beginning is after procedure end.")
 
         # a little magic for temperature controllers
-        if issubclass(component.__class__, TempControl):
+        if isinstance(component, TempControl):
             if kwargs.get("temp") is not None and kwargs.get("active") is None:
                 kwargs["active"] = True
             elif not kwargs.get("active") and kwargs.get("temp") is None:
@@ -234,7 +239,7 @@ class Protocol(object):
     def add(
         self,
         component: Union[ActiveComponent, Iterable[ActiveComponent]],
-        start="0 seconds",
+        start=None,
         stop=None,
         duration=None,
         **kwargs,
@@ -360,27 +365,30 @@ class Protocol(object):
                 )
 
             for i, procedure in enumerate(component_procedures):
-
                 # automatically infer start and stop times
                 try:
-                    if component_procedures[i + 1]["start"] == 0:
+                    # the start time of the next procedure
+                    next_start = component_procedures[i + 1]["start"]
+                    if next_start == 0:
                         raise RuntimeError(
-                            f"Ambiguous start time for {procedure['component']}. " ""
+                            f"Ambiguous start time for {procedure['component']}. "
                         )
-                    elif (
-                        component_procedures[i + 1]["start"] is not None
-                        and procedure["stop"] is None
-                    ):
+                    elif next_start is not None and procedure["stop"] is None:
                         warn(
                             f"Automatically inferring stop time for {procedure['component']} "
                             f"as beginning of {procedure['component']}'s next procedure."
                         )
-                        procedure["stop"] = component_procedures[i + 1]["start"]
+                        procedure["stop"] = next_start
+
+                    # check for overlapping procedures
+                    elif next_start < procedure["stop"]:
+                        raise RuntimeError("Cannot have two overlapping procedures.")
+
                 except IndexError:
                     if procedure["stop"] is None:
                         warn(
-                            f"Automatically inferring stop for {procedure['component']} as "
-                            f"the end of the protocol. To override, provide stop in your call to add()."
+                            f"Automatically inferring stop for {procedure['component']} as the end of the protocol. "
+                            f"To override, provide stop in your call to add()."
                         )
                         procedure["stop"] = self._inferred_duration
 

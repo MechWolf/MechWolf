@@ -69,7 +69,14 @@ class Apparatus(object):
                     component for component in self.components if component.name == item
                 ][0]
             except IndexError:
-                raise KeyError(f"No component named '{item}' in network.")
+                raise KeyError(f"No component named '{item}' in {repr(self)}.")
+
+        # a shorthand way to check if a component is in the apparatus
+        elif isinstance(item, Component):
+            if item in self.components:
+                return item
+            else:
+                raise KeyError(f"{repr(item)} is not in {repr(self)}.")
 
     def _add_single(
         self, from_component: Component, to_component: Component, tube: Tube
