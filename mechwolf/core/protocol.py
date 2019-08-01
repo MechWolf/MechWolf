@@ -553,10 +553,10 @@ class Protocol(object):
         verbosity: str = "info",
         confirm: bool = False,
         strict: bool = True,
-        log_file: Union[str, bool, os.PathLike] = True,
+        log_file: Union[str, bool, os.PathLike, None] = True,
         log_file_verbosity: Optional[str] = None,
         log_file_compression: Optional[str] = None,
-        data_file: Union[str, bool, os.PathLike] = True,
+        data_file: Union[str, bool, os.PathLike, None] = True,
     ) -> Experiment:
         """
         Executes the procedure.
@@ -566,10 +566,10 @@ class Protocol(object):
         - `dry_run`: Whether to simulate the experiment or actually perform it. Defaults to `False`, which means executing the protocol on real hardware. If an integer greater than zero, the dry run will execute at that many times speed.
         - `strict`: Whether to stop execution upon encountering any errors. If False, errors will be noted but ignored.
         - `verbosity`: The level of logging verbosity. One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity. "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
-        - `log_file`: The file to write the logs to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.log.jsonl`.
+        - `log_file`: The file to write the logs to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.log.jsonl`. If falsey, no logs will be written to the file.
         - `log_file_verbosity`: How verbose the logs in file should be. By default, it is the same as `verbosity`.
         - `log_file_compression`: Whether to compress the log file after the experiment.
-        - `data_file`: The file to write the experimental data to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.data.jsonl`.
+        - `data_file`: The file to write the experimental data to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.data.jsonl`. If falsey, no data will be written to the file.
 
         Returns:
         - An `Experiment` object. In a Jupyter notebook, the object yields an interactive visualization. If protocol execution fails for any reason that does not raise an error, the return type is None.
