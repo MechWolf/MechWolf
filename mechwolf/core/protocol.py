@@ -284,7 +284,7 @@ class Protocol(object):
         if all([x is None for x in computed_durations]):
             raise RuntimeError(
                 "Unable to automatically infer duration of protocol. "
-                'Must define stop or duration for at least one procedure to use duration="auto".'
+                "Must define stop or duration for at least one procedure"
             )
         return computed_durations[-1]
 
