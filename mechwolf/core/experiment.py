@@ -2,6 +2,7 @@ import json
 import os
 import time
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+from warnings import warn
 
 import aiofiles
 import ipywidgets as widgets
@@ -28,15 +29,20 @@ class Experiment(object):
     - `protocol`: The protocol for which the experiment was conducted
     - `compiled_protocol`: The results of `protocol._compile()`.
     - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
+    - `dry_run`: Whether the experiment is a dry run and, if so, by what factor it is sped up by.
 
     Attributes:
     - `cancelled`: Whether the experiment was cancelled.
+    - `compiled_protocol`: The results of `protocol._compile()`.
     - `data`: A list of `Datapoint` namedtuples from the experiment's sensors.
+    - `dry_run`: Whether the experiment is a dry run and, if so, by what factor it is sped up by.
     - `end_time`: The Unix time of the experiment's end.
     - `executed_procedures`: A list of the procedures that were executed during the experiment.
     - `experiment_id`: The experiment's ID. By default, of the form `YYYY_MM_DD_HH_MM_SS_HASH`, where HASH is the 32-bit hexadecmial xxhash of the protocol's YAML.
     - `paused`: Whether the experiment is currently paused.
+    - `protocol`: The protocol for which the experiment was conducted
     - `start_time`: The Unix time of the experiment's start.
+    - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
     """
 
     def __init__(
@@ -47,11 +53,12 @@ class Experiment(object):
             Iterable[Mapping[str, Union[float, str, Mapping[str, Any]]]],
         ],
         verbosity: str,
+        dry_run: Union[bool, int],
     ):
-        """See the main docstring."""
+        # args
         self.protocol = protocol
         self.compiled_protocol = compiled_protocol
-        self.cancelled = False
+        self.dry_run = dry_run
 
         # computed values
         self.experiment_id = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{xxh32(str(protocol.yaml())).hexdigest()}'
@@ -63,6 +70,7 @@ class Experiment(object):
         self.executed_procedures: List[
             Dict[str, Union[float, Dict[str, Any], str, ActiveComponent]]
         ] = []
+        self.cancelled = False
 
         # internal values (unstable!)
         self._charts = {}  # type: ignore
@@ -77,6 +85,7 @@ class Experiment(object):
         self._bound_logger = None
         self._plot_height = 300
         self._paused = False
+        self._pause_times: List[Dict[str, float]] = []
         self._data_file: Optional[os.PathLike] = None
 
         # don't do any of the UI stuff if not in the notebook
@@ -123,23 +132,26 @@ class Experiment(object):
             for i, sensor in enumerate(self._sensor_outputs):
                 self._accordion.set_title(i, sensor.name)
 
+        # decide whether to show a pause button
+        buttons = [self._stop_button]
+        if type(self.dry_run) != int:
+            buttons.insert(0, self._pause_button)
+
         self._output_widget = widgets.VBox(
             [
                 widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"),
-                widgets.HBox([self._stop_button]),  # self._pause_button went here
+                widgets.HBox(buttons),
                 self._tab,
             ]
         )
 
         def _log(x):
             with self._log_widget:  # the log
-                pad_length = (
-                    len(str(int(self.protocol._inferred_duration))) + 4
-                )  # .xxx in floats
+                # .xxx in floats
+                pad_length = len(str(int(self.protocol._inferred_duration))) + 4
                 if self.start_time is not None:
-                    print(
-                        f"({time.time() - self.start_time:0{pad_length}.3f}s) {x.rstrip()}"
-                    )
+                    elapsed_time = f"{time.time() - self.start_time:0{pad_length}.3f}"
+                    print(f"({elapsed_time}) {x.rstrip()}")
                 else:
                     print(f"({'setup': ^{pad_length+1}}) " + x.rstrip())
 
@@ -241,11 +253,33 @@ class Experiment(object):
 
     @paused.setter
     def paused(self, paused):
-        if paused:
+
+        # pausing a sped up dry run is meaningless
+        if type(self.dry_run) == int:
+            warn("Pausing a speed run is not supported. This will have no effect.")
+
+        # issue a warning if the user overuses the pause button
+        if len(self._pause_times) >= 3:
+            logger.warning("Pausing repeatedly may adversely affect protocol timing.")
+
+        if paused and not self._paused:
             logger.warning(f"Paused execution.")
-        else:
+            self._pause_times.append(dict(start=time.time()))
+        elif not paused and self._paused:
+            self._pause_times[-1]["stop"] = time.time()
             logger.warning(f"Resumed execution.")
         self._paused = paused
+
+        # control the pause button
         self._pause_button.description = "Resume" if paused else "Pause"
         self._pause_button.button_style = "success" if paused else ""
         self._pause_button.icon = "play" if paused else "pause"
+
+    @property
+    def _total_paused_duration(self) -> float:
+        """Calculate the total amount of time the experiment was paused for."""
+        duration = 0.0
+        for pause in self._pause_times:
+            if "stop" in pause:
+                duration += pause["stop"] - pause["start"]
+        return duration
