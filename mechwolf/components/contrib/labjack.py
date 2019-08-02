@@ -43,6 +43,7 @@ class LabJack(Sensor):
     def __exit__(self, exc_type, exc_value, traceback):
         # close the serial connection
         self.device.close()
+        del self.device
 
     async def _read(self):
         return self.device.getAIN(0, 1)
