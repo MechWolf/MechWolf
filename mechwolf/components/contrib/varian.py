@@ -54,7 +54,7 @@ class VarianPump(Pump):
 
     def _lock(self):
         self._gsioc.buffered_command("L")
-        self._gsioc.buffered_command("W0=        MechWolf")
+        #self._gsioc.buffered_command("W0=        MechWolf")
 
     def _unlock(self):
         self._gsioc.buffered_command("U")  # unlock keypad
@@ -72,9 +72,9 @@ class VarianPump(Pump):
 
         await self._gsioc.buffered_command_async(flow_command)
 
-        await self._gsioc.buffered_command_async(
-            "W1=       {} ml/min".format(flow_rate)
-        )
+        #await self._gsioc.buffered_command_async(
+        #    "W1=       {} ml/min".format(flow_rate)
+        #)
 
     async def _update(self) -> None:
         new_rate = self.rate.to(_ureg.ml / _ureg.min).magnitude
