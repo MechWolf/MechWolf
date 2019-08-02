@@ -105,7 +105,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                     )  # reset object
                     if isinstance(component, Sensor):
                         component._stop = True
-                
+
                 await asyncio.sleep(1)
 
                 # Cancel all of the remaining tasks
@@ -139,9 +139,9 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
         experiment.protocol.is_executing = False
         experiment.protocol.was_executed = True
 
-        if experiment._bound_logger is not None:  # type: ignore
+        if experiment._bound_logger is not None:
             logger.trace("Deactivating logging to Jupyter notebook widget...")
-            logger.remove(experiment._bound_logger)  # type: ignore
+            logger.remove(experiment._bound_logger)
 
 
 async def wait_and_execute_procedure(
