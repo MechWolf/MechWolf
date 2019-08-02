@@ -381,8 +381,12 @@ class Protocol(object):
                         procedure["stop"] = next_start
 
                     # check for overlapping procedures
-                    elif next_start < procedure["stop"]:
-                        raise RuntimeError("Cannot have two overlapping procedures.")
+                    elif next_start < procedure["stop"] and not isclose(
+                        next_start, procedure["stop"]
+                    ):
+                        msg = "Cannot have two overlapping procedures. "
+                        msg += f"{procedure} and {component_procedures[i + 1]} conflict"
+                        raise RuntimeError(msg)
 
                 except IndexError:
                     if procedure["stop"] is None:
