@@ -105,6 +105,8 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                     )  # reset object
                     if isinstance(component, Sensor):
                         component._stop = True
+                
+                await asyncio.sleep(1)
 
                 # Cancel all of the remaining tasks
                 logger.trace("Cancelling all remaining tasks")
