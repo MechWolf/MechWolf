@@ -1,7 +1,7 @@
 from pint import UnitRegistry
 
 # unit registry for conversions
-_ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)  # type: ignore
+_ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
 import pkg_resources
 
 __version__ = pkg_resources.get_distribution("mechwolf").version
@@ -16,7 +16,7 @@ if get_ipython():
 # to avoid circular import
 from .core.apparatus import Apparatus
 from .core.protocol import Protocol
-from .components import *  # type: ignore
+from .components import *
 from .core.experiment import Experiment
 
 from . import zoo
