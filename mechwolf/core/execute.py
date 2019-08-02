@@ -29,7 +29,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
     - `strict`: Whether to stop execution upon any errors.
     """
 
-    logger.warning("Support for pausing execution is EXPERIMENTAL!")
+    # logger.warning("Support for pausing execution is EXPERIMENTAL!")
 
     tasks = []
 
@@ -153,16 +153,7 @@ async def wait_and_execute_procedure(
     execution_time = procedure["time"]
     if type(dry_run) == int:
         execution_time /= dry_run
-
-    time_awaited = 0.0
-    while time_awaited < execution_time - WAIT_DURATION:
-        if not experiment.paused:
-            time_awaited += WAIT_DURATION
-        await asyncio.sleep(WAIT_DURATION)
-    logger.trace(
-        f"{component} is waiting a final {execution_time - time_awaited} seconds"
-    )
-    await asyncio.sleep(execution_time - time_awaited)
+    await asyncio.sleep(execution_time)
 
     component._update_from_params(
         procedure["params"]
@@ -231,14 +222,7 @@ async def end_monitoring(
     """
     if type(dry_run) == int:
         end_time /= dry_run
-    time_awaited = 0.0
-
-    # spend most of the time checking to see if the protocol is paused
-    while time_awaited < end_time - WAIT_DURATION:
-        if not experiment.paused:
-            time_awaited += WAIT_DURATION
-        await asyncio.sleep(WAIT_DURATION)
-    await asyncio.sleep(end_time - time_awaited)
+    await asyncio.sleep(end_time)
 
     logger.debug(f"Setting {sensor}._stop to True in order to stop monitoring")
     sensor._stop = True

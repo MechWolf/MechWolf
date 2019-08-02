@@ -126,7 +126,7 @@ class Experiment(object):
         self._output_widget = widgets.VBox(
             [
                 widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"),
-                widgets.HBox([self._pause_button, self._stop_button]),
+                widgets.HBox([self._stop_button]),  # self._pause_button went here
                 self._tab,
             ]
         )
