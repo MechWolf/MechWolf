@@ -27,8 +27,4 @@ class TempControl(ActiveComponent):
         self.temp = _ureg.parse_expression("0 degC")
         self.active = False
 
-    def _base_state(self) -> dict:
-        """
-        Default to being inactive.
-        """
-        return dict(temp="0 degC", active=False)
+        self._base_state = dict(temp="0 degC", active=False)

@@ -20,9 +20,4 @@ class Pump(ActiveComponent):
         super().__init__(name=name)
         self.rate = _ureg.parse_expression("0 ml/min")
         self._visualization_shape = "box3d"
-
-    def _base_state(self) -> dict:
-        """
-        A pump's base state is a flow rate of 0 mL/min.
-        """
-        return dict(rate="0 mL/min")
+        self._base_state = dict(rate="0 mL/min")

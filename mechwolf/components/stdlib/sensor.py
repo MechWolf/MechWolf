@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import AsyncGenerator, Optional
 from warnings import warn
 
 from loguru import logger
@@ -24,12 +24,7 @@ class Sensor(ActiveComponent):
         self._visualization_shape = "ellipse"
         self._unit: str = ""
         self._stop: bool = False
-
-    def _base_state(self) -> Dict[str, Any]:
-        """
-        Default to being inactive.
-        """
-        return dict(rate="0 Hz")
+        self._base_state = {"rate": "0 Hz"}
 
     async def _read(self):
         """

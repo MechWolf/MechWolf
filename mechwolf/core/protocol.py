@@ -423,9 +423,11 @@ class Protocol(object):
                         pass
 
                     # otherwise, go back to base state
-                    compiled.append(
-                        dict(time=procedure["stop"], params=component._base_state())
-                    )
+                    new_state = {
+                        "time": procedure["stop"],
+                        "params": component._base_state,
+                    }
+                    compiled.append(new_state)
 
             output[component] = compiled
 

@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any, Dict
 
 from loguru import logger
 
@@ -28,6 +29,13 @@ class ActiveComponent(Component):
 
     def __init__(self, name=None):
         super().__init__(name=name)
+        self._base_state: Dict[str, Any] = NotImplemented
+        """
+        A placeholder for the base state of the component.
+        All subclasses of `ActiveComponent` must have this attribute.
+        The dict must have values which can be parsed into compatible units of the object's other attributes, if applicable.
+        At the end of a protocol and when not under explicit control by the user, the component will return to this state.
+        """
 
     def _update_from_params(self, params: dict) -> None:
         """
@@ -35,7 +43,6 @@ class ActiveComponent(Component):
 
         Arguments:
         - `params`: A dict whose keys are the strings of attribute names and values are the new values of the attribute.
-
         """
         for key, value in params.items():
             if isinstance(getattr(self, key), _ureg.Quantity):
@@ -43,29 +50,8 @@ class ActiveComponent(Component):
             else:
                 setattr(self, key, value)
 
-    def _base_state(self) -> dict:
-        """
-        A placeholder method for the base state of the component.
-
-        All subclasses of `ActiveComponent` must implement a function that returns a dict of its base state.
-        At the end of a protocol, the component will return to this state.
-
-        Returns:
-        - A dict that has values which can be parsed into compatible units of the object's attributes, if applicable.
-
-        Example:
-
-        ```python
-        >>> Pump._base_state()
-        {"rate": "0 ml/min"}
-        ```
-        """
-        raise NotImplementedError(
-            f"Please implement a _base_state() method for {self} that returns a dict."
-        )
-
     async def _update(self):
-        raise NotImplementedError(f"Please implement an _update() method for {self}.")
+        raise NotImplementedError(f"Implement an _update() method for {repr(self)}.")
 
     def _validate(self, dry_run: bool) -> None:
         """
@@ -74,56 +60,55 @@ class ActiveComponent(Component):
         Arguments:
         - `dry_run`: Whether this is a validation check for a dry run. Ignores the actual executability of the component.
 
-
         Returns:
         - Whether the component is valid or not.
         """
 
         logger.debug(f"Validating {self.name}...")
 
-        # the base_state dict must not be empty
-        if not self._base_state():
-            raise ValueError("base_state method dict must not be empty")
-
         # base_state method must return a dict
-        elif not isinstance(self._base_state(), dict):
-            raise ValueError("base_state method does not return a dict")
+        if not isinstance(self._base_state, dict):
+            raise ValueError("_base_state is not a dict")
+
+        # the base_state dict must not be empty
+        if not self._base_state:
+            raise ValueError("_base_state dict must not be empty")
 
         # validate the base_state dict
-        for k, v in self._base_state().items():
+        for k, v in self._base_state.items():
             if not hasattr(self, k):
                 raise ValueError(
-                    f"base_state sets {k} for {self} but {k} is not an attribute of {self}. "
+                    f"base_state sets {k} for {repr(self)} but {k} is not an attribute of {repr(self)}. "
                     f"Valid attributes are {self.__dict__}"
                 )
 
             # dimensionality checking
-            if (
-                isinstance(self.__dict__[k], _ureg.Quantity)
-                and _ureg.parse_expression(v).dimensionality
-                != self.__dict__[k].dimensionality
-            ):
-                raise ValueError(
-                    f"Invalid dimensionality in base_state for {self}. "
-                    f"Got {_ureg.parse_expression(v).dimensionality} for {k}, "
-                    f"expected {self.__dict__[k].dimensionality}"
-                )
+            if isinstance(self.__dict__[k], _ureg.Quantity):
+                # figure out the dimensions we're comparing
+                expected_dim = _ureg.parse_expression(v).dimensionality
+                actual_dim = self.__dict__[k].dimensionality
+
+                if expected_dim != actual_dim:
+                    raise ValueError(
+                        f"Invalid dimensionality in _base_state for {repr(self)}. "
+                        f"Got {_ureg.parse_expression(v).dimensionality} for {k}, "
+                        f"expected {self.__dict__[k].dimensionality}"
+                    )
 
             # if not dimensional, do type matching
-            if not isinstance(self.__dict__[k], _ureg.Quantity):
-                if not isinstance(self.__dict__[k], type(v)):
-                    raise ValueError(
-                        f"Bad type matching for {k} in base_state dict. "
-                        f"Should be {type(self.__dict__[k])} but is {type(v)}."
-                    )
+            elif not isinstance(self.__dict__[k], type(v)):
+                raise ValueError(
+                    f"Bad type matching for {k} in _base_state dict. "
+                    f"Should be {type(self.__dict__[k])} but is {type(v)}."
+                )
 
         # once we've checked everything, it should be good
         if not dry_run:
-            self._update_from_params(self._base_state())
-            logger.trace(f"Attempting to call _update() for {self}. Entering context")
+            self._update_from_params(self._base_state)
+            logger.trace(f"Attempting to call _update() for {repr(self)}.")
             with self:
                 res = asyncio.run(self._update())
                 if res is not None:
                     raise ValueError(f"Received return value {res} from update.")
 
-        logger.debug(f"{self} is valid")
+        logger.debug(f"{repr(self)} is valid")

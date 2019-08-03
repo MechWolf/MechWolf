@@ -21,8 +21,7 @@ class Dummy(ActiveComponent):
         super().__init__(name=name)
         self.active = False
 
-    def _base_state(self) -> dict:
-        return dict(active=False)
+        self._base_state = dict(active=False)
 
     async def _update(self) -> None:
         if self.active:
