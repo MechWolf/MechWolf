@@ -20,6 +20,7 @@ from .components import *
 from .core.experiment import Experiment
 
 from . import zoo
+from . import plugins
 
 # deactivate logging (see https://loguru.readthedocs.io/en/stable/overview.html#suitable-for-scripts-and-libraries)
 from loguru import logger
