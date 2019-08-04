@@ -5,10 +5,18 @@ from pathlib import Path
 
 import mechwolf as mw
 
+NO_EDIT_HEADER = "---\neditLink: false\n---\n"
 
-def obj_to_mw_doc(obj):
+
+def format_signature(obj):
+    declaration = ""
+    if inspect.isfunction(obj):
+        declaration = "def "
+    elif inspect.isclass(obj):
+        declaration = "class "
     return (
         "```python\n"
+        + declaration
         + obj.__name__
         + str(inspect.signature(obj))
         + "\n```\n\n"
@@ -17,29 +25,37 @@ def obj_to_mw_doc(obj):
     )
 
 
-def document_class(cls):
-    res = "---\neditLink: false\n---\n"  # the YAML header
-    res += f"# {cls.__name__}"  # the title of the class
+def add_badges(obj):
+    res = ""
+    if obj.metadata["stability"] == "stable" and obj["supported"]:
+        res += ' <Badge text="Supported" type="tip"/>'
+    if obj.metadata["stability"] == "beta":
+        res += ' <Badge text="Beta" type="warn"/>'
+    if not obj.metadata["supported"]:
+        res += ' <Badge text="Unsupported" type="error"/>'
+    return res
 
+
+def generate_obj_md(cls, title=None, header=NO_EDIT_HEADER):
+    res = header  # the YAML header
+    if title is None:
+        res += f"# {cls.__name__}"  # the title of the class
+    else:
+        res += title
     # add badges, if applicable
     try:
-        if cls.metadata["stability"] == "stable" and cls["supported"]:
-            res += ' <Badge text="Supported" type="tip"/>'
-        if cls.metadata["stability"] == "beta":
-            res += ' <Badge text="Beta" type="warn"/>'
-        if not cls.metadata["supported"]:
-            res += ' <Badge text="Unsupported" type="error"/>'
+        res += add_badges(cls)
         res += "\n\n"
     # core and stdlib classes don't have metadata right now
     except AttributeError:
         res += "\n\n"
 
-    res += obj_to_mw_doc(cls) + "\n"  # get the docstring
+    res += format_signature(cls) + "\n"  # get the docstring
 
     # add contact info, if possible
     try:
-        cls.metadata
-        res += f"""This component was built and {"is" if cls.metadata["supported"] else "was"} maintained by:
+        cls.metadata, cls.metadata["supported"], cls.metadata["author"]
+        res += f"""Built and {"" if cls.metadata["supported"] else "formerly"} maintained by:
 
 <table>
   <tr>
@@ -63,7 +79,7 @@ def document_class(cls):
 </tr>
 """
         res += "</table>\n\n"
-    except AttributeError:
+    except (AttributeError, KeyError):
         pass
 
     for method in inspect.getmembers(cls):  # now repeat for the methods
@@ -74,7 +90,7 @@ def document_class(cls):
         ):
             continue
         res += "## " + method[0] + "\n\n"
-        res += obj_to_mw_doc(method[1])
+        res += format_signature(method[1])
     res = (
         res.replace("Arguments:", "### Arguments")
         .replace("Returns:", "### Returns")
@@ -89,7 +105,7 @@ def document_class(cls):
 # first, do the main objects
 for cls in [mw.Apparatus, mw.Protocol, mw.Experiment]:
     print(f"Generating docs for {cls.__name__}")
-    docs = document_class(cls)
+    docs = generate_obj_md(cls)
     Path("api/core/" + cls.__name__.lower() + ".md").write_text(docs)
 
 for module in [mw.components.stdlib, mw.components.contrib]:
@@ -108,10 +124,38 @@ for module in [mw.components.stdlib, mw.components.contrib]:
             continue
 
         # write it out
-        docs = document_class(cls[1])
+        docs = generate_obj_md(cls[1])
         Path(
             inspect.getmodule(cls[1])
             .__name__.replace(".", "/")
             .replace("mechwolf", "api")
             + ".md"
         ).write_text(docs)
+
+print("Generating docs for zoo")
+for module in inspect.getmembers(mw.zoo):
+    docs = ""
+    if module[0][0] != "_":  # exclude internal methods
+        # note that for the zoo, it's one file per module
+        docs += f"# {module[0]} " + add_badges(module[1]) + "\n"  # add the title
+        docs += inspect.getdoc(module[1]) + "\n\n"  # add the module docstring
+        for submodule in inspect.getmembers(module[1]):  # we want its members
+            # but not internal ones or recursive submodules (such as mw imports)
+            if submodule[0][0] != "_" and not inspect.ismodule(submodule[1]):
+                # yet another hack
+                if submodule[0] == "metadata":
+                    continue
+                # we document each function or class as second level items
+                docs += generate_obj_md(
+                    submodule[1], header="", title=f"## {submodule[0]}"
+                )
+                docs += "\n"
+        Path("api/zoo/" + module[0] + ".md").write_text(docs)
+
+print("Generating docs for plugins")
+plugins = f"{NO_EDIT_HEADER}\n# Plugins\n"
+for fn in inspect.getmembers(mw.plugins):
+    if fn[0][0] == "_" or not inspect.isfunction(fn[1]):
+        continue
+    plugins += generate_obj_md(fn[1], header="", title=f"## {fn[1].__name__}") + "\n"
+Path("api/plugins.md").write_text(plugins)

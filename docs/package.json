@@ -4,9 +4,10 @@
   "description": "The documentation site for the MechWolf package",
   "main": "index.js",
   "scripts": {
-    "dev": "vuepress dev ./",
-    "build": "npm run api && vuepress build ./",
-    "api": "python3.7 -V && python3.7 -m pip install -e .. && python3.7 generate_api_docs.py"
+    "dev": "npm run generate && vuepress dev ./",
+    "build": "npm run install && npm run generate && vuepress build ./",
+    "install": "python3.7 -V && python3.7 -m pip install -e .. ",
+    "generate": "python3.7 generate_api_docs.py"
   },
   "author": "Benjamin Lee",
   "license": "GPL-3.0",

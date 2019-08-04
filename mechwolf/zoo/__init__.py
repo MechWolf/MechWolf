@@ -1,1 +1,1 @@
-from .acetaminophen import create_protocol
+from . import peptide_synthesizer

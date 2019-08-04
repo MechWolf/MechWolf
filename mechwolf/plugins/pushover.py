@@ -41,7 +41,7 @@ def pushover(token: str, user: str, level: str):
     Example:
     ```python
     import mechwolf as mw
-    mw.zoo.pushover(YOUR_TOKEN, YOUR_USER_KEY, "info")
+    mw.plugins.pushover(YOUR_TOKEN, YOUR_USER_KEY, "info")
     ```
     """
 
