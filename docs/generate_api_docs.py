@@ -26,13 +26,20 @@ def format_signature(obj):
 
 
 def add_badges(obj):
-    res = ""
-    if obj.metadata["stability"] == "stable" and obj.metadata["supported"]:
-        res += ' <Badge text="Supported" type="tip"/>'
-    if obj.metadata["stability"] == "beta":
-        res += ' <Badge text="Beta" type="warn"/>'
+    res = " "
+    if obj.metadata["stability"] == "stable":
+        res += '<Badge text="Stable" type="tip"/>'
+    elif obj.metadata["stability"] == "beta":
+        res += '<Badge text="Beta" type="warn"/>'
+    elif obj.metadata["stability"] == "deprecated":
+        res += '<Badge text="Deprecated" type="error"/>'
+    else:
+        raise ValueError(f"Unknown stability status for {repr(obj)}")
+
+    # check if the obj is supported
     if not obj.metadata["supported"]:
-        res += ' <Badge text="Unsupported" type="error"/>'
+        res += '<Badge text="Unsupported" type="warn"/>'
+
     return res
 
 
@@ -55,7 +62,7 @@ def generate_obj_md(cls, title=None, header=NO_EDIT_HEADER):
     # add contact info, if possible
     try:
         cls.metadata, cls.metadata["supported"], cls.metadata["author"]
-        res += f"""Built and {"" if cls.metadata["supported"] else "formerly"} maintained by:
+        res += f"""### Metadata\nBuilt and {"" if cls.metadata["supported"] else "formerly"} maintained by:
 
 <table>
   <tr>
