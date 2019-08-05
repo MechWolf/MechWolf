@@ -106,7 +106,9 @@ def generate_obj_md(cls, title=None, header=NO_EDIT_HEADER):
 for cls in [mw.Apparatus, mw.Protocol, mw.Experiment]:
     print(f"Generating docs for {cls.__name__}")
     docs = generate_obj_md(cls)
-    Path("api/core/" + cls.__name__.lower() + ".md").write_text(docs)
+    path = Path("api/core/")
+    path.mkdir(exist_ok=True, parents=True)
+    (path / (cls.__name__.lower() + ".md")).write_text(docs)
 
 for module in [mw.components.stdlib, mw.components.contrib]:
     # find out what classes are part of the module
@@ -125,12 +127,14 @@ for module in [mw.components.stdlib, mw.components.contrib]:
 
         # write it out
         docs = generate_obj_md(cls[1])
-        Path(
+        path = Path(
             inspect.getmodule(cls[1])
             .__name__.replace(".", "/")
             .replace("mechwolf", "api")
             + ".md"
-        ).write_text(docs)
+        )
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.write_text(docs)
 
 print("Generating docs for zoo")
 for module in inspect.getmembers(mw.zoo):
@@ -150,7 +154,9 @@ for module in inspect.getmembers(mw.zoo):
                     submodule[1], header="", title=f"## {submodule[0]}"
                 )
                 docs += "\n"
-        Path("api/zoo/" + module[0] + ".md").write_text(docs)
+        path = Path("api/zoo/" + module[0] + ".md")
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.write_text(docs)
 
 print("Generating docs for plugins")
 plugins = f"{NO_EDIT_HEADER}\n# Plugins\n"
@@ -158,4 +164,6 @@ for fn in inspect.getmembers(mw.plugins):
     if fn[0][0] == "_" or not inspect.isfunction(fn[1]):
         continue
     plugins += generate_obj_md(fn[1], header="", title=f"## {fn[1].__name__}") + "\n"
-Path("api/plugins.md").write_text(plugins)
+path = Path("api/plugins.md")
+path.parent.mkdir(exist_ok=True, parents=True)
+path.write_text(plugins)
