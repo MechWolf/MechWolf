@@ -27,7 +27,7 @@ def format_signature(obj):
 
 def add_badges(obj):
     res = ""
-    if obj.metadata["stability"] == "stable" and obj["supported"]:
+    if obj.metadata["stability"] == "stable" and obj.metadata["supported"]:
         res += ' <Badge text="Supported" type="tip"/>'
     if obj.metadata["stability"] == "beta":
         res += ' <Badge text="Beta" type="warn"/>'
