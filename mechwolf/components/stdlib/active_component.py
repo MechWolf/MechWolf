@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from loguru import logger
 
@@ -27,7 +27,7 @@ class ActiveComponent(Component):
 
     _id_counter = 0
 
-    def __init__(self, name=None):
+    def __init__(self, name: Optional[str] = None):
         super().__init__(name=name)
         self._base_state: Dict[str, Any] = NotImplemented
         """

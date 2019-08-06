@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .mixer import Mixer
 
 
@@ -14,5 +16,5 @@ class CrossMixer(Mixer):
     - `name`: The name of the mixer.
     """
 
-    def __init__(self, name=None):
+    def __init__(self, name: Optional[str] = None):
         super().__init__(name=name)
