@@ -9,4 +9,6 @@ script:
   - black --check mechwolf
   - flake8
   - mypy mechwolf/ --ignore-missing-import --no-implicit-optional
+  - cd docs
+  - npm run build
 cache: pip
