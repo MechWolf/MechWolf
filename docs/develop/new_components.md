@@ -2,84 +2,58 @@
 
 ## General Approach
 
-You may find yourself in the position that MechWolf's included
-components aren't what you need. In that case, you'll have to create
-your own component. Here's how:
+You may find yourself in the position that MechWolf's included components aren't what you need.
+In that case, you'll have to create your own component.
+Here's how:
 
 1.  **Decide what kind of component it is.**  
-    If you're trying to make a new kind of pump, for example, you'll
-    want to be inheriting from `components.pump.Pump`. For
-    components being controlled (i.e. not aliases of
-    `components.component.Component`), you'll have to
-    create a subclass of
-    `components.component.ActiveComponent`. If you are
-    only creating an alias of `validate_component`, you
-    can skip 4–6.
+    If you're trying to make a new kind of pump, for example, you'll want to be inheriting from `Pump`.
+    For components being controlled (i.e. not aliases of `Component`), you'll have to create a subclass of `ActiveComponent`.
 
 2.  **Create a new class.**  
-    If you're struggling, see [the official Python
-    docs](https://docs.python.org/3/tutorial/classes.html), a handy
-    [tutorial on
-    classes](https://www.tutorialspoint.com/python3/python_classes_objects.htm),
-    or look at MechWolf's source code. Make sure to add `name` as an
-    argument to `__init__` and the line
-    `super().__init__(name=name)`, which tells Python to pass the
-    name argument up to the
-    `components.component.ActiveComponent` class.
+    If you're struggling, see [the official Python docs](https://docs.python.org/3/tutorial/classes.html), a handy [tutorial on classes](https://www.tutorialspoint.com/python3/python_classes_objects.htm), or look at MechWolf's source code.
+    Make sure to add `name` as an optional argument to `__init__` and the line `super().__init__(name=name)`, which tells Python to pass the name argument up to the `ActiveComponent` class.
 
-3.  **Give the component its attributes.**  
-    This means that anything that you will be using as keywords
-    during your calls to `Protocol.add` must be
-    attributes. Furthermore, if they are quantities such as "10
-    mL/min", these attributes should be parsed Quantity objects.
+3.  **Give the component its controllable attributes.**  
+    This means that anything that you will be using as keywords during your calls to `Protocol.add()` must be attributes.
+    Furthermore, if they are quantities such as "10 mL/min", these attributes should be parsed `Quantity` objects.
+    To get a `Quantity` object, import MechWolf's internal Unit registry (_i.e._ using `from mechwolf import _ureg`) and call `_ureg.parse_expression()` with the string of the component's attributes.
 
-4.  **Give it a base state method.**  
-    MechWolf requires that any component being modified as part of a
-    protocol have a base state which it will return to after the
-    protocol. For things that turn on, this base state is usually
-    "off". The base state method must be called `base_state` and
-    return a dict with attribute as keys and settings for those
-    attributes as values. For a Varian pump, it could look like
-    this:
+4.  **Give it a base state attribute.**  
+    MechWolf requires that any component being modified as part of a protocol have a base state attribute to which it will return to after the protocol.
+    For things that turn on, this base state is usually "off".
+    The base state method must be called `_base_state` and be a dict with attributes as keys and settings for those attributes as values.
+    For a Varian pump, it could look like this:
 
-        >>> VarianPump(name="pump").base_state()
-        {"rate": "0 mL/min"}
+    ```python
+    >>> VarianPump()._base_state
+    {"rate": "0 mL/min"}
+    ```
 
-    The values in the base state dictionary need to be parsable into
-    valid values, the same as if they were passed as keyword
-    arguments to `Protocol.add`. In fact, under the hood,
-    that is exactly what is happening. At the end of your protocol,
-    `Protocol.compile` adds a procedure for each
-    `components.component.ActiveComponent` in the protocol
-    to return to its base state.å
+    The values in the base state dictionary need to be parsable into valid values, the same as if they were passed as keyword arguments to `Protocol.add()`.
+    In fact, under the hood, that is exactly what is happening.
+    At the end of your protocol, `Protocol.compile()` adds a procedure for each `ActiveComponent` in the protocol to return to its base state.
+    In addition, when the component is not explicity being used, the component will default to its base state.
 
-5.  **Give it an update method.**  
-    The job of the update method is to make the object's real-world
-    state match its virtual representation. This is where the
-    hardware interfacing happens.
+5.  **Give it a method to update the hardware's state.**  
+    The job of the update method is to make the object's real-world state match its virtual representation.
+    The update method must be asynchronous and be called `_update()`.
+    This is where the hardware interfacing happens.
 
-    Note, however, that because MechWolf objects have two distinct
-    uses (being manipulated before runtime and actually used during
-    runtime to control the hardware), components must be able to be
-    instantiated without respect to it's real-world configuration.
-    For example, this means that, to enforce a level of abstraction,
-    you shouldn't need to know what serial port your client is
-    talking to your component in order to manipulate it when
-    creating your script. The object that is being run on your
-    client _would_ need to know that though, so the object has to be
-    able to support both uses.
+    Note, however, that because MechWolf objects have two distinct uses (being manipulated before runtime and actually used during runtime to control the hardware), components must be able to be instantiated without respect to it's real-world configuration.
+    For example, this means that, to enforce a level of abstraction, you shouldn't need to know what serial port your client is talking to your component in order to manipulate it when creating your script.
+    The object that is being run on your client _would_ need to know that though, so the object has to be able to support both uses.
 
-    Note: this step doesn't apply to
-    `components.sensor.Sensor` s, which already have a
-    built-in update method.
+    Note: this step doesn't apply to `Sensor`s, which already have a built-in update method.
 
-6.  **For sensors, give it a read method.**
+6.  **For sensors, give it a method to read the data.**
 
-    > This is where the actual data collection goes. It should return
-    > the data read in from the sensor. MechWolf will automatically
-    > timestamp it, so don't worry about that.
+    This is where the actual data collection goes.
+    The method must be called `_read()`.
+    It should asynchronously return the data read in from the sensor, which may be in any JSON-serializable format.
+    MechWolf will automatically timestamp and log it, so don't worry about that.
 
-7.  **Test thoroughly with** `validate_component`.  
+7.  \*\*Test thoroughly with `validate_component`.  
     For your convenience, the `validate_component`
     function will take an instance of your class (not the class
     itself) and verify that it meets the requirements to be used in
