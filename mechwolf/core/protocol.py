@@ -626,7 +626,10 @@ class Protocol(object):
 
         # the Experiment object is going to hold all the info
         E = Experiment(
-            self, compiled_protocol=compiled_protocol, verbosity=verbosity.upper()
+            self,
+            compiled_protocol=compiled_protocol,
+            verbosity=verbosity.upper(),
+            dry_run=dry_run,
         )
         display(E._output_widget)  # type: ignore
 

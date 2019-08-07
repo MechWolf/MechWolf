@@ -98,7 +98,10 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
 
                 # Stop all of the sensors and exit the read loops
+                logger.info("Experimentation is over. Cleaning up...")
                 logger.debug("Stopping all sensors")
+
+                # reset object
                 for component in list(experiment.compiled_protocol.keys()):
                     # reset object
                     component._update_from_params(component._base_state)
@@ -150,38 +153,32 @@ async def wait_and_execute_procedure(
     dry_run: Union[bool, int],
     strict: bool,
 ):
+    params = procedure["params"]
+
     # wait for the right moment
     execution_time = procedure["time"]
     if type(dry_run) == int:
         execution_time /= dry_run
-    await asyncio.sleep(execution_time)
+    await wait(execution_time, experiment, f"Set {component} to {params}")
 
-    component._update_from_params(
-        procedure["params"]
-    )  # NOTE: this doesn't actually call the _update() method
+    # NOTE: this doesn't actually call the _update() method
+    component._update_from_params(params)
 
     if dry_run:
-        logger.info(
-            f"Simulating: {procedure['params']} on {component}"
-            f" at {procedure['time']}s"
-        )
+        logger.info(f"Simulating: {params} on {component} at {procedure['time']}s")
     else:
-        logger.info(
-            f"Executing: {procedure['params']} on {component}"
-            f" at {procedure['time']}s"
-        )
+        logger.info(f"Executing: {params} on {component} at {procedure['time']}s")
         try:
             await component._update()  # NOTE: This does!
         except Exception as e:
-            logger.log(
-                "ERROR" if strict else "WARNING", f"Failed to update {component}!"
-            )
+            level = "ERROR" if strict else "WARNING"
+            logger.log(level, f"Failed to update {component}!")
             if strict:
                 raise RuntimeError(str(e))
 
     record = {
         "timestamp": time.time(),
-        "params": procedure["params"],
+        "params": params,
         "type": "executed_procedure" if not dry_run else "simulated_procedure",
         "component": component,
     }
@@ -215,6 +212,7 @@ async def end_monitoring(
     """
     Creates a new async task that ends the monitoring for a `components.sensor.Sensor` when it is done for the protocol.
 
+    Arguments:
     - `sensor`: The sensor to end monitoring for.
     - `end_time`: The end time for the sensor in EET.
     - `dry_run`: Whether a dry run is in progress.
@@ -223,7 +221,7 @@ async def end_monitoring(
     """
     if type(dry_run) == int:
         end_time /= dry_run
-    await asyncio.sleep(end_time)
+    await wait(end_time, experiment, f"Stop monitoring {repr(sensor)}")
 
     logger.debug(f"Setting {sensor}._stop to True in order to stop monitoring")
     sensor._stop = True
@@ -231,8 +229,37 @@ async def end_monitoring(
 
 async def check_if_cancelled(experiment: Experiment, end_time: float) -> None:
     time_awaited = 0.0
-    while time_awaited < end_time:
+    while time_awaited < end_time + experiment._total_paused_duration:
         await asyncio.sleep(WAIT_DURATION)
         time_awaited += WAIT_DURATION
         if experiment.cancelled is True:
             raise ProtocolCancelled("protocol cancelled")
+
+
+async def wait(duration: float, experiment: Experiment, name: str):
+    """A pause-aware version of asyncio.sleep"""
+    await asyncio.sleep(duration)
+    logger.trace(f"<{name}> Just woke up from {duration}s nap")
+
+    while True:
+        # if, at the end of sleeping, the experiment is paused, wait for it to resume
+        while experiment.paused:
+            await asyncio.sleep(0)
+        assert not experiment.paused
+
+        # figure out how long we've been paused for
+        eet_offset = experiment._total_paused_duration
+        # and where in the experimental plan we are
+        assert isinstance(experiment.start_time, float)  # make the type checker happy
+        eet = time.time() - experiment.start_time - eet_offset
+
+        # do the logging thing
+        logger.trace(f"EET is {eet}")
+        logger.trace(f"<{name}> was supposed to execute after {duration}s")
+
+        if (duration - eet) > 0:
+            logger.trace(f"Waiting {duration - eet} more seconds")
+            await asyncio.sleep(duration - eet)
+        else:
+            logger.trace(f"It's go time for <{name}>!")
+            break
