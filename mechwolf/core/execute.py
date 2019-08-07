@@ -103,7 +103,8 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
 
                 # reset object
                 for component in list(experiment.compiled_protocol.keys()):
-                    component._update_from_params(component._base_state())
+                    # reset object
+                    component._update_from_params(component._base_state)
                     if isinstance(component, Sensor):
                         component._stop = True
 

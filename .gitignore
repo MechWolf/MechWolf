@@ -117,11 +117,10 @@ node_modules
 
 # ignore automatically generated docs
 docs/api/components/stdlib/*
-!docs/api/components/stdlib/README.md
 docs/api/components/contrib/*
-!docs/api/components/contrib/README.md
 docs/api/core/*
-!docs/api/core/README.md
+docs/api/plugins.md
+docs/api/zoo/*
 
 # automatically generated logging
 *.log.json

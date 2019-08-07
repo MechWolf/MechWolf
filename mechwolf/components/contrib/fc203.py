@@ -38,6 +38,8 @@ class GilsonFC203(ActiveComponent):
         self.position = 1
         self.prev_position = 1
 
+        self._base_state = dict(position=1)
+
     def __enter__(self):
         from .gsioc import GsiocInterface
 
@@ -95,8 +97,3 @@ class GilsonFC203(ActiveComponent):
 
     async def _update(self):
         await self._goto(self.position)
-
-    def _base_state(self):
-        """We assume that the collector starts at the drain position.
-        """
-        return dict(position=1)

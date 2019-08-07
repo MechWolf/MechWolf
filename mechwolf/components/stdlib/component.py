@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Optional, Set
 
 from loguru import logger
 
@@ -20,7 +20,7 @@ class Component(object):
     _id_counter = 0
     _used_names: Set[str] = set()
 
-    def __init__(self, name=None):
+    def __init__(self, name: Optional[str] = None):
         # name the object, either sequentially or with a given name
         if name is None:
             self.name = self.__class__.__name__ + "_" + str(self.__class__._id_counter)

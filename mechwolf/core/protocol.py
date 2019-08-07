@@ -5,7 +5,17 @@ from copy import deepcopy
 from datetime import timedelta
 from math import isclose
 from pathlib import Path
-from typing import IO, Any, Dict, Iterable, List, MutableMapping, Optional, Union
+from typing import (
+    IO,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Union,
+)
 from warnings import warn
 
 import altair as alt
@@ -284,7 +294,7 @@ class Protocol(object):
         if all([x is None for x in computed_durations]):
             raise RuntimeError(
                 "Unable to automatically infer duration of protocol. "
-                'Must define stop or duration for at least one procedure to use duration="auto".'
+                "Must define stop or duration for at least one procedure"
             )
         return computed_durations[-1]
 
@@ -423,9 +433,11 @@ class Protocol(object):
                         pass
 
                     # otherwise, go back to base state
-                    compiled.append(
-                        dict(time=procedure["stop"], params=component._base_state())
-                    )
+                    new_state = {
+                        "time": procedure["stop"],
+                        "params": component._base_state,
+                    }
+                    compiled.append(new_state)
 
             output[component] = compiled
 
@@ -504,13 +516,23 @@ class Protocol(object):
                 for k, v in procedure["params"].items():
                     procedure[k] = v
 
+                # show what the valve is actually connecting to
+                if isinstance(component, Valve) and type(procedure["setting"]) == int:
+                    assert isinstance(component.mapping, Mapping)
+                    # guess the component, c, which the valve is set to
+                    mapped_component = [
+                        repr(k)
+                        for k, v in component.mapping.items()
+                        if v == procedure["setting"]
+                    ][0]
+                    procedure["mapped component"] = mapped_component
                 # TODO: make this deterministic for color coordination
                 procedure["params"] = json.dumps(procedure["params"])
 
             # prettyify the tooltips
             tooltips = [
-                alt.Tooltip("utchoursminutesseconds(start):T", title="Start (h:m:s)"),
-                alt.Tooltip("utchoursminutesseconds(stop):T", title="Stop (h:m:s)"),
+                alt.Tooltip("utchoursminutesseconds(start):T", title="start (h:m:s)"),
+                alt.Tooltip("utchoursminutesseconds(stop):T", title="stop (h:m:s)"),
                 "component",
             ]
 

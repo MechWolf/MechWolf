@@ -31,13 +31,7 @@ class Valve(ActiveComponent):
         self.setting = 1
         self._visualization_shape = "parallelogram"
 
-    def _base_state(self) -> dict:
-        """
-        Default to `setting=1`.
-
-        This is an arbitrary choice but is guaranteed to be a valid setting.
-        """
-        return {"setting": 1}
+        self._base_state = {"setting": 1}
 
     def _validate(self, dry_run):
         if not self.mapping:

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from loguru import logger
 
 from .pump import Pump
@@ -19,7 +21,7 @@ class DummyPump(Pump):
     - `rate` (`pint.Quantity`): The flow rate of the pump. Must be of the dimensionality of volume/time.
     """
 
-    def __init__(self, name=None):
+    def __init__(self, name: Optional[str] = None):
         super().__init__(name=name)
 
     async def _update(self):

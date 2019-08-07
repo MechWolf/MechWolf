@@ -20,12 +20,10 @@ def test_empty_base_state():
         def __init__(self):
             super().__init__(name=None)
             self.active = False
+            self._base_state = {}
 
         async def _update(self):
             return True
-
-        def _base_state(self):
-            return {}
 
     with pytest.raises(ValueError):
         Test()._validate(dry_run=True)
@@ -37,12 +35,10 @@ def test_invalid_base_state():
         def __init__(self):
             super().__init__(name=None)
             self.active = False
+            self._base_state = dict(rate="10 mL")
 
         async def _update(self):
             return True
-
-        def _base_state(self):
-            return dict(rate="10 mL")
 
     with pytest.raises(ValueError):
         Test()._validate(dry_run=True)
@@ -54,12 +50,10 @@ def test_wrong_base_state_dimensionality():
         def __init__(self):
             super().__init__(name=None)
             self.rate = mw._ureg.parse_expression("10 mL/min")
+            self._base_state = dict(rate="10 mL")
 
         async def _update(self):
             return True
-
-        def _base_state(self):
-            return dict(rate="10 mL")
 
     with pytest.raises(ValueError):
         Test()._validate(dry_run=True)
@@ -71,12 +65,10 @@ def test_passing_class():
             super().__init__(name=None)
             self.active = False
             self.serial_port = serial_port
+            self._base_state = dict(active=False)
 
         async def _update(self):
             pass
-
-        def _base_state(self):
-            return dict(active=False)
 
     # should pass both as a dry run and as a real run (since update doesn't do anything)
     Test()._validate(dry_run=True)
@@ -90,12 +82,10 @@ def test_base_state_type():
             super().__init__(name=None)
             self.active = False
             self.serial_port = serial_port
+            self._base_state = dict(active="10 mL")
 
         async def _update(self):
             return True
-
-        def _base_state(self):
-            return dict(active="10 mL")
 
     with pytest.raises(ValueError):
         Test()._validate(dry_run=True)
@@ -106,12 +96,10 @@ def test_base_state_type():
             super().__init__(name=None)
             self.active = False
             self.serial_port = serial_port
+            self._base_state = "not a dict"
 
         async def _update(self):
             return True
-
-        def _base_state(self):
-            return "not a dict"
 
     with pytest.raises(ValueError):
         Test()._validate(dry_run=True)
@@ -133,12 +121,10 @@ def test_update_must_return_none():
         def __init__(self):
             super().__init__(name=None)
             self.active = False
+            self._base_state = dict(active=False)
 
         async def _update(self):
             return False
-
-        def _base_state(self):
-            return dict(active=False)
 
     Test()._validate(dry_run=True)
     with pytest.raises(ValueError):
@@ -150,9 +136,7 @@ def test_default_update():
         def __init__(self):
             super().__init__(name=None)
             self.active = False
-
-        def _base_state(self):
-            return dict(active=False)
+            self._base_state = dict(active=False)
 
     Test()._validate(dry_run=True)
     with pytest.raises(NotImplementedError):
@@ -164,12 +148,10 @@ def test_sync_update():
         def __init__(self):
             super().__init__(name=None)
             self.active = False
+            self._base_state = dict(active=False)
 
         def _update(self):
             pass
-
-        def _base_state(self):
-            return dict(active=False)
 
     Test()._validate(dry_run=True)
     with pytest.raises(ValueError):

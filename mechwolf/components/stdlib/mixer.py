@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .component import Component
 
 
@@ -14,6 +16,6 @@ class Mixer(Component):
     - `name`: The name of the mixer.
     """
 
-    def __init__(self, name=None):
+    def __init__(self, name: Optional[str] = None):
         super().__init__(name=name)
         self._visualization_shape = "cds"

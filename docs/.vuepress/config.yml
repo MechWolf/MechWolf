@@ -1,5 +1,5 @@
 title: MechWolf
-description: Continuous flow process automation made easy
+description: "Robotic chemistry made easy"
 themeConfig:
   logo: /head10x.png
   lastUpdated: Last Updated
@@ -13,28 +13,34 @@ themeConfig:
     - text: API Reference
       items:
         - text: Overview
-          link: /api/overview
+          link: /api/index
         - text: Modules
           items:
             - text: core
-              link: /api/core/
+              link: /api/core/apparatus
             - text: stdlib
-              link: /api/components/stdlib/
+              link: /api/components/stdlib/active_component
             - text: contrib
-              link: /api/components/contrib/
+              link: /api/components/contrib/arduino
+            - text: zoo
+              link: /api/zoo/peptide_synthesizer
+            - text: plugins
+              link: /api/plugins
     - text: Get Help
       link: https://github.com/Benjamin-Lee/MechWolf/issues/new/choose
   sidebar:
     /api/:
+      - /api/
       - title: Core
         collapsable: false
         children:
           - /api/core/apparatus
           - /api/core/protocol
           - /api/core/experiment
-      - title: Component Standard Library
+      - title: Standard Components
         collapsable: false
         children:
+          # NOTE: if adding a component right after this line be sure to change the link in the navbar
           - /api/components/stdlib/active_component
           - /api/components/stdlib/broken_dummy_component
           - /api/components/stdlib/broken_dummy_sensor
@@ -53,9 +59,10 @@ themeConfig:
           - /api/components/stdlib/valve
           - /api/components/stdlib/vessel
           - /api/components/stdlib/y_mixer
-      - title: Contributed Component Library
+      - title: Contributed Components
         collapsable: false
         children:
+          # NOTE: if adding a component right after this line be sure to change the link in the navbar
           - /api/components/contrib/arduino
           - /api/components/contrib/fc203
           # - /api/components/contrib/gsioc
@@ -63,6 +70,13 @@ themeConfig:
           - /api/components/contrib/varian
           - /api/components/contrib/vici
           - /api/components/contrib/vicipump
+      - title: Reproducibility Zoo
+        collapsable: false
+        children:
+          # NOTE: if adding a component right after this line be sure to change the link in the navbar
+          - /api/zoo/peptide_synthesizer
+      - /api/plugins
+
     /develop/:
       - title: Developer Information
         collapsable: false

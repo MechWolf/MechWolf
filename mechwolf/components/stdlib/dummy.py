@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .active_component import ActiveComponent
 
 
@@ -17,12 +19,11 @@ class Dummy(ActiveComponent):
     - `active`: Whether the component is active. This doesn't actually mean anything.
     """
 
-    def __init__(self, name=None):
+    def __init__(self, name: Optional[str] = None):
         super().__init__(name=name)
         self.active = False
 
-    def _base_state(self) -> dict:
-        return dict(active=False)
+        self._base_state = dict(active=False)
 
     async def _update(self) -> None:
         if self.active:

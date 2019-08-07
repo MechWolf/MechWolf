@@ -41,8 +41,23 @@ def pushover(token: str, user: str, level: str):
     Example:
     ```python
     import mechwolf as mw
-    mw.zoo.pushover(YOUR_TOKEN, YOUR_USER_KEY, "info")
+    mw.plugins.pushover(YOUR_TOKEN, YOUR_USER_KEY, "info")
     ```
     """
 
     logger.add(generate_sink(token=token, user=user), level=level.upper(), enqueue=True)
+
+
+pushover.metadata = {  # type: ignore
+    "author": [
+        {
+            "first_name": "Benjamin",
+            "last_name": "Lee",
+            "email": "benjamin_lee@college.harvard.edu",
+            "institution": "Harvard University",
+            "github_username": "Benjamin-Lee",
+        }
+    ],
+    "stability": "stable",
+    "supported": True,
+}
