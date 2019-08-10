@@ -1,7 +1,9 @@
+import asyncio
 import json
 import os
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+from pathlib import Path
+from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Union
 from warnings import warn
 
 import aiofiles
@@ -10,10 +12,12 @@ from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
 from IPython import get_ipython
+from IPython.display import display
 from loguru import logger
 from xxhash import xxh32
 
 from ..components import ActiveComponent, Sensor
+from .execute import main
 
 # handle the hard issue of circular dependencies
 if TYPE_CHECKING:
@@ -45,37 +49,30 @@ class Experiment(object):
     - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
     """
 
-    def __init__(
-        self,
-        protocol: "Protocol",
-        compiled_protocol: Mapping[
-            ActiveComponent,
-            Iterable[Mapping[str, Union[float, str, Mapping[str, Any]]]],
-        ],
-        verbosity: str,
-        dry_run: Union[bool, int],
-    ):
+    def __init__(self, protocol: "Protocol"):
         # args
+        self.apparatus = protocol.apparatus
         self.protocol = protocol
-        self.compiled_protocol = compiled_protocol
-        self.dry_run = dry_run
 
         # computed values
-        self.experiment_id = f'{time.strftime("%Y_%m_%d_%H_%M_%S")}_{xxh32(str(protocol.yaml())).hexdigest()}'
+        self.experiment_id: Optional[str] = None
 
         # default values
-        self.start_time: Optional[float] = None  # hasn't started until main() is called
+        self.dry_run: Union[bool, int]
+        self.start_time: float  # hasn't started until main() is called
+        self.created_time = time.time()  # when the object was created (might be diff)
         self.end_time: float
         self.data: Dict[str, List[Datapoint]] = {}
         self.executed_procedures: List[
             Dict[str, Union[float, Dict[str, Any], str, ActiveComponent]]
         ] = []
         self.cancelled = False
+        self.was_executed = False
 
         # internal values (unstable!)
         self._charts = {}  # type: ignore
         self._graphs_shown = False
-        self._sensors = [c for c in self.compiled_protocol if isinstance(c, Sensor)]
+        self._sensors = self.apparatus[Sensor]
         self._sensors.reverse()
         self._device_name_to_unit = {c.name: c._unit for c in self._sensors}
         self._sensor_names: List[str] = [s.name for s in self._sensors]
@@ -86,82 +83,14 @@ class Experiment(object):
         self._plot_height = 300
         self._paused = False
         self._pause_times: List[Dict[str, float]] = []
+        _local_time = time.localtime(self.created_time)
+        self._created_time_local: str = time.strftime("%Y_%m_%d_%H_%M_%S", _local_time)
+
+        # internal values
+        self._file_logger_id: Optional[int] = None
+        self._is_executing = False
+        self._log_file: Union[IO, str, None, os.PathLike] = None
         self._data_file: Optional[os.PathLike] = None
-
-        # don't do any of the UI stuff if not in the notebook
-        # if get_ipython() is None:
-        #     return
-
-        # create pause button
-        self._pause_button = widgets.Button(description="Pause", icon="pause")
-        self._pause_button.on_click(self._on_pause_clicked)
-
-        # create a stop button
-        self._stop_button = widgets.Button(
-            description="Stop", button_style="danger", icon="stop"
-        )
-        self._stop_button.on_click(self._on_stop_clicked)
-
-        # create a nice, pretty HTML string wth the metadata
-        metadata = "<ul>"
-        for k, v in {
-            "Apparatus Name": self.protocol.apparatus.name,
-            "Protocol name": self.protocol.name,
-        }.items():
-            metadata += f"<li>{k}: {v}</li>"
-        metadata += "</ul>"
-
-        # create the output tab widget with a log tab
-        self._tab = widgets.Tab()
-        self._log_widget = widgets.Output()
-        self._tab.children = (widgets.HTML(value=metadata), self._log_widget)
-        self._tab.set_title(0, "Metadata")
-        self._tab.set_title(1, "Log")
-
-        if self._sensors:
-            self._sensor_outputs = {s: widgets.Output() for s in self._sensors}
-
-            self._accordion = widgets.Accordion(
-                children=tuple(self._sensor_outputs.values())
-            )
-            self._tab.children = tuple(list(self._tab.children) + [self._accordion])
-            self._tab.set_title(2, "Sensors")
-
-            # we know that the accordion will line up with the dict since dict order
-            # is preserved in Python 3.7+
-            for i, sensor in enumerate(self._sensor_outputs):
-                self._accordion.set_title(i, sensor.name)
-
-        # decide whether to show a pause button
-        buttons = [self._stop_button]
-        if type(self.dry_run) != int:
-            buttons.insert(0, self._pause_button)
-
-        self._output_widget = widgets.VBox(
-            [
-                widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"),
-                widgets.HBox(buttons),
-                self._tab,
-            ]
-        )
-
-        def _log(x):
-            with self._log_widget:  # the log
-                # .xxx in floats
-                pad_length = len(str(int(self.protocol._inferred_duration))) + 4
-                if self.start_time is not None:
-                    elapsed_time = f"{time.time() - self.start_time:0{pad_length}.3f}"
-                    print(f"({elapsed_time}) {x.rstrip()}")
-                else:
-                    print(f"({'setup': ^{pad_length+1}}) " + x.rstrip())
-
-        # don't enqueue since it breaks the graphing
-        self._bound_logger = logger.add(
-            lambda x: _log(x),
-            level=verbosity,
-            colorize=True,
-            format="{level.icon} {message}",
-        )
 
     def __str__(self):
         return f"Experiment {self.experiment_id}"
@@ -242,6 +171,7 @@ class Experiment(object):
             push_notebook(handle=target)
 
     def _on_stop_clicked(self, b):
+        logger.debug("Stop button pressed.")
         self.cancelled = True
 
     def _on_pause_clicked(self, b):
@@ -283,3 +213,198 @@ class Experiment(object):
             if "stop" in pause:
                 duration += pause["stop"] - pause["start"]
         return duration
+
+    def _execute(
+        self,
+        dry_run: Union[bool, int],
+        verbosity: str,
+        confirm: bool,
+        strict: bool,
+        log_file: Union[str, bool, os.PathLike, None],
+        log_file_verbosity: Optional[str],
+        log_file_compression: Optional[str],
+        data_file: Union[str, bool, os.PathLike, None],
+    ):
+        self.dry_run = dry_run
+
+        # make the user confirm if it's the real deal
+        if not self.dry_run and not confirm:
+            confirmation = input(f"Execute? [y/N]: ").lower()
+            if not confirmation or confirmation[0] != "y":
+                logger.critical("Aborting execution...")
+                raise RuntimeError("Execution aborted by user.")
+
+        self._compiled_protocol = self.protocol._compile(dry_run=bool(dry_run))
+
+        # now that we're ready to start, create the time and ID attributes
+        protocol_hash: str = xxh32(str(self.protocol.yaml())).hexdigest()
+        self.experiment_id = f"{self._created_time_local}_{protocol_hash}"
+
+        # handle logging to a file
+        if log_file:
+            # automatically log to the mw directory
+            if log_file is True:
+                mw_path = Path("~/.mechwolf").expanduser()
+                try:
+                    mw_path.mkdir()
+                except FileExistsError:
+                    pass
+                log_file = mw_path / Path(self.experiment_id + ".log.jsonl")
+
+            # automatically configure a logger to persist the logs
+            self._file_logger_id = logger.add(
+                log_file,
+                level=verbosity.upper()
+                if log_file_verbosity is None
+                else log_file_verbosity.upper(),
+                compression=log_file_compression,
+                serialize=True,
+                enqueue=True,
+            )
+            logger.trace(f"File logger ID is {self._file_logger_id}")
+
+            # for typing's sake
+            assert isinstance(log_file, (str, os.PathLike))
+
+            # determine the log file's path
+            if log_file_compression is not None:
+                self._log_file = Path(log_file)
+                self._log_file = self._log_file.with_suffix(
+                    self._log_file.suffix + "." + log_file_compression
+                )
+            else:
+                self._log_file = Path(log_file)
+
+        if data_file:
+            # automatically log to the mw directory
+            if data_file is True:
+                mw_path = Path("~/.mechwolf").expanduser()
+                try:
+                    mw_path.mkdir()
+                except FileExistsError:
+                    pass
+                self._data_file = mw_path / Path(self.experiment_id + ".data.jsonl")
+            elif isinstance(data_file, (str, os.PathLike)):
+                self._data_file = Path(data_file)
+            else:
+                raise TypeError(
+                    f"Invalid type {type(data_file)} for data file."
+                    "Expected str or os.PathLike (such as a pathlib.Path object)."
+                )
+
+            self._data_file = self._data_file
+
+        if get_ipython():
+            self._display(verbosity=verbosity.upper(), strict=strict)
+            asyncio.ensure_future(main(experiment=self, dry_run=dry_run, strict=strict))
+        else:
+            asyncio.run(main(experiment=self, dry_run=dry_run, strict=strict))
+
+    def _display(self, verbosity: str, strict: bool):
+
+        # create pause button
+        self._pause_button = widgets.Button(description="Pause", icon="pause")
+        self._pause_button.on_click(self._on_pause_clicked)
+
+        # create a stop button
+        self._stop_button = widgets.Button(
+            description="Stop", button_style="danger", icon="stop"
+        )
+        self._stop_button.on_click(self._on_stop_clicked)
+
+        # create a nice, pretty HTML string wth the metadata
+        metadata = "<ul>"
+        for k, v in {
+            "Apparatus": self.apparatus.name,
+            "Protocol": self.protocol.name,
+            "Description": self.protocol.description,
+            "Start time": time.ctime(self.created_time),
+            "Expected completion": time.ctime(
+                self.created_time + self.protocol._inferred_duration
+            ),
+            "Procedure count": sum([len(x) for x in self._compiled_protocol.values()]),
+            "Abort on error": strict,
+        }.items():
+            if not v:
+                continue
+            metadata += f"<li><b>{k}:</b> {v}</li>"
+        metadata += "</ul>"
+
+        # create the output tab widget with a log tab
+        self._tab = widgets.Tab()
+        self._log_widget = widgets.Output()
+        self._tab.children = (widgets.HTML(value=metadata), self._log_widget)
+        self._tab.set_title(0, "Metadata")
+        self._tab.set_title(1, "Log")
+
+        if self._sensors:
+            self._sensor_outputs = {s: widgets.Output() for s in self._sensors}
+
+            self._accordion = widgets.Accordion(
+                children=tuple(self._sensor_outputs.values())
+            )
+            self._tab.children = tuple(list(self._tab.children) + [self._accordion])
+            self._tab.set_title(2, "Sensors")
+
+            # we know that the accordion will line up with the dict since dict order
+            # is preserved in Python 3.7+
+            for i, sensor in enumerate(self._sensor_outputs):
+                self._accordion.set_title(i, sensor.name)
+
+        # decide whether to show a pause button
+        buttons = [self._stop_button]
+        if type(self.dry_run) != int:
+            buttons.insert(0, self._pause_button)
+
+        self._output_widget = widgets.VBox(
+            [
+                widgets.HTML(value=f"<h3>Experiment {self.experiment_id}</h3>"),
+                widgets.HBox(buttons),
+                self._tab,
+            ]
+        )
+
+        def _log(x):
+            with self._log_widget:  # the log
+                # .xxx in floats
+                pad_length = len(str(int(self.protocol._inferred_duration))) + 4
+                # we don't (cleanup) to look weird, so pad to at least its length
+                pad_length = max((pad_length, len("cleanup")))
+
+                if self.is_executing and not self.was_executed:
+                    elapsed_time = f"{time.time() - self.start_time:0{pad_length}.3f}"
+                    print(f"({elapsed_time}) {x.rstrip()}")
+                elif self.was_executed:
+                    print(f"({'cleanup'.center(pad_length)}) {x.rstrip()}")
+                else:
+                    print(f"({'setup'.center(pad_length)}) " + x.rstrip())
+
+        # don't enqueue since it breaks the graphing
+        self._bound_logger = logger.add(
+            lambda x: _log(x),
+            level=verbosity,
+            colorize=True,
+            format="{level.icon} {message}",
+        )
+
+        display(self._output_widget)
+
+    @property
+    def is_executing(self):
+        return self._is_executing
+
+    @is_executing.setter
+    def is_executing(self, is_executing):
+        if not is_executing and self._file_logger_id is not None:
+            logger.info("Wrote logs to " + str(self._log_file.absolute()))
+            logger.trace(f"Removing generated file logger {self._file_logger_id}")
+            logger.remove(self._file_logger_id)
+            logger.trace("File logger removed")
+            # ensure that an execution without logging after one with it doesn't break
+            self._log_file = None
+            self._file_logger_id = None
+        if not is_executing and self._data_file:
+            logger.info("Wrote data to " + str(self._data_file.absolute()))
+            logger._data_file = None
+        logger.debug(f"{repr(self)}.is_executing is now {is_executing}")
+        self._is_executing = is_executing

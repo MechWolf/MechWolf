@@ -1,34 +1,21 @@
-import asyncio
 import json
 import os
 from copy import deepcopy
 from datetime import timedelta
 from math import isclose
-from pathlib import Path
-from typing import (
-    IO,
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Union,
-)
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from warnings import warn
 
 import altair as alt
 import pandas as pd
 import yaml
 from IPython import get_ipython
-from IPython.display import Code, display
+from IPython.display import Code
 from loguru import logger
 
 from .. import _ureg
 from ..components import ActiveComponent, TempControl, Valve
 from .apparatus import Apparatus
-from .execute import main
 from .experiment import Experiment
 
 
@@ -91,13 +78,6 @@ class Protocol(object):
         self.procedures: List[
             Dict[str, Union[float, None, ActiveComponent, Dict[str, Any]]]
         ] = []
-        self.was_executed = False
-
-        # internal values
-        self._file_logger_id: Optional[int] = None
-        self._is_executing = False
-        self._log_file: Union[IO, str, None, os.PathLike] = None
-        self._data_file: Optional[os.PathLike] = None
 
     def __repr__(self):
         return f"<{self.__str__()}>"
@@ -297,26 +277,6 @@ class Protocol(object):
                 "Must define stop or duration for at least one procedure"
             )
         return computed_durations[-1]
-
-    @property
-    def is_executing(self):
-        return self._is_executing
-
-    @is_executing.setter
-    def is_executing(self, is_executing):
-        if not is_executing and self._file_logger_id is not None:
-            logger.info("Wrote logs to " + str(self._log_file.absolute()))
-            logger.trace(f"Removing generated file logger {self._file_logger_id}")
-            logger.remove(self._file_logger_id)
-            logger.trace("File logger removed")
-            # ensure that an execution without logging after one with it doesn't break
-            self._log_file = None
-            self._file_logger_id = None
-        if not is_executing and self._data_file:
-            logger.info("Wrote data to " + str(self._data_file.absolute()))
-            logger._data_file = None
-        logger.debug(f"{repr(self)}.is_executing is now {is_executing}")
-        self._is_executing = is_executing
 
     def _compile(
         self, dry_run: bool = True, _visualization: bool = False
@@ -580,7 +540,7 @@ class Protocol(object):
         confirm: bool = False,
         strict: bool = True,
         log_file: Union[str, bool, os.PathLike, None] = True,
-        log_file_verbosity: Optional[str] = None,
+        log_file_verbosity: Optional[str] = "trace",
         log_file_compression: Optional[str] = None,
         data_file: Union[str, bool, os.PathLike, None] = True,
     ) -> Experiment:
@@ -593,7 +553,7 @@ class Protocol(object):
         - `strict`: Whether to stop execution upon encountering any errors. If False, errors will be noted but ignored.
         - `verbosity`: The level of logging verbosity. One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity. "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
         - `log_file`: The file to write the logs to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.log.jsonl`. If falsey, no logs will be written to the file.
-        - `log_file_verbosity`: How verbose the logs in file should be. By default, it is the same as `verbosity`.
+        - `log_file_verbosity`: How verbose the logs in file should be. By default, it is "trace", which is the most verbose logging availible. If `None`, it will use the same level as `verbosity`.
         - `log_file_compression`: Whether to compress the log file after the experiment.
         - `data_file`: The file to write the experimental data to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.data.jsonl`. If falsey, no data will be written to the file.
 
@@ -604,103 +564,17 @@ class Protocol(object):
         - `RuntimeError`: When attempting to execute a protocol on invalid components.
         """
 
-        # If protocol is executing, return an error
-        if self.is_executing:
-            raise RuntimeError("Protocol is currently running.")
-
-        logger.info(f"Compiling protocol with dry_run = {dry_run}")
-        try:
-            compiled_protocol = self._compile(dry_run=bool(dry_run))
-        except RuntimeError as e:
-            # add an execution-specific message
-            raise (RuntimeError(str(e).rstrip() + " Aborting execution..."))
-
-        # make the user confirm if it's the real deal
-        if not dry_run and not confirm:
-            confirmation = input(f"Execute? [y/N]: ").lower()
-            if not confirmation or confirmation[0] != "y":
-                logger.critical("Aborting execution...")
-                raise RuntimeError("Execution aborted by user.")
-
-        self.is_executing = True
-
         # the Experiment object is going to hold all the info
-        E = Experiment(
-            self,
-            compiled_protocol=compiled_protocol,
-            verbosity=verbosity.upper(),
+        E = Experiment(self)
+        E._execute(
             dry_run=dry_run,
+            verbosity=verbosity,
+            confirm=confirm,
+            strict=strict,
+            log_file=log_file,
+            log_file_verbosity=log_file_verbosity,
+            log_file_compression=log_file_compression,
+            data_file=data_file,
         )
-        display(E._output_widget)  # type: ignore
-
-        # handle logging to a file
-        if log_file:
-            # automatically log to the mw directory
-            if log_file is True:
-                mw_path = Path("~/.mechwolf").expanduser()
-                try:
-                    mw_path.mkdir()
-                except FileExistsError:
-                    pass
-                log_file = mw_path / Path(E.experiment_id + ".log.jsonl")
-
-            # automatically configure a logger to persist the logs
-            self._file_logger_id = logger.add(
-                log_file,
-                level=verbosity.upper()
-                if log_file_verbosity is None
-                else log_file_verbosity.upper(),
-                compression=log_file_compression,
-                serialize=True,
-                enqueue=True,
-            )
-            logger.trace(f"File logger ID is {self._file_logger_id}")
-
-            # for typing's sake
-            assert isinstance(log_file, (str, os.PathLike))
-
-            # determine the log file's path
-            if log_file_compression is not None:
-                self._log_file = Path(log_file)
-                self._log_file = self._log_file.with_suffix(
-                    self._log_file.suffix + "." + log_file_compression
-                )
-            else:
-                self._log_file = Path(log_file)
-
-        if data_file:
-            # automatically log to the mw directory
-            if data_file is True:
-                mw_path = Path("~/.mechwolf").expanduser()
-                try:
-                    mw_path.mkdir()
-                except FileExistsError:
-                    pass
-                E._data_file = mw_path / Path(E.experiment_id + ".data.jsonl")
-            elif isinstance(data_file, (str, os.PathLike)):
-                E._data_file = Path(data_file)
-            else:
-                raise TypeError(
-                    f"Invalid type {type(data_file)} for data file."
-                    "Expected str or os.PathLike (such as a pathlib.Path object)."
-                )
-
-            self._data_file = E._data_file
-        logger.debug("Initiating async execution")
-        if get_ipython():
-            asyncio.ensure_future(main(experiment=E, dry_run=dry_run, strict=strict))
-        else:
-            asyncio.run(main(experiment=E, dry_run=dry_run, strict=strict))
 
         return E
-
-    def clear_procedures(self) -> None:
-        """
-        Reset the protocol's procedures.
-        """
-        if not self.was_executed or self.is_executing:
-            self.procedures = []
-        else:
-            raise RuntimeError(
-                "Unable to clear the procedures of a protocol that has been executed."
-            )

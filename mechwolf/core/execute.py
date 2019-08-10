@@ -2,13 +2,18 @@ import asyncio
 import time
 from collections import namedtuple
 from contextlib import ExitStack
-from datetime import datetime
-from typing import Iterable, List, Union
+from time import asctime, localtime
+from typing import TYPE_CHECKING, Iterable, List, Union
 
 from loguru import logger
 
+from .. import __version__
 from ..components import ActiveComponent, Sensor
-from .experiment import Experiment
+
+# handle the hard issue of circular dependencies
+if TYPE_CHECKING:
+    from .experiment import Experiment
+
 
 Datapoint = namedtuple("Datapoint", ["data", "timestamp", "experiment_elapsed_time"])
 
@@ -19,7 +24,7 @@ class ProtocolCancelled(Exception):
     pass
 
 
-async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
+async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool):
     """
     The function that actually does the execution of the protocol.
 
@@ -30,6 +35,8 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
     """
 
     # logger.warning("Support for pausing execution is EXPERIMENTAL!")
+    logger.info(f"Using MechWolf v{__version__} ⚙️🐺")
+    logger.info("Performing final launch status check...")
 
     tasks = []
 
@@ -39,20 +46,20 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
     try:
         with ExitStack() as stack:
             if not dry_run:
-                components = [
-                    stack.enter_context(component)
-                    for component in experiment.compiled_protocol.keys()
-                ]
+                components = []
+                for component in experiment._compiled_protocol.keys():
+                    logger.debug(f"Entered context for {component}")
+                    components.append(stack.enter_context(component))
             else:
-                components = list(experiment.compiled_protocol.keys())
+                components = list(experiment._compiled_protocol.keys())
             for component in components:
                 # Find out when each component's monitoring should end
-                procedures: Iterable = experiment.compiled_protocol[component]
+                procedures: Iterable = experiment._compiled_protocol[component]
                 end_times: List[float] = [p["time"] for p in procedures]
                 end_time: float = max(end_times)  # we only want the last end time
                 logger.debug(f"Calculated {component} end time is {end_time}s")
 
-                for procedure in experiment.compiled_protocol[component]:
+                for procedure in experiment._compiled_protocol[component]:
                     tasks.append(
                         wait_and_execute_procedure(
                             procedure=procedure,
@@ -62,6 +69,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                             strict=strict,
                         )
                     )
+                logger.debug(f"Task list generated for {component}")
 
                 # Add a task to monitor the stop button
                 tasks.append(check_if_cancelled(experiment, end_time))
@@ -82,9 +90,16 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 logger.info(f"Simulating at {dry_run}x speed...")
 
             # begin the experiment
+            logger.info("All checks passed!")
+            experiment.is_executing = True
             experiment.start_time = time.time()
-            start_msg = f"{experiment} started at {datetime.utcfromtimestamp(experiment.start_time)} UTC"
+
+            # convert to local time for the start message
+            _local_time = asctime(localtime(experiment.start_time))
+            start_msg = f"{experiment} started at {_local_time}."
+
             logger.success(start_msg)
+
             try:
                 done, pending = await asyncio.wait(
                     tasks, return_when=asyncio.FIRST_EXCEPTION
@@ -95,17 +110,19 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
                 experiment.end_time = time.time()
 
                 # when this code block is reached, the tasks will have completed or have been cancelled.
-                end_msg = f"{experiment} completed at {datetime.utcfromtimestamp(experiment.end_time)} UTC"
+                _local_time = asctime(localtime(experiment.end_time))
+                end_msg = f"{experiment} completed at {_local_time}."
 
                 # Stop all of the sensors and exit the read loops
-                logger.info("Experimentation is over. Cleaning up...")
-                logger.debug("Stopping all sensors")
+                logger.debug("Resetting all components")
 
                 # reset object
-                for component in list(experiment.compiled_protocol.keys()):
+                for component in list(experiment._compiled_protocol.keys()):
                     # reset object
+                    logger.trace(f"Resetting {component} to base state")
                     component._update_from_params(component._base_state)
                     if isinstance(component, Sensor):
+                        logger.trace(f"Setting _stop = True for {component}")
                         component._stop = True
 
                 await asyncio.sleep(1)
@@ -138,8 +155,11 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
     finally:
 
         # set some protocol metadata
-        experiment.protocol.is_executing = False
-        experiment.protocol.was_executed = True
+        experiment.was_executed = True
+        # after E.was_executed=True, we THEN log that we're cleaning up so it's shown
+        # in the cleanup category, not with a time in EET
+        logger.info("Experimentation is over. Cleaning up...")
+        experiment.is_executing = False
 
         if experiment._bound_logger is not None:
             logger.trace("Deactivating logging to Jupyter notebook widget...")
@@ -149,7 +169,7 @@ async def main(experiment: Experiment, dry_run: Union[bool, int], strict: bool):
 async def wait_and_execute_procedure(
     procedure,
     component: ActiveComponent,
-    experiment: Experiment,
+    experiment: "Experiment",
     dry_run: Union[bool, int],
     strict: bool,
 ):
@@ -187,7 +207,9 @@ async def wait_and_execute_procedure(
     experiment.executed_procedures.append(record)
 
 
-async def _monitor(sensor: Sensor, experiment: Experiment, dry_run: bool, strict: bool):
+async def _monitor(
+    sensor: Sensor, experiment: "Experiment", dry_run: bool, strict: bool
+):
     logger.debug(f"Started monitoring {sensor.name}")
     sensor._stop = False
     try:
@@ -207,7 +229,7 @@ async def _monitor(sensor: Sensor, experiment: Experiment, dry_run: bool, strict
 
 
 async def end_monitoring(
-    sensor: Sensor, end_time: float, dry_run: Union[bool, int], experiment: Experiment
+    sensor: Sensor, end_time: float, dry_run: Union[bool, int], experiment: "Experiment"
 ) -> None:
     """
     Creates a new async task that ends the monitoring for a `components.sensor.Sensor` when it is done for the protocol.
@@ -221,13 +243,13 @@ async def end_monitoring(
     """
     if type(dry_run) == int:
         end_time /= dry_run
-    await wait(end_time, experiment, f"Stop monitoring {repr(sensor)}")
+    await wait(end_time, experiment, f"Stop monitoring {sensor}")
 
     logger.debug(f"Setting {sensor}._stop to True in order to stop monitoring")
     sensor._stop = True
 
 
-async def check_if_cancelled(experiment: Experiment, end_time: float) -> None:
+async def check_if_cancelled(experiment: "Experiment", end_time: float) -> None:
     time_awaited = 0.0
     while time_awaited < end_time + experiment._total_paused_duration:
         await asyncio.sleep(WAIT_DURATION)
@@ -236,7 +258,7 @@ async def check_if_cancelled(experiment: Experiment, end_time: float) -> None:
             raise ProtocolCancelled("protocol cancelled")
 
 
-async def wait(duration: float, experiment: Experiment, name: str):
+async def wait(duration: float, experiment: "Experiment", name: str):
     """A pause-aware version of asyncio.sleep"""
     await asyncio.sleep(duration)
     logger.trace(f"<{name}> Just woke up from {duration}s nap")
