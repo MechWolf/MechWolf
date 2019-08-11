@@ -26,6 +26,7 @@ Note that the sentence ends in a period.
 Below the short introduction, there may be one or more paragraphs of details.
 This paragraph should written with one sentence per line.
 The reason for this is that it results in smaller git diffs.
+All sentences should end in a period.
 After (or before) the paragraph, you can also optionally include a tip or warning.
 
 ::: warning Optional Title
@@ -57,6 +58,8 @@ Raises:
 - `RuntimeError`: A list of the errors that can be raised by the function, if applicable.
   Also a list.
 ````
+
+Classes may also have an optional field entitled "Attributes" in their class docstring (not the `__init__()` docstring).
 
 To quote [PEP8](https://www.python.org/dev/peps/pep-0008/#a-foolish-consistency-is-the-hobgoblin-of-little-minds):
 

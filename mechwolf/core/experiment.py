@@ -30,13 +30,14 @@ class Experiment(object):
     Experiments contain all data from execution of a protocol.
 
     Arguments:
-    - `protocol`: The protocol for which the experiment was conducted
+    - `protocol`: The protocol for which the experiment was conducted.
     - `compiled_protocol`: The results of `protocol._compile()`.
     - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
     - `dry_run`: Whether the experiment is a dry run and, if so, by what factor it is sped up by.
 
     Attributes:
-    - `cancelled`: Whether the experiment was cancelled.
+    - `apparatus`: The apparatus upon which the experiment is conducted.
+    - `cancelled`: Whether the experiment is cancelled.
     - `compiled_protocol`: The results of `protocol._compile()`.
     - `data`: A list of `Datapoint` namedtuples from the experiment's sensors.
     - `dry_run`: Whether the experiment is a dry run and, if so, by what factor it is sped up by.
@@ -45,8 +46,7 @@ class Experiment(object):
     - `experiment_id`: The experiment's ID. By default, of the form `YYYY_MM_DD_HH_MM_SS_HASH`, where HASH is the 32-bit hexadecmial xxhash of the protocol's YAML.
     - `paused`: Whether the experiment is currently paused.
     - `protocol`: The protocol for which the experiment was conducted.
-    - `start_time`: The Unix time of the experiment's start.
-    - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
+    - `start_time`: The Unix time of the experiment's is.
     """
 
     def __init__(self, protocol: "Protocol"):
