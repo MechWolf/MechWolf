@@ -3,7 +3,7 @@ import json
 import os
 import time
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from warnings import warn
 
 import aiofiles
@@ -85,8 +85,8 @@ class Experiment(object):
         self._pause_times: List[Dict[str, float]] = []
         self._end_loop = False  # when to stop monitoring the buttons
         self._file_logger_id: Optional[int] = None
-        self._log_file: Union[IO, str, None, os.PathLike] = None
-        self._data_file: Optional[os.PathLike] = None
+        self._log_file: Optional[Path] = None
+        self._data_file: Optional[Path] = None
         self._transformed_data: Dict[str, Dict[str, List[Datapoint]]] = {
             s: {"datapoints": [], "timestamps": []} for s in self._sensor_names
         }
@@ -295,6 +295,8 @@ class Experiment(object):
             ),
             "Procedure count": sum([len(x) for x in self._compiled_protocol.values()]),
             "Abort on error": strict,
+            "Log file": self._log_file.absolute() if self._log_file else None,
+            "Data file": self._data_file.absolute() if self._data_file else None,
         }.items():
             if not v:
                 continue
@@ -304,9 +306,9 @@ class Experiment(object):
         # create the output tab widget with a log tab
         self._tab = widgets.Tab()
         self._log_widget = widgets.Output()
-        self._tab.children = (widgets.HTML(value=metadata), self._log_widget)
-        self._tab.set_title(0, "Metadata")
-        self._tab.set_title(1, "Log")
+        self._tab.children = (self._log_widget, widgets.HTML(value=metadata))
+        self._tab.set_title(0, "Log")
+        self._tab.set_title(1, "Metadata")
 
         if self._sensors:
             self._sensor_outputs = {s: widgets.Output() for s in self._sensors}
@@ -377,7 +379,7 @@ class Experiment(object):
         if not is_executing and self._data_file:
             logger.info("Wrote data to " + str(self._data_file.absolute()))
             logger._data_file = None
-        logger.debug(f"{repr(self)}.is_executing is now {is_executing}")
+        logger.trace(f"{repr(self)}.is_executing is now {is_executing}")
         self._is_executing = is_executing
 
     @property
