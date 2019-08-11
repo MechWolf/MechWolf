@@ -63,34 +63,33 @@ class Experiment(object):
         self.created_time = time.time()  # when the object was created (might be diff)
         self.end_time: float
         self.data: Dict[str, List[Datapoint]] = {}
+        self.cancelled = False
+        self.was_executed = False
         self.executed_procedures: List[
             Dict[str, Union[float, Dict[str, Any], str, ActiveComponent]]
         ] = []
-        self.cancelled = False
-        self.was_executed = False
 
         # internal values (unstable!)
+        _local_time = time.localtime(self.created_time)
+        self._created_time_local: str = time.strftime("%Y_%m_%d_%H_%M_%S", _local_time)
         self._charts = {}  # type: ignore
         self._graphs_shown = False
         self._sensors = self.apparatus[Sensor]
         self._sensors.reverse()
         self._device_name_to_unit = {c.name: c._unit for c in self._sensors}
         self._sensor_names: List[str] = [s.name for s in self._sensors]
+        self._bound_logger = None
+        self._plot_height = 300
+        self._is_executing = False
+        self._paused = False
+        self._pause_times: List[Dict[str, float]] = []
+        self._end_loop = False  # when to stop monitoring the buttons
+        self._file_logger_id: Optional[int] = None
+        self._log_file: Union[IO, str, None, os.PathLike] = None
+        self._data_file: Optional[os.PathLike] = None
         self._transformed_data: Dict[str, Dict[str, List[Datapoint]]] = {
             s: {"datapoints": [], "timestamps": []} for s in self._sensor_names
         }
-        self._bound_logger = None
-        self._plot_height = 300
-        self._paused = False
-        self._pause_times: List[Dict[str, float]] = []
-        _local_time = time.localtime(self.created_time)
-        self._created_time_local: str = time.strftime("%Y_%m_%d_%H_%M_%S", _local_time)
-
-        # internal values
-        self._file_logger_id: Optional[int] = None
-        self._is_executing = False
-        self._log_file: Union[IO, str, None, os.PathLike] = None
-        self._data_file: Optional[os.PathLike] = None
 
     def __str__(self):
         return f"Experiment {self.experiment_id}"
@@ -176,34 +175,6 @@ class Experiment(object):
 
     def _on_pause_clicked(self, b):
         self.paused = not self.paused
-
-    @property
-    def paused(self):
-        return self._paused
-
-    @paused.setter
-    def paused(self, paused):
-
-        # pausing a sped up dry run is meaningless
-        if type(self.dry_run) == int:
-            warn("Pausing a speed run is not supported. This will have no effect.")
-
-        # issue a warning if the user overuses the pause button
-        if len(self._pause_times) >= 3:
-            logger.warning("Pausing repeatedly may adversely affect protocol timing.")
-
-        if paused and not self._paused:
-            logger.warning(f"Paused execution.")
-            self._pause_times.append(dict(start=time.time()))
-        elif not paused and self._paused:
-            self._pause_times[-1]["stop"] = time.time()
-            logger.warning(f"Resumed execution.")
-        self._paused = paused
-
-        # control the pause button
-        self._pause_button.description = "Resume" if paused else "Pause"
-        self._pause_button.button_style = "success" if paused else ""
-        self._pause_button.icon = "play" if paused else "pause"
 
     @property
     def _total_paused_duration(self) -> float:
@@ -408,3 +379,31 @@ class Experiment(object):
             logger._data_file = None
         logger.debug(f"{repr(self)}.is_executing is now {is_executing}")
         self._is_executing = is_executing
+
+    @property
+    def paused(self):
+        return self._paused
+
+    @paused.setter
+    def paused(self, paused):
+
+        # pausing a sped up dry run is meaningless
+        if type(self.dry_run) == int:
+            warn("Pausing a speed run is not supported. This will have no effect.")
+
+        # issue a warning if the user overuses the pause button
+        if len(self._pause_times) >= 3:
+            logger.warning("Pausing repeatedly may adversely affect protocol timing.")
+
+        if paused and not self._paused:
+            logger.warning(f"Paused execution.")
+            self._pause_times.append(dict(start=time.time()))
+        elif not paused and self._paused:
+            self._pause_times[-1]["stop"] = time.time()
+            logger.warning(f"Resumed execution.")
+        self._paused = paused
+
+        # control the pause button
+        self._pause_button.description = "Resume" if paused else "Pause"
+        self._pause_button.button_style = "success" if paused else ""
+        self._pause_button.icon = "play" if paused else "pause"
