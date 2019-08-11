@@ -44,7 +44,7 @@ class Experiment(object):
     - `executed_procedures`: A list of the procedures that were executed during the experiment.
     - `experiment_id`: The experiment's ID. By default, of the form `YYYY_MM_DD_HH_MM_SS_HASH`, where HASH is the 32-bit hexadecmial xxhash of the protocol's YAML.
     - `paused`: Whether the experiment is currently paused.
-    - `protocol`: The protocol for which the experiment was conducted
+    - `protocol`: The protocol for which the experiment was conducted.
     - `start_time`: The Unix time of the experiment's start.
     - `verbosity`: See `Protocol.execute` for a description of the verbosity options.
     """
