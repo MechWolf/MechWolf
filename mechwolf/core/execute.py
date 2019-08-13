@@ -3,8 +3,9 @@ import time
 import traceback
 from collections import namedtuple
 from contextlib import ExitStack
+from copy import deepcopy
 from time import asctime, localtime
-from typing import TYPE_CHECKING, Iterable, List, Union
+from typing import TYPE_CHECKING, Dict, Iterable, List, Union
 
 from loguru import logger
 
@@ -269,18 +270,29 @@ async def pause_handler(
     experiment: "Experiment", end_time: float, components: List[ActiveComponent]
 ) -> None:
     was_paused = False
+    states: Dict[ActiveComponent, dict] = {}
     while not experiment._end_loop:
         if experiment.paused and not was_paused:
             was_paused = True
             for component in components:
+                logger.debug(f"Pausing {component}.")
+                states[component] = deepcopy(component.__dict__)
                 component._update_from_params(component._base_state)
                 await component._update()
-                logger.info(f"Pausing {component}")
+            logger.info("All components set to base states.")
+            logger.trace(f"Saved states are {states}.")
         elif experiment.paused and was_paused:
             await asyncio.sleep(0)
         elif not experiment.paused and was_paused:
+            logger.trace(f"Previous states: {states}")
+            for component in components:
+                for k, v in states[component].items():
+                    setattr(component, k, v)
+                await component._update()
+                logger.debug(f"Reset {component} to {states[component]}.")
             was_paused = False
-            logger.info("RESUME GOES HERE")
+            states = {}
+            logger.info("All components reset to state before pause.")
         await asyncio.sleep(0)
 
 
