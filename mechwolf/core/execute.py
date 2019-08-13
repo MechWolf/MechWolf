@@ -244,7 +244,10 @@ async def pause_handler(
 ) -> None:
     was_paused = False
     states: Dict[ActiveComponent, dict] = {}
+    # this is either the planned duration of the experiment or cancellation
     while not experiment._end_loop:
+
+        # we need to pause
         if experiment.paused and not was_paused:
             was_paused = True
             for component in components:
@@ -252,10 +255,10 @@ async def pause_handler(
                 states[component] = deepcopy(component.__dict__)
                 component._update_from_params(component._base_state)
                 await component._update()
-            logger.info("All components set to base states.")
+            logger.debug("All components set to base states.")
             logger.trace(f"Saved states are {states}.")
-        elif experiment.paused and was_paused:
-            await asyncio.sleep(0)
+
+        # we are paused but the button was hit, so we need to resume
         elif not experiment.paused and was_paused:
             logger.trace(f"Previous states: {states}")
             for component in components:
@@ -265,7 +268,8 @@ async def pause_handler(
                 logger.debug(f"Reset {component} to {states[component]}.")
             was_paused = False
             states = {}
-            logger.info("All components reset to state before pause.")
+            logger.debug("All components reset to state before pause.")
+
         await asyncio.sleep(0)
 
 
