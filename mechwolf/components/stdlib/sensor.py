@@ -9,7 +9,7 @@ from . import _ureg
 from .active_component import ActiveComponent
 
 if TYPE_CHECKING:
-    from mechwolf import Experiment
+    import mechwolf
 
 
 class Sensor(ActiveComponent):
@@ -37,7 +37,7 @@ class Sensor(ActiveComponent):
         raise NotImplementedError
 
     async def _monitor(
-        self, experiment: "Experiment", dry_run: bool = False
+        self, experiment: "mechwolf.Experiment", dry_run: bool = False
     ) -> AsyncGenerator:
         """
         If data collection is off and needs to be turned on, turn it on.

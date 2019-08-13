@@ -122,7 +122,7 @@ class Experiment(object):
 
         if not self._graphs_shown:
             logger.debug("Graphs not shown. Initializing...")
-            for sensor, output in self._sensor_outputs.items():
+            for sensor, output in self._sensor_outputs.items():  # type: ignore
                 logger.trace(f"Initializing graph for {sensor}")
 
                 # bind the height of the graph to the selected plot height
