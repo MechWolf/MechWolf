@@ -171,13 +171,10 @@ async def wait_and_execute_procedure(
     dry_run: Union[bool, int],
     strict: bool,
 ):
-    params = procedure["params"]
 
     # wait for the right moment
-    execution_time = procedure["time"]
-    if type(dry_run) == int:
-        execution_time /= dry_run
-    await wait(execution_time, experiment, f"Set {component} to {params}")
+    params = procedure["params"]
+    await wait(procedure["time"], experiment, f"Set {component} to {params}")
 
     # NOTE: this doesn't actually call the _update() method
     component._update_from_params(params)
@@ -277,6 +274,8 @@ async def pause_handler(
 
 async def wait(duration: float, experiment: "Experiment", name: str):
     """A pause-aware version of asyncio.sleep"""
+    if type(experiment.dry_run) == int:
+        duration /= experiment.dry_run
     await asyncio.sleep(duration)
     logger.trace(f"<{name}> Just woke up from {duration}s nap")
 
