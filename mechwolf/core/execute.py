@@ -74,9 +74,6 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
                 if isinstance(component, Sensor):
                     logger.trace(f"Creating sensor monitoring task for {component}")
                     tasks.append(_monitor(component, experiment, bool(dry_run), strict))
-                    tasks.append(
-                        end_monitoring(component, end_time, dry_run, experiment)
-                    )
                 logger.debug(f"{component} is GO")
             logger.debug(f"All components are GO!")
 
@@ -122,9 +119,6 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
                     # reset object
                     logger.debug(f"Resetting {component} to base state")
                     component._update_from_params(component._base_state)
-                    if isinstance(component, Sensor):
-                        logger.trace(f"Setting _stop = True for {component}")
-                        component._stop = True
 
                 await asyncio.sleep(1)
 
@@ -185,6 +179,7 @@ async def wait_and_execute_procedure(
 
     # NOTE: this doesn't actually call the _update() method
     component._update_from_params(params)
+    logger.trace(f"{component} object state updated to reflect new params.")
 
     if dry_run:
         logger.info(f"Simulating: {params} on {component} at {procedure['time']}s")
@@ -214,9 +209,8 @@ async def _monitor(
     sensor: Sensor, experiment: "Experiment", dry_run: bool, strict: bool
 ):
     logger.debug(f"Started monitoring {sensor.name}")
-    sensor._stop = False
     try:
-        async for result in sensor._monitor(dry_run=dry_run):
+        async for result in sensor._monitor(dry_run=dry_run, experiment=experiment):
             await experiment._update(
                 device=sensor.name,
                 datapoint=Datapoint(
@@ -231,27 +225,6 @@ async def _monitor(
         logger.trace(traceback.format_exc())
         if strict:
             raise RuntimeError(str(e))
-
-
-async def end_monitoring(
-    sensor: Sensor, end_time: float, dry_run: Union[bool, int], experiment: "Experiment"
-) -> None:
-    """
-    Creates a new async task that ends the monitoring for a `components.sensor.Sensor` when it is done for the protocol.
-
-    Arguments:
-    - `sensor`: The sensor to end monitoring for.
-    - `end_time`: The end time for the sensor in EET.
-    - `dry_run`: Whether a dry run is in progress.
-    - `experiment`: The experiment that's in progress.
-
-    """
-    if type(dry_run) == int:
-        end_time /= dry_run
-    await wait(end_time, experiment, f"Stop monitoring {sensor}")
-
-    logger.debug(f"Stopping monitoring {sensor}")
-    sensor._stop = True
 
 
 async def end_loop(experiment: "Experiment"):

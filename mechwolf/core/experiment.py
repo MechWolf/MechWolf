@@ -379,6 +379,12 @@ class Experiment(object):
         if not is_executing and self._data_file:
             logger.info("Wrote data to " + str(self._data_file.absolute()))
             logger._data_file = None
+
+        # this deactivates sensor monitoring and button usability
+        if not is_executing:
+            self._end_loop = True
+            logger.trace(f"_end_loop for {self} is now True.")
+
         logger.trace(f"{repr(self)}.is_executing is now {is_executing}")
         self._is_executing = is_executing
 
