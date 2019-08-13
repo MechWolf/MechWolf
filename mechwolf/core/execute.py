@@ -68,20 +68,20 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
                             strict=strict,
                         )
                     )
-                logger.trace(f"Task list generated for {component}")
+                logger.trace(f"Task list generated for {component}.")
 
                 # for sensors, add the monitor task
                 if isinstance(component, Sensor):
                     logger.trace(f"Creating sensor monitoring task for {component}")
                     tasks.append(_monitor(component, experiment, bool(dry_run), strict))
-                logger.debug(f"{component} is GO")
+                logger.debug(f"{component} is GO!")
             logger.debug(f"All components are GO!")
 
             # Add a task to monitor the stop button
             tasks.append(check_if_cancelled(experiment))
             tasks.append(pause_handler(experiment, end_time, components))
             tasks.append(end_loop(experiment))
-            logger.debug("All tasks are GO")
+            logger.debug("All tasks are GO!")
 
             # Add a reminder about FF
             if type(dry_run) == int:
@@ -142,11 +142,13 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
 
             except ProtocolCancelled:
                 logger.error(f"Stop button pressed.")
+                logger.error("Protocol execution is stopping NOW!")
                 logger.critical(end_msg)
 
             except Exception:
                 logger.trace(traceback.format_exc())
                 logger.error("Failed to execute protocol due to uncaught error!")
+                logger.error("Protocol execution is stopping NOW!")
                 logger.critical(end_msg)
     finally:
 
