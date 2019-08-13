@@ -88,7 +88,7 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
                 logger.info(f"Simulating at {dry_run}x speed...")
 
             # begin the experiment
-            logger.info("All checks passed. Experiment is GO! 💥🚀💥")
+            logger.info("All checks passed. Experiment is GO!")
             experiment.is_executing = True
             experiment.start_time = time.time()
 
