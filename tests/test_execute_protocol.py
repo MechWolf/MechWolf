@@ -31,7 +31,6 @@ for dry_run in [True, False]:
     if dry_run:
         assert E.data["test"][0].data == "simulated read"
     assert pump.rate == mw._ureg.parse_expression(pump._base_state["rate"])
-    assert test._stop
 
 # test fast forward
 E = P.execute(confirm=True, dry_run=5, log_file=None, data_file=None)

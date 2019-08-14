@@ -109,12 +109,12 @@ def test_add_valve():
     # directly pass the pump object
     P.add(valve, setting=pump1)
     assert P.procedures == expected
-    P.clear_procedures()
+    P.procedures = []
 
     # using its name
     P.add(valve, setting="pump1")
     assert P.procedures == expected
-    P.clear_procedures()
+    P.procedures = []
 
     # using its port number
     P.add(valve, setting=1)
