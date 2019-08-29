@@ -17,7 +17,7 @@ In order to get started with MechWolf, you'll need to learn the elements of Pyth
 [**Don't panic.**](https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Don't_Panic)
 
 You don't need to know every nook and cranny of Python, just the most basic aspects of the language.
-In fact, all of the Python that you'll need is able to be learned in [a two-page cheatsheet](https://perso.limsi.fr/pointal/_media/python:cours:mementopython3-english.pdf). 
+In fact, all of the Python that you'll need to get started is able to fit on [a two-page cheatsheet](https://perso.limsi.fr/pointal/_media/python:cours:mementopython3-english.pdf). 
 (It might be a good idea to print it out and have it handy as you get started with Python.)
 MechWolf's tutorials provide lots of examples to follow and use as the basis of your code, so you won't be starting from scratch. 
 
