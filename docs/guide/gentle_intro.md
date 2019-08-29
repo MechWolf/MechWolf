@@ -24,7 +24,7 @@ MechWolf's tutorials provide lots of examples to follow and use as the basis of 
 If you're looking for a quick guide to learn basic syntax with biologically inspired examples (rather than contrived computer science-y ones), take a look at the eight-page [Python for Biologists](https://pythonforbiologists.com/introduction) guide. 
 You can pick up the basics of Python in a less than a day. 
 
-Should you get interested in learning more about Python than the very basics (we certainly hope you are), a few good resources are listed here:
+Should you be interested in learning more about Python than just the very basics (and we certainly hope you are), here are a few good resources:
 
 - [Codecademy](https://www.codecademy.com/learn/learn-python)
 - [The official Python tutorial](https://docs.python.org/3/tutorial/index.html)
