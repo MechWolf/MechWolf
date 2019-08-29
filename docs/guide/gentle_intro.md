@@ -8,26 +8,27 @@ guide is right for you, if you know what the command `pip install XXXXX`
 does, then feel free to skip this section. If not, welcome! We'll cover
 the background knowledge you'll need for the general [getting started guide](./getting_started).
 
-## Learn Python
+## Learn the Very Basics of Python Syntax
 
-MechWolf is written in Python, a high level programming language that is
-the _lingua franca_ of scientific computation. This one language can do
-anything from [machine learning](http://keras.io) to [web server
-development](http://flask.pocoo.org) and now flow process automation. In
-order to get started with MechWolf, you'll need to learn Python,
-specifically Python 3.
+MechWolf is written in Python, a high level programming language that is the _lingua franca_ of scientific computation.
+This one language can do anything from [machine learning](http://keras.io) to [web server development](http://flask.pocoo.org) and now robotic chemistry. 
+In order to get started with MechWolf, you'll need to learn the elements of Python syntax so that you'll have enough understanding to get tinkering.
 
-[Don't panic.](https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Don't_Panic)
+[**Don't panic.**](https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Don't_Panic)
 
-You can pick up the basics of Python in a day or two. A few good
-resources are listed here:
+You don't need to know every nook and cranny of Python, just the most basic aspects of the language.
+In fact, all of the Python that you'll need is able to be learned in [a two-page cheatsheet](https://perso.limsi.fr/pointal/_media/python:cours:mementopython3-english.pdf). 
+(It might be a good idea to print it out and have it handy as you get started with Python.)
+MechWolf's tutorials provide lots of examples to follow and use as the basis of your code, so you won't be starting from scratch. 
+
+If you're looking for a quick guide to learn basic syntax with biologically inspired examples (rather than contrived computer science-y ones), take a look at the eight-page [Python for Biologists](https://pythonforbiologists.com/introduction) guide. 
+You can pick up the basics of Python in a less than a day. 
+
+Should you get interested in learning more about Python than the very basics (we certainly hope you are), a few good resources are listed here:
 
 - [Codecademy](https://www.codecademy.com/learn/learn-python)
-- [The official Python
-  tutorial](https://docs.python.org/3/tutorial/index.html)
-- [Learn Python the Hard
-  Way](https://learnpythonthehardway.org/python3/) (note: despite the
-  name, it isn't actually hard)
+- [The official Python tutorial](https://docs.python.org/3/tutorial/index.html)
+- [Learn Python the Hard Way](https://learnpythonthehardway.org/python3/) (note: despite the name, it isn't actually hard)
 
 ## Install Python 3.7 or greater
 
