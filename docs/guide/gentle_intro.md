@@ -10,19 +10,20 @@ the background knowledge you'll need for the general [getting started guide](./g
 
 ## Learn the Very Basics of Python Syntax
 
-MechWolf is written in Python, a high level programming language that is the _lingua franca_ of scientific computation.
+MechWolf is written in Python, a high level programming language that is the _lingua franca_ of scientific computation and that was specifically designed for humans to read.
 This one language can do anything from [machine learning](http://keras.io) to [web server development](http://flask.pocoo.org) and now robotic chemistry. 
-In order to get started with MechWolf, you'll need to learn the elements of Python syntax so that you'll have enough understanding to get tinkering.
+In order to get started with MechWolf, it can help to learn a few elements of Python syntax so that you'll have enough understanding to get tinkering.
 
 [**Don't panic.**](https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Don't_Panic)
 
+If you just want to call up and run someone else’s MechWolf procedure, you can get away with knowing almost no Python.
 You don't need to know every nook and cranny of Python, just the most basic aspects of the language.
-In fact, all of the Python that you'll need to get started is able to fit on [a two-page cheatsheet](https://perso.limsi.fr/pointal/_media/python:cours:mementopython3-english.pdf). 
+In fact, all of the Python that you'll need to understand the underlying code is able to fit on [a two-page cheatsheet](https://perso.limsi.fr/pointal/_media/python:cours:mementopython3-english.pdf). 
 (It might be a good idea to print it out and have it handy as you get started with Python.)
-MechWolf's tutorials provide lots of examples to follow and use as the basis of your code, so you won't be starting from scratch. 
+If you are inspired to start writing your own automated procedures, MechWolf's tutorials provide lots of examples to follow and use as the basis of your code, so you won't be starting from scratch. 
 
 If you're looking for a quick guide to learn basic syntax with biologically inspired examples (rather than contrived computer science-y ones), take a look at the eight-page [Python for Biologists](https://pythonforbiologists.com/introduction) guide. 
-You can pick up the basics of Python in a less than a day. 
+You can pick up the basics of Python in less than a day. 
 
 Should you be interested in learning more about Python than just the very basics (and we certainly hope you are), here are a few good resources:
 
