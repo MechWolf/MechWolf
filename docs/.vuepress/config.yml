@@ -3,7 +3,7 @@ description: "Robotic chemistry made easy"
 themeConfig:
   logo: /head10x.png
   lastUpdated: Last Updated
-  repo: Benjamin-Lee/mechwolf
+  repo: MechWolf/mechwolf
   editLinks: true
   nav:
     - text: Learn
@@ -27,7 +27,7 @@ themeConfig:
             - text: plugins
               link: /api/plugins
     - text: Get Help
-      link: https://github.com/Benjamin-Lee/MechWolf/issues/new/choose
+      link: https://github.com/MechWolf/MechWolf/issues/new/choose
   sidebar:
     /api/:
       - /api/

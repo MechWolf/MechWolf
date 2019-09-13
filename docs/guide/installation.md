@@ -21,7 +21,7 @@ If you would like to use the development version of MechWolf, which is
 directly from the GitHub repository using the following command:
 
 ```
-$ pip install git+https://github.com/Benjamin-Lee/MechWolf.git
+$ pip install git+https://github.com/MechWolf/MechWolf.git
 ```
 
 ## Updating MechWolf

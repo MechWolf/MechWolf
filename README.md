@@ -1,5 +1,5 @@
 <h1 align ="center">
-<img src='https://github.com/Benjamin-Lee/MechWolf/raw/master/logo/head10x.png' width="150">
+<img src='https://github.com/MechWolf/MechWolf/raw/master/logo/head10x.png' width="150">
 <br>
 MechWolf
 </h1>
@@ -8,7 +8,7 @@ MechWolf
 <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.7-blue.svg" alt="Python version" /></a>
 <a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/chat-on%20gitter-brightgreen.svg" alt="Gitter chat" /></a>
 <a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/DOI-to%20be%20determined-brightgreen.svg" alt="DOI" /></a>
-<a href="https://github.com/Benjamin-Lee/MechWolf/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GPLv3 license" /></a>
+<a href="https://github.com/MechWolf/MechWolf/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GPLv3 license" /></a>
 <img src="https://img.shields.io/travis/MechWolf/MechWolf.svg" alt="Travis status"/>
 <a href="https://mechwolf.netlify.com"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeveloper.oswaldlabs.com%2Fnetlify-status%2F39a2d45e-f621-4e8d-afed-3ae2ee4b9364" alt="Netlify"/></a>
 <a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
@@ -39,7 +39,7 @@ $ pip install mechwolf
 Or, to get the latest (but not necessarily stable) development branch:
 
 ```bash
-$ pip install git+https://github.com/Benjamin-Lee/MechWolf.git
+$ pip install git+https://github.com/MechWolf/MechWolf.git
 ```
 
 ## What can MechWolf do?

@@ -76,7 +76,7 @@ In fact, to quote [_Ten Simple Rules for Documenting Scientific Software_](https
 
 > **When in doubt, err on the side of more comments.**
 
-To learn more about Python commenting, take a look at [this guide](https://realpython.com/python-comments-guide/), or follow the example of the current [MechWolf repository](https://github.com/Benjamin-Lee/mechwolf).
+To learn more about Python commenting, take a look at [this guide](https://realpython.com/python-comments-guide/), or follow the example of the current [MechWolf repository](https://github.com/MechWolf/mechwolf).
 
 ## Type annotations
 

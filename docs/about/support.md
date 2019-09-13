@@ -10,8 +10,8 @@ Additionally, it may be useful to install a tool such as [stackprinter](https://
 
 ## Talk to us
 
-Still, if those steps haven't solved the problem or you are having other struggles, [create an issue on our GitHub](https://github.com/Benjamin-Lee/MechWolf/issues) (free account required), where we'll try our best to help you.
+Still, if those steps haven't solved the problem or you are having other struggles, [create an issue on our GitHub](https://github.com/MechWolf/MechWolf/issues) (free account required), where we'll try our best to help you.
 
 ## Report a bug
 
-If you think you've found a bug in MechWolf, [create an issue](https://github.com/Benjamin-Lee/MechWolf/issues) on the MechWolf GitHub repository and someone will work to resolve the issue there.
+If you think you've found a bug in MechWolf, [create an issue](https://github.com/MechWolf/MechWolf/issues) on the MechWolf GitHub repository and someone will work to resolve the issue there.

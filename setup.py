@@ -13,7 +13,7 @@ setup(
     version="0.1.0",
     description="Continuous flow process description, analysis, and automation",
     long_description=long_description,
-    url="https://github.com/benjamin-lee/MechWolf",
+    url="https://github.com/MechWolf/MechWolf",
     author="Benjamin Lee and Alex Mijalis",
     author_email="benjamindlee@me.com",
     classifiers=[
