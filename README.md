@@ -12,7 +12,7 @@ MechWolf
 <img src="https://img.shields.io/travis/MechWolf/MechWolf.svg" alt="Travis status"/>
 <a href="https://mechwolf.netlify.com"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeveloper.oswaldlabs.com%2Fnetlify-status%2F39a2d45e-f621-4e8d-afed-3ae2ee4b9364" alt="Netlify"/></a>
 <a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
-
+<a href="https://mybinder.org/v2/gh/MechWolf/MechWolf/master"><img src="https://mybinder.org/badge_logo.svg"></img></a>
 </div>
 <br>
 
