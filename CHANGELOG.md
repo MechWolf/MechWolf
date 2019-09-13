@@ -1,5 +1,4 @@
-Changelog
-=========
+# Changelog
 
 0.1.1 (unreleased)
 ------------------
@@ -8,5 +7,4 @@ Changelog
 
 0.1.0 (2019-09-12)
 ------------------
-
 - Initial public release
