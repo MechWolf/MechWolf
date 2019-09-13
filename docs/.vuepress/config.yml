@@ -33,6 +33,7 @@ themeConfig:
   sidebar:
     /api/:
       - /api/
+      - /api/changelog
       - title: Core
         collapsable: false
         children:
