@@ -11,12 +11,12 @@ There are a bunch of ways that you can contribute to the project:
 ### Bug reports
 
 The easiest way to help out is to let us know if something is wrong so we can fix it.
-To file a bug report, go to please click [here](https://github.com/Benjamin-Lee/MechWolf/issues/new?assignees=&labels=bug&template=bug_report.md&title=) and fill out the form with as much information as you can.
+To file a bug report, go to please click [here](https://github.com/MechWolf/MechWolf/issues/new?assignees=&labels=bug&template=bug_report.md&title=) and fill out the form with as much information as you can.
 
 ### Feature requests
 
 If you have an idea of way to make MechWolf better (even if you're not sure how to implement it), we want to know!
-In order to help us keep track of feature requests, we ask that you open a [GitHub issue](https://github.com/Benjamin-Lee/MechWolf/issues/new?assignees=&labels=&template=feature_request.md&title=) using the feature request form.
+In order to help us keep track of feature requests, we ask that you open a [GitHub issue](https://github.com/MechWolf/MechWolf/issues/new?assignees=&labels=&template=feature_request.md&title=) using the feature request form.
 
 ### Write documentation
 
@@ -25,12 +25,12 @@ Our docs are written in a combination of [Markdown](https://commonmark.org/help/
 
 ### Fix bugs and implement features
 
-Look through the [GitHub issues](https://github.com/Benjamin-Lee/MechWolf/issues/) for unfixed bugs and unimplemented features.
+Look through the [GitHub issues](https://github.com/MechWolf/MechWolf/issues/) for unfixed bugs and unimplemented features.
 Anything tagged with "enhancement" and "help wanted" is open to whoever wants to do it.
 
 ## Get started
 
-1. First, [fork the repository on GitHub](https://github.com/Benjamin-Lee/MechWolf).
+1. First, [fork the repository on GitHub](https://github.com/MechWolf/MechWolf).
 1. Clone your fork:
    ```bash
    $ git clone git@github.com:your_name_here/MechWolf.git

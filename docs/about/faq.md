@@ -49,7 +49,7 @@ Yes. MechWolf is licensed under the permissive [GNU General Public License v3.0]
 
 ## Where can I get high-resolution versions of MechWolf's logo?
 
-High-res versions are available in the [logos directory](https://github.com/Benjamin-Lee/MechWolf/tree/master/logo).
+High-res versions are available in the [logos directory](https://github.com/MechWolf/MechWolf/tree/master/logo).
 
 ## How do I cite MechWolf?
 
