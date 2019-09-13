@@ -14,6 +14,8 @@ themeConfig:
       items:
         - text: Overview
           link: /api/index
+        - text: Changelog
+          link: /api/changelog
         - text: Modules
           items:
             - text: core

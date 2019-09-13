@@ -1,5 +1,5 @@
-Changelog for MechWolf
-======================
+Changelog
+=========
 
 0.1.1 (unreleased)
 ------------------
