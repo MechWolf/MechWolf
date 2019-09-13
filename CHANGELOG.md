@@ -6,6 +6,7 @@ Changelog for MechWolf
 
 - Nothing changed yet.
 
-
 0.1.0 (2019-09-12)
 ------------------
+
+- Initial public release
