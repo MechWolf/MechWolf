@@ -1,0 +1,48 @@
+name: Python package
+
+on: [push]
+
+jobs:
+  test:
+    name: Test MechWolf on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: 3.7
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 
+    - name: Test with pytest
+      run: |
+        pip install pytest
+        pytest
+    - name: Ensure code style compliance with Black
+      run: |
+        pip install black
+        black --check mechwolf
+    - name: Typecheck with Mypy
+      run: |
+        pip install mypy
+        mypy mechwolf/ --ignore-missing-import --no-implicit-optional
+    - name: Install Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - name: Verify docs build
+      run: |
+        cd docs
+        npm i
+        npm run build
