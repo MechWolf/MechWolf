@@ -4,4 +4,4 @@ contrib: mechwolf/components/contrib/*
 plugins: mechwolf/plugins/*
 zoo: mechwolf/zoo/*
 tests: mechwolf/tests/*
-docs: mechwolf/docs
+docs: mechwolf/docs/*
