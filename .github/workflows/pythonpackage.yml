@@ -31,6 +31,10 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v1
+      - name: Install Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
       - name: Lint the source code with Flake8
         run: |
           pip install flake8
@@ -40,6 +44,10 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v1
+      - name: Install Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
       - name: Ensure code style compliance with Black
         run: |
           pip install black
@@ -49,6 +57,10 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v1
+      - name: Install Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
       - name: Typecheck with Mypy
         run: |
           pip install mypy
@@ -63,6 +75,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - name: Install Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
       - name: Build the actual docs
         run: |
           cd docs
