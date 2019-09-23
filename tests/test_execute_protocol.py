@@ -27,7 +27,7 @@ P.add([test, test2, test3, test4], rate="5 Hz", start="0 secs", stop="1 secs")
 # test both execution modes
 for dry_run in [True, False]:
     E = P.execute(confirm=True, dry_run=dry_run, log_file=None, data_file=None)
-    assert len(E.data["test"]) == 5
+    assert len(E.data["test"]) >= 5
     if dry_run:
         assert E.data["test"][0].data == "simulated read"
     assert pump.rate == mw._ureg.parse_expression(pump._base_state["rate"])
