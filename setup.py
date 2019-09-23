@@ -10,7 +10,7 @@ with open(path.join(here, "README.md")) as f:
 
 setup(
     name="mechwolf",
-    version="0.1.1",
+    version="0.1.2.dev0",
     description="Continuous flow process description, analysis, and automation",
     long_description=long_description,
     long_description_content_type="text/markdown",
