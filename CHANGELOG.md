@@ -3,7 +3,7 @@
 0.1.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Moved developer dependencies out of setup.py in order to [enable Conda installation](https://github.com/conda-forge/staged-recipes/pull/9541).
 
 0.1.0 (2019-09-12)
 ------------------
