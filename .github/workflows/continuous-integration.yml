@@ -1,6 +1,6 @@
-name: Python package
+name: CI
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   test:
@@ -39,6 +39,7 @@ jobs:
         run: |
           pip install flake8
           flake8
+
   style-check:
     name: Ensure code style compliance with Black
     runs-on: "ubuntu-latest"
@@ -52,6 +53,7 @@ jobs:
         run: |
           pip install black
           black --check mechwolf
+
   type-check:
     name: Typecheck with Mypy
     runs-on: "ubuntu-latest"
