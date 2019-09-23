@@ -5,3 +5,4 @@ plugins: mechwolf/plugins/*
 zoo: mechwolf/zoo/*
 tests: mechwolf/tests/*
 docs: mechwolf/docs/*
+dependencies: setup.py
