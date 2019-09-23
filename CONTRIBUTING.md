@@ -43,7 +43,8 @@ Anything tagged with "enhancement" and "help wanted" is open to whoever wants to
 1. Install MechWolf with the developer dependencies:
    ```bash
    (mechwolf-dev-env) $ cd MechWolf
-   (mechwolf-dev-env) $ pip install -e .[dev]
+   (mechwolf-dev-env) $ pip install -e .
+   (mechwolf-dev-env) $ pip install -r requirements-dev.txt
    ```
 1. Set up [pre-commit](https://pre-commit.com/):
    ```bash

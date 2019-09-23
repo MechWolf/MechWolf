@@ -48,17 +48,4 @@ setup(
         "vega",
         "xxhash",
     ],
-    extras_require={
-        "dev": [
-            "black",
-            "flake8",
-            "isort",
-            "mypy",
-            "pipdeptree",
-            "pipreqs",
-            "pre-commit",
-            "pytest",
-            "zest.releaser",
-        ]
-    },
 )
