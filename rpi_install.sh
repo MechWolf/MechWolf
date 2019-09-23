@@ -3,6 +3,13 @@
 # Install script for Raspberry Pi running Raspbian Buster
 # Note that this is only tested/supported on Buster
 
+raspbian_version=$(cat /etc/os-release |grep VERSION_CODENAME |cut -d = -f 2)
+
+if [ $raspbian_version != 'buster' ]; then
+  echo 'This install script is only tested/supported in Raspbian Buster.'
+  exit
+fi
+
 # Update
 apt-get -y update
 apt-get -y upgrade
