@@ -34,4 +34,4 @@ for dry_run in [True, False]:
 
 # test fast forward
 E = P.execute(confirm=True, dry_run=5, log_file=None, data_file=None)
-assert len(E.data["test"]) == 1
+assert len(E.data["test"]) >= 1
