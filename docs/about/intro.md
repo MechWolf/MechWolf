@@ -174,8 +174,6 @@ But wait, there’s more! `visualize()` will create a diagram of the network:
 A.visualize()
 ```
 
-![svg](index_files/index_9_0.svg)
-
 It’s fully customizable, so you can decide whether to show the details of the tubing, the name of the apparatus, and more. And that’s not all either. `describe()` will generate an SI-ready description of the apparatus:
 
 ```python
