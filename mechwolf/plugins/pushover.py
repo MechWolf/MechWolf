@@ -4,8 +4,6 @@ from loguru import logger
 
 
 def generate_sink(token: str, user: str) -> Callable:
-    """Programm
-    """
     import requests
 
     def sink(message):
@@ -26,7 +24,7 @@ def pushover(token: str, user: str, level: str):
     """Bind [Pushover](https://pushover.net) notifications to the MechWolf logger.
 
     Pushover is an online service that takes care of most of the complexity of sending push notifications to mobile devices.
-    This function handles the API calls and logger configuration: all you neded to do is set up your Pushover account and download the app.
+    This function handles the API calls and logger configuration: all you need to do is set up your Pushover account and download the app.
     At the time of this writing, the app is a one-time $5 purchase.
 
 

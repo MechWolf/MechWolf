@@ -5,7 +5,7 @@ from loguru import logger
 
 class Component(object):
     """
-    One of the individial, irreducible parts of a flow chemistry setup.
+    One of the individual, irreducible parts of a flow chemistry setup.
 
     All components in an `Apparatus` must be of type `Component`.
     However, it is unlikely that a user will directly instantiate a `Component`.

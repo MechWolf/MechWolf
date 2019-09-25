@@ -553,7 +553,7 @@ class Protocol(object):
         - `strict`: Whether to stop execution upon encountering any errors. If False, errors will be noted but ignored.
         - `verbosity`: The level of logging verbosity. One of "critical", "error", "warning", "success", "info", "debug", or "trace" in descending order of severity. "debug" and (especially) "trace" are not meant to be used regularly, as they generate significant amounts of usually useless information. However, these verbosity levels are useful for tracing where exactly a bug was generated, especially if no error message was thrown.
         - `log_file`: The file to write the logs to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.log.jsonl`. If falsey, no logs will be written to the file.
-        - `log_file_verbosity`: How verbose the logs in file should be. By default, it is "trace", which is the most verbose logging availible. If `None`, it will use the same level as `verbosity`.
+        - `log_file_verbosity`: How verbose the logs in file should be. By default, it is "trace", which is the most verbose logging available. If `None`, it will use the same level as `verbosity`.
         - `log_file_compression`: Whether to compress the log file after the experiment.
         - `data_file`: The file to write the experimental data to during execution. If `True`, the data will be written to a file in `~/.mechwolf` with the filename `{experiment_id}.data.jsonl`. If falsey, no data will be written to the file.
 

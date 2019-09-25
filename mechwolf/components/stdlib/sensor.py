@@ -61,7 +61,7 @@ class Sensor(ActiveComponent):
         logger.debug(f"Monitor loop for {self} has completed.")
 
     def _validate(self, dry_run: bool) -> None:
-        logger.debug(f"Perfoming sensor specific checks for {self}...")
+        logger.debug(f"Performing sensor specific checks for {self}...")
         if not dry_run:
             logger.trace(f"Executing Sensor-specific checks...")
             logger.trace("Entering context...")
