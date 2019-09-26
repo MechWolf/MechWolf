@@ -8,7 +8,7 @@ There are several ways to get MechWolf from Conda.
 ### Visual installation
 
 ::: tip
-If you run into any issues installation, please contact us [here](https://github.com/MechWolf/MechWolf/issues/new?assignees=Benjamin-Lee&template=installation_help.md&title=).
+If you run into any issues during installation, please contact us [here](https://github.com/MechWolf/MechWolf/issues/new?assignees=Benjamin-Lee&template=installation_help.md&title=).
 :::
 
 If you're new to programming, you can get MechWolf up and running _without_ having to use the command line.
