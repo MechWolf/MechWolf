@@ -1,8 +1,8 @@
 ---
 name: Installation help
 about: Having trouble installing MechWolf? We're here to help.
-title: "Installation iss"
-assignees: ""
+title: ""
+assignees: "Benjamin-Lee"
 ---
 
 **Screenshots**
