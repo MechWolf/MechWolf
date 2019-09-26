@@ -1,5 +1,7 @@
 title: MechWolf
 description: "Robotic chemistry made easy"
+plugins:
+  - "@vuepress/medium-zoom"
 themeConfig:
   logo: /head10x.png
   lastUpdated: Last Updated

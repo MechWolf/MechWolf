@@ -33,7 +33,7 @@ Features include:
 It's as easy as:
 
 ```bash
-$ pip install mechwolf
+$ conda install -c conda-forge mechwolf
 ```
 
 Or, to get the latest (but not necessarily stable) development branch:
@@ -41,6 +41,8 @@ Or, to get the latest (but not necessarily stable) development branch:
 ```bash
 $ pip install git+https://github.com/MechWolf/MechWolf.git
 ```
+
+For more information about installation, as well as to learn about other installation options, please look at the full [installation instructions](docs/guide/installation.md).
 
 ## What can MechWolf do?
 
