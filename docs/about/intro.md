@@ -1,5 +1,10 @@
 # Welcome to MechWolf
 
+::: warning 🚧️ Under Construction 🚧️
+While MechWolf 0.1.1 is released and relatively stable (for pre-1.0 software), this documentation site is still under construction.
+Please pardon the dust while we update and refine the documentation.
+:::
+
 MechWolf is a Python framework for automating continuous flow processes.
 It was developed as a collaboration between computer scientists, chemists, and complete novices to be used by anyone wanting to do better, faster, more reproducible flow-based science.
 Features include:
