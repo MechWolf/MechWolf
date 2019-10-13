@@ -68,4 +68,4 @@ Anything tagged with "enhancement" and "help wanted" is open to whoever wants to
 1. When you're done, create a pull request for us to review.
    As a general request, please ensure that the tests and documentation are updated before submitting your pull request.
    This allows us to review and accept it as quickly as possible.
-   Furthermore, it should be compatible with all supported Python versions, which is currently only ython 3.7.
+   Furthermore, it should be compatible with all supported Python versions, which is currently only Python 3.7.
