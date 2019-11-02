@@ -3,8 +3,7 @@
     "scope": "python",
     "prefix": "logger",
     "body": [
-      "logger.${1|trace,debug,info,success,warning,error,critical|}('$2')",
-      "$3"
+      "logger.${1|trace,debug,info,success,warning,error,critical|}(\"$2\")"
     ]
   }
 }
