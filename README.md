@@ -111,11 +111,11 @@ P.execute()
 ```
 
 That's it! You can do this and a whole lot more with MechWolf.
-To learn more, take a look at the [docs](example.com).
+To learn more, take a look at the [docs](https://mechwolf.org).
 
 ## Documentation
 
-[Link will go here](example.com)
+The documentation website is accessible [here](https://mechwolf.org).
 
 ## License
 
