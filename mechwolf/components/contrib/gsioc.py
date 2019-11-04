@@ -87,7 +87,8 @@ class GsiocInterface(object):
             logger.trace("Connection attempt failed.")
 
         raise RuntimeError(
-            f"Unable to connect to device with GSIOC unit ID {self.gsioc_id - 128}. Check 'Unit ID' setting on device."
+            f"Unable to connect to device with GSIOC unit ID {self.gsioc_id - 128}. "
+            f"Check 'Unit ID' setting on device."
         )
 
     async def connect_async(self) -> None:
@@ -118,7 +119,8 @@ class GsiocInterface(object):
             logger.trace("Connection attempt failed.")
 
         raise RuntimeError(
-            f"Unable to connect asynchronously to device with GSIOC unit ID {self.gsioc_id - 128}. Check 'Unit ID' setting on device."
+            f"Unable to connect asynchronously to device with GSIOC unit ID "
+            f"{self.gsioc_id - 128}. Check 'Unit ID' setting on device."
         )
 
     def immediate_command(self, command: str) -> str:
@@ -204,7 +206,10 @@ class GsiocInterface(object):
             echo = self._ser.read()
 
         if echo != b"\n":
-            logger.debug(f"Did not get expected response of '\\n' but rather '{echo}'.")
+            logger.debug(
+                f"Did not get expected response of '\\n' but "
+                f"rather '{echo.decode(encoding='ascii')}'."
+            )
             raise RuntimeError("GSIOC device not ready for buffered command.")
 
         # Command terminates with a \r
@@ -215,7 +220,10 @@ class GsiocInterface(object):
             echo = self._ser.read()
 
             if echo != byte:
-                logger.debug(f"Expected '{byte}', got '{echo}'.")
+                logger.debug(
+                    f"Expected '{byte.decode(encoding='ascii')}', "
+                    f"got '{echo.decode(encoding='ascii')}'."
+                )
                 raise RuntimeError("GSIOC device did not respond to buffered command.")
 
         logger.trace("Command sent successfully.")
@@ -237,7 +245,10 @@ class GsiocInterface(object):
             echo = await self._ser.read_async()
 
         if echo != b"\n":
-            logger.debug(f"Did not get expected response of '\\n' but rather '{echo}'.")
+            logger.debug(
+                f"Did not get expected response of '\\n' but rather "
+                f"'{echo.decode(encoding='ascii')}'."
+            )
             raise RuntimeError("GSIOC device not ready for buffered command.")
 
         # Command terminates with a \r
@@ -248,7 +259,10 @@ class GsiocInterface(object):
             echo = await self._ser.read_async()
 
             if echo != byte:
-                logger.debug(f"Expected '{byte}', got '{echo}'.")
+                logger.debug(
+                    f"Expected '{byte.decode(encoding='ascii')}', "
+                    f"got '{echo.decode(encoding='ascii')}'."
+                )
                 raise RuntimeError("GSIOC device did not respond to buffered command.")
 
         logger.trace("Command sent successfully.")
