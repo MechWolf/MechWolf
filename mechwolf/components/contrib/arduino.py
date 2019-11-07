@@ -15,11 +15,10 @@ class ArduinoSensor(Sensor):
     Arguments:
     - `serial_port`: Serial port through which device is connected
     - `name`: The name of the component.
-    - `command` : Command to be sent to device to request reading. `'*'` by default.
+    - `command`: Command to be sent to device to request reading. `'*'` by default.
 
     Returns:
-    - `ArduinoSensor`, when read, returns the parsed response, which can be an `int` or `float`.
-
+    - When read, returns the parsed response, which can be an `int` or `float`.
     """
 
     metadata = {
