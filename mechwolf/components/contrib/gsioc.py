@@ -93,9 +93,9 @@ class GsiocInterface(object):
 
     async def connect_async(self) -> None:
         """
-        Connect asynchronously to a GSIOC device.
+        Async implementation of [`connect`](#connect).
 
-        For API docs, see [`connect`](#connect)
+        For API docs, see [`connect`](#connect).
         """
         logger.trace(f"Connecting async to {self}.")
 
