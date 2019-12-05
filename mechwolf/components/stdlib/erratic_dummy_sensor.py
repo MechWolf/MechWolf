@@ -20,7 +20,7 @@ class ErraticDummySensor(Sensor):
 
     Attributes:
     - `name`: The component's name.
-    - `rate`: Data collection rate in Hz as a `pint.Quanity`. A rate of 0 Hz corresponds to the sensor being off.
+    - `rate`: Data collection rate in Hz as a `pint.Quantity`. A rate of 0 Hz corresponds to the sensor being off.
     """
 
     def __init__(self, name: Optional[str] = None, invocation_threshold=100):
