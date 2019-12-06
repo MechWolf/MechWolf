@@ -47,7 +47,7 @@ class ErraticDummySensor(Sensor):
                     "output zero",
                     "change amp",
                 ],
-                weights=[99, 0.2, 0.2, 0.2, 0.2, 0.2],
+                weights=[80, 0.2, 0.2, 0.2, 0.2, 0.2],
             )[0]
 
             # once it has failed, failures can only compound

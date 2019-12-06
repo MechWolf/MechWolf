@@ -124,3 +124,6 @@ docs/api/zoo/*
 
 # automatically generated logging
 *.log.json
+
+# generated papers
+**/paper.pdf
