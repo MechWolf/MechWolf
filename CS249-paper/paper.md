@@ -31,6 +31,12 @@ Because all flow-based robotic chemistry systems depend on one or more pumps to 
 
 # Related work
 
+There are several frameworks for robotic chemistry.
+However, to the best of our knowledge there have not been any attempts to perform on-device learning in real time to detect anomalies.
+Neither the Chemputer [@Kitson2018] nor Octopus [@octopus] have implemented anomaly detection of any kind.
+
+There are several methods for time series anomaly detection, although only a subset of them are capable of being computed in real time. 
+
 # Methods
 
 Because the pumps use in chemical systems generate sine waves when monitored by UV/visible light spectroscopy sensors, we focused on identifying anomalies with the waveforms present in the sensor data.
@@ -53,6 +59,14 @@ If an anomaly is detected, it will return an error, which will be propagated by 
 The source code for our implementation of this feature is available online at <github.com/MechWolf/MechWolf/tree/CS249>.
 
 # Results
+
+## Model Evaluation
+
+We are doing this now.
+
+## Real-Time Performance
+
+We have not done this yet. 
 
 # Conclusion
 
