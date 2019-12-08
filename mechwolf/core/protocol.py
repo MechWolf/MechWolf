@@ -543,6 +543,7 @@ class Protocol(object):
         log_file_verbosity: Optional[str] = "trace",
         log_file_compression: Optional[str] = None,
         data_file: Union[str, bool, os.PathLike, None] = True,
+        display: bool = True,
     ) -> Experiment:
         """
         Executes the procedure.
@@ -575,6 +576,7 @@ class Protocol(object):
             log_file_verbosity=log_file_verbosity,
             log_file_compression=log_file_compression,
             data_file=data_file,
+            display=display,
         )
 
         return E

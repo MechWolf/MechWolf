@@ -195,6 +195,7 @@ class Experiment(object):
         log_file_verbosity: Optional[str],
         log_file_compression: Optional[str],
         data_file: Union[str, bool, os.PathLike, None],
+        display: bool,
     ):
         self.dry_run = dry_run
 
@@ -266,7 +267,8 @@ class Experiment(object):
             self._data_file = self._data_file
 
         if get_ipython():
-            self._display(verbosity=verbosity.upper(), strict=strict)
+            if display:
+                self._display(verbosity=verbosity.upper(), strict=strict)
             asyncio.ensure_future(main(experiment=self, dry_run=dry_run, strict=strict))
         else:
             asyncio.run(main(experiment=self, dry_run=dry_run, strict=strict))
