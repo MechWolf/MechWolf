@@ -35,7 +35,8 @@ There are several frameworks for robotic chemistry.
 However, to the best of our knowledge there have not been any attempts to perform on-device learning in real time to detect anomalies.
 Neither the Chemputer [@Kitson2018] nor Octopus [@octopus] have implemented anomaly detection of any kind.
 
-There are several methods for time series anomaly detection, although only a subset of them are capable of being computed in real time. 
+There are several methods for time series anomaly detection, although only a subset of them are capable of being computed in real time on streamlining data.
+One such method is the neuro-inspired hierarchical temporal memory (HTM) method, developed by Numenta to resemble the neocortex [@Ahmad2017].
 
 # Methods
 
@@ -44,19 +45,29 @@ Since the devices have limited compute and memory capacity, we decided to use a 
 RRCF enables us to precisely control the amount of memory used for anomaly detection to ensure that sufficient memory is available for MechWolf.
 We eliminated threshold-based methods as too simple to capture the types of anomalies common to pumps in chemical systems.
 
-We extended MechWolf by creating a virtual sensor capable of simulating various known failure modalities.
-We then injected noise into the sensor's sine wave output.
-To eliminate this noise, we used a moving average to smooth the data.
-We performed experiments in which we fed either the raw or smoothed sensor data into a Python implementation of RRCF [@Bartos2019] but found that both the performance and the false positive and false negative rates were unacceptable.
-We therefore switched to using SciPy's signal processing routines for peak finding as a featurization method.
-We tested these routines on both the raw and smoothed data.
+The source code for our methods is available online at [github.com/MechWolf/MechWolf/tree/CS249](https://github.com/MechWolf/MechWolf/tree/CS249).
+
+## Robust Random Cut Forest
+
+Soumil will write up a description of how RRCF works here.
+
+## Model Evaluation
+
+To study the performance of the RRCF model, we extended MechWolf by creating a virtual sensor capable of returning simulated data indicative of various known failure modalities: uncommanded increases in pump frequency, uncommanded decreases in pump frequency, and incomplete pump actuation resulting in a decrease in amplitude.
+This virtual sensor inserts noise into the output data stream in order to simulate noise in the spectroscopy reading.
+
+In order to perform peak prominence and width finding on sensor data to use as features for the RRCF model, we relied on SciPy's signal processing routines [@scipy].
+Similarly, to smooth the data, we used a moving average with a window size of 11 as implemented by SciPy [@scipy-cookbook].
+
+We used the RRCF implementation in @Bartos2019 to calculate the collusive displacement of each datapoint in the stream.
+To identify collusive displacement values that are indicative of an anomaly, we performed thresholding for values greater than 20 and more than two standard deviations from the mean collusive displacement.
+
+## Real-Time Implementation
 
 For the real time monitoring capability, we intend to create a Flask local web server to run as a separate process on the device.
 We have already modified the MechWolf `Sensor` object (which is responsible for reading data) to immediately post an asynchronous request to this server upon the receipt of new data.
 The server will perform peak-finding and compute the anomaly score via RRCF.
 If an anomaly is detected, it will return an error, which will be propagated by the `Sensor` object to the MechWolf protocol executor, which will in turn halt the experiment if configured to do so by the user.
-
-The source code for our implementation of this feature is available online at <github.com/MechWolf/MechWolf/tree/CS249>.
 
 # Results
 
@@ -64,9 +75,17 @@ The source code for our implementation of this feature is available online at <g
 
 We are doing this now.
 
+### Featurization achieves better results faster.
+
+We tested RRCF on the raw data and the
+
+### RRCF can identify major anomalies with very little training data.
+
+Because the sine waves in the signal from spectrographs are highly regular, minimal training data is required to identify anomalous pump actuation.
+
 ## Real-Time Performance
 
-We have not done this yet. 
+We have not done this yet.
 
 # Conclusion
 
