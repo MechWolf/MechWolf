@@ -127,3 +127,4 @@ docs/api/zoo/*
 
 # generated papers
 **/paper.pdf
+**/*.jsonl
