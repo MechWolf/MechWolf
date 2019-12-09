@@ -96,7 +96,7 @@ The goal of our model evaluation experiment was to ascertain how quickly we coul
 
 For each anomaly type we vary the invocation threshold from 200 to 900 and then measure how many anomalies the RRCF model detects. We enforce that each sensor only produces 1 anomaly in its lifetime (that is, the single anomaly induced immediately after the invocation threshold is crossed). Thus, because we run our experiment with 200 sensors reading the pump data, the maximum number of anomalies our RRCF model can detect is 200, constituting a perfect score. 
 
-Again, the data passed into the RRCF model is 'featurized'. Instead of passing in raw signal data read by each sensor, we process this data and obtain a $1$ x $2$ dimensional array; the first row corresponds to the heights of each peak in the sensor data, and the second row corresponds to the widths between each peak in the sensor data. 
+Again, the data passed into the RRCF model is 'featurized'. Instead of passing in raw signal data read by each sensor, we process this data and obtain a $1$ x $2$ dimensional array; the first row corresponds to the heights of each peak in the sensor data, and the second row corresponds to the widths between each peak in the sensor data. 
 
 We specified two criteria which determined whether or not a given point was an anomaly. The first criteria used the aforementioned collusive displacement measure; if the introduction of a new point $x$ caused the average co-displacement of the set of 50 trees comprising the RRCF to increase beyond a specific threshold, $x$ was classified as an anomaly. The second criteria utilized standard deviation; [COME BACK TO THIS]. 
 
@@ -106,19 +106,19 @@ Because the sinusoidal waves in the signal from spectrographs are highly regular
 
 Our main findings are demonstrated on the graph below. For reference, the x-axis labeled as 'Number of Training Data Points' corresponds to the aforementioned invokation threshold, and hence simply refers to the number of 'good' training points the model received before the anomaly was induced. Our results demonstrate the unsurprising trend that anomaly detection improves as our model receives more training data. We see this trend differently for each anomaly type, however; for the 'speed-up' anomaly, we see a fairly regular upward trend of anomaly detection success as we increase the number of training points, whereas for both the 'change-amp' anomaly and 'slow-down' anomaly we have almost no success detecting anomalies whatsoever until we reach an invokation threshold of 800 after which our model catches every possible anomaly. We estimate that, given the parameters we specified for our pump that can be viewed in our source code, every 100 invokations/reads of the pump data yields approximately 1.6 wavelengths of signal data (prior to an anomaly, of course). Hence, we can quantify our results by stating that at both speed-up and change-amplitude anomalies were detected close to perfectly after our model was trained  approximately 12 'wavelengths' of true signal data, and slow-down anomalies were detected after it was trained on approximately 14 'wavelengths' of true signal data. 
 
-![Anomaly](P1.png)
+![\label{anomaly detection success}](P1.png)
 
 
 
 In the above graph, we notice a gradual increase in the success rate of our model in detecting speed-up anomalies over the specified spread of invokation thresholds, but sudden jumps in success for both slow-down and change-amp anomalies. Thus, we constrain the invokation thresholds to investigate more closely how success rates increase for the latter two types of anomalies. Because the success of our model detecting 'slow-down' anomalies jumped to 200 from almost 0 between invokation thresholds 800 and 900, we examine the change between thresholds 800 and 900 below and see a relatively sudden jump in model success between thresholds 860 and 880. Similarly, we see a relatively sudden jump in model success detecting change-amp anomalies between thresholds 700 and 720. Statistically it is challenging to characterize why these sudden increases in model success occur, though we did notice that at the thresholds at which model success suddenly increased, the signal data often finished a full 'wavelength' at or near the threshold. 
 
-![Anomalyv2](P2.png)
+![\label{slow-down anomaly detection success}](P2.png)
 
 
 
 Similarly, we see a relatively sudden jump in model success detecting change-amp anomalies between thresholds 700 and 720. Statistically it is challenging to characterize why these sudden increases in model success occur, though we did notice that at the thresholds at which model success suddenly increased, the signal data often finished a full 'wavelength' at or near the threshold. 
 
-![Anomalyv2](P3.png)
+![\label{change-amp anomaly detection success}](P3.png)
 
 As part of our experiment, we also wanted to determine the extent to which our model would detect false-positives, that is, classify points as anomalies when they were in truth not anomalies. Empirically, we noticed that our model produced very few false positives for all invokation thresholds (under 5 for each experiment). 
 
