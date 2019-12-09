@@ -2,8 +2,8 @@
 title: Streaming Anomaly Detection for Constrained Robotic Chemistry Systems
 author: Benjamin D. Lee and Soumil Singh
 abstract: |
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+	Continuously monitoring robotic chemistry systems for hardware failures that do not generate error messages is a challenge that is preventing the adoption of these systems to accelerate laboratory research.
+	We apply a new method for online anomaly detection, robust random cut forests, to identify the most common types of failures via anomalies in ultaviolet/visual light spectroscopy sensor output.
 bibliography: bibliography.bib
 classoption: twocolumn
 ---
@@ -40,7 +40,7 @@ One such method is the neuro-inspired hierarchical temporal memory (HTM) method,
 
 # Methods
 
-Because the pumps use in chemical systems generate sinusoidal waves when monitored by UV/visible light spectroscopy sensors, we focused on identifying anomalies with the waveforms present in the sensor data.
+Because the pumps use in chemical systems generate sinusoidal waves when monitored by ultraviolet/visible light spectroscopy sensors, we focused on identifying anomalies with the waveforms present in the sensor data.
 Since the devices have limited compute and memory capacity, we decided to use a recently published unsupervised tree-based method, the robust random cut forest (RRCF) for anomaly detection on the data streams [@rrcf].
 RRCF enables us to precisely control the amount of memory used for anomaly detection to ensure that sufficient memory is available for MechWolf.
 We eliminated threshold-based methods as too simple to capture the types of anomalies common to pumps in chemical systems. Similarly, we eliminated any models which were customized for a specific pump type due to the wide variety of pumps in use among MechWolf's users. Thus, we required a computationally efficient, fully unsupervised model capable of performing anomaly detection on streams of sinusoidal.
@@ -108,8 +108,6 @@ Our main findings are demonstrated on the graph below. For reference, the x-axis
 
 ![\label{anomaly detection success}](P1.png)
 
-
-
 In the above graph, we notice a gradual increase in the success rate of our model in detecting speed-up anomalies over the specified spread of invokation thresholds, but sudden jumps in success for both slow-down and change-amp anomalies. Thus, we constrain the invokation thresholds to investigate more closely how success rates increase for the latter two types of anomalies. Because the success of our model detecting 'slow-down' anomalies jumped to 200 from almost 0 between invokation thresholds 800 and 900, we examine the change between thresholds 800 and 900 below and see a relatively sudden jump in model success between thresholds 860 and 880. Similarly, we see a relatively sudden jump in model success detecting change-amp anomalies between thresholds 700 and 720. Statistically it is challenging to characterize why these sudden increases in model success occur, though we did notice that at the thresholds at which model success suddenly increased, the signal data often finished a full 'wavelength' at or near the threshold. 
 
 ![\label{slow-down anomaly detection success}](P2.png)
@@ -136,10 +134,6 @@ Therefore, we had to prevent the most recent detected peak from being inserted i
 
 ![A demonstration of the real time detection of an anomaly, which started at the point labeled (A) and resulted in a shutdown at the point labeled (B). Note that the anomaly was not detected before another peak had completed. \label{automatic-shutdown}](automatic-shutdown.png)
 
-# Conclusion
-
-Through our experiment, we were able to demonstrate the ability for an RRCF model to detect multiple types of anomalies with high success probabilities using minimal training data. After providing only approximately 12-14 full 'wavelengths' of true signal data to our RRCF model for training, it was able to generically detect each type of anomaly with close to 100% success probability. We also found that by featurizing the process, that is providing peak and width feature data instead of raw signal data to our RRCF model, we drastically improved the effectiveness of our model. 
-
 # Next Steps and Discussion:
 
 In this section we analyse the applicability of our findings to real signal anomaly detection tasks, its limitations, and the improvement points that could be explored as next steps. 
@@ -150,11 +144,9 @@ Secondly, our analysis of different types of anomalies was by no means exhaustiv
 
 Thirdly, [SOME REAL TIME NEXT STEPS STUFF]
 
-
-
 # Conclusion
 
-Through our experiment, we were able to demonstrate the ability for an RRCF model to detect multiple types of anomalies with high success probabilities using minimal training data. After providing only approximately 12-14 full 'wavelengths' of true signal data to our RRCF model for training, it was able to generically detect each type of anomaly with close to 100% success probability. We also found that by featurizing the process, that is providing peak and width feature data instead of raw signal data to our RRCF model, we drastically improved the effectiveness of our model. 
+Through our experiment, we were able to demonstrate the ability for an RRCF model to detect multiple types of anomalies with high success probabilities using minimal training data. After providing only approximately 12-14 full 'wavelengths' of true signal data to our RRCF model for training, it was able to generically detect each type of anomaly with success probabilities approaching 100%. We also found that by featurizing the process, that is providing peak and width feature data instead of raw signal data to our RRCF model, we drastically improved the effectiveness of our model. 
 
 [REAL TIME STUFF CONCLUSION] 
 
