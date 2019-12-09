@@ -127,6 +127,12 @@ We also benchmarked our results when using featurization (signal peaks and width
 
 We have not done this yet.
 
+![paper](automatic-shutdown.png)
+
+# Conclusion
+
+Through our experiment, we were able to demonstrate the ability for an RRCF model to detect multiple types of anomalies with high success probabilities using minimal training data. After providing only approximately 12-14 full 'wavelengths' of true signal data to our RRCF model for training, it was able to generically detect each type of anomaly with close to 100% success probability. We also found that by featurizing the process, that is providing peak and width feature data instead of raw signal data to our RRCF model, we drastically improved the effectiveness of our model. 
+
 # Next Steps and Discussion:
 
 In this section we analyse the applicability of our findings to real signal anomaly detection tasks, its limitations, and the improvement points that could be explored as next steps. 
