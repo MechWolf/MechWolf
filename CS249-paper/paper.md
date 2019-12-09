@@ -146,9 +146,7 @@ Thirdly, eliminating the requirement for the next wave to complete before detect
 
 # Conclusion
 
-Through our experiment, we were able to demonstrate the ability for an RRCF model to detect multiple types of anomalies with high success probabilities using minimal training data. After providing only approximately 12-14 full 'wavelengths' of true signal data to our RRCF model for training, it was able to generically detect each type of anomaly with success probabilities approaching 100%. We also found that by featurizing the process, that is providing peak and width feature data instead of raw signal data to our RRCF model, we drastically improved the effectiveness of our model. 
-
-[REAL TIME STUFF CONCLUSION] 
+Through our experiment, we were able to demonstrate the ability for an RRCF model to detect multiple types of anomalies with high success probabilities using minimal training data. After providing only approximately 12-14 full 'wavelengths' of true signal data to our RRCF model for training, it was able to generically detect each type of anomaly with success probabilities approaching 100%. We also found that by featurizing the process, that is providing peak and width feature data instead of raw signal data to our RRCF model, we drastically improved the effectiveness of our model. Combined with the ability to perform this monitoring in real time, we are eager to share this feature with our colleagues in the laboratory to enhance safety, productivity, and resilience against errors.
 
 <!-- leave this at the bottom because it writes the references at the end-->
 
