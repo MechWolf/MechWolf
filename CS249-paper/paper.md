@@ -59,9 +59,9 @@ Definition 1.1 - Robust Random Cut Tree: a RRCT is defined on a set of points $S
 
 Definition 1.1 defines RRCT on a set of points $S$, however, in the case of streaming signal data points are continuously added to the set $S$, and hence must be dynamically added to the RRCT. Hence RRCTs allow for both insertion and deletion operations. That is, if we dynamically add a point $p$ to $S$, we have a function $insert(p)$ which takes as input $RRCT(S)$ and returns $RRCT(S \cup p)$ -  (detele is analogously defined). 
 
-We omit the formal definition of these functions but provide high level intuition for the insertion operation. When inserting a point p into the tree, we generate a new random cut along some random dimension, and then check if this cut separates point $p$ from set $S$. If it does, then we construct a parent node $k$ and specify that the two children of $k$ are the node corresponding to the point $p$ and the node corresponding $S$ (which is of course the root of the original tree). If the cut does not separate $S$ and $p$, we follow the existing cut and under the same process and recurse on either child of the current node until we have correctly isolated $p$ as a leaf node. Deletions are more simple; we simply remove the leaf node corresponding to $p$ from the tree, removing $p's$ parent, and then adding an edge between $p's$ sibling node to its grandparent node. 
+We omit the rigorous implementation of these functions but provide high level intuition for the insertion operation. When inserting a point p into the tree, we generate a new random cut along some random dimension, and then check if this cut separates point $p$ from set $S$. If it does, then we construct a parent node $k$ and specify that the two children of $k$ are the node corresponding to the point $p$ and the node corresponding $S$ (which is of course the root of the original tree). If the cut does not separate $S$ and $p$, we follow the existing cut and under the same process and recurse on either child of the current node until we have correctly isolated $p$ as a leaf node. Deletions are more simple; we simply remove the leaf node corresponding to $p$ from the tree, removing $p's$ parent, and then adding an edge between $p's$ sibling node to its grandparent node. 
 
-We now need to formalize the definition of an anomaly in the context of RRCT/RRCF. We introduce the notion of the model complexity $M$ of a RRCT. If an RRCT $T$ is defined on a set $S$, let the depth of point $y \in S$  in the tree be given by the function $f(y, S, T)$. Now, the model complexity is given as follows $M(T) = \sum_{y \in S}f(y,S,T)$. Now, we wish to determine whether or not point $x$ is an anomaly, and we do so by measuring the change in model complexity induced by the removal of $x$, which is proportional to $\sum_{y \in S}f(y,S,T) - \sum_{y \in S - x}f(y,S - x,T')$. Remembering however that the generation of $T$ follows a random process and the mapping of $T(S)$ to $T(S - x)$ is many to one, we take the sum over the probability distribution of obtaining tree T and define the quantity bit-displacement as $BDisp(x, S) = \sum_{T, y \in S}Pr(T)(f(y,S,T) - f(y,S - x,T'))$. 
+We now need to formalize the definition of an anomaly in the context of RRCT/RRCF. We introduce the notion of the model complexity $M$ of a RRCT. If an RRCT $T$ is defined on a set $S$, let the depth of point $y \in S$  in the tree be given by the function $f(y, S, T)$. Now, the model complexity is given as follows $M(T) = \sum_{y \in S}f(y,S,T)$. Now, we wish to determine whether or not point $x$ is an anomaly, and we do so by measuring the change in model complexity induced by the removal of $x$, which is proportional to $\sum_{y \in S}f(y,S,T) - \sum_{y \in S - x}f(y,S - x,T')$. Remembering however that the generation of $T$ follows a random process and the mapping of $T(S)$ to $T(S - x)$ is many to one, we take the sum over the probability distribution of obtaining tree T with our randomized RRCT generation algorithm and define the quantity bit-displacement as $$BDisp(x, S) = \sum_{T, y \in S}Pr(T)(f(y,S,T) - f(y,S - x,T'))$$. 
 
 $BDisp$ is one of many possible measures of anomalies. The measure our experiments used was Co-Disp which is similar to $BDisp$, but less instructive in this explanation and hence not detailed here. Intuitively, when we are evaluating whether or not point $x$ is an anomaly using $BDisp$, it is clear that we are more likely to achieve a higher $BDisp$ the shallower $x$ is as a leaf node in the tree. This is because the shallower $x$ is, the more nodes its sibling node $x'$ will tend to have in its subtree, and hence the more nodes will have their depth reduced upon the deletion of $x$ from the tree. This is a desireable property because our definition of RRCT means that anomaly points are likely to be isolated at shallower depths in the tree. To see why, consider the world in which cuts/partitions are made entirely randomly; clearly anomalous points should be isolated before other points in general. As it happens, under our definiton of RRCT, we are more likely to make cuts along dimensions which contain anomalous data and are even more likely than a completely uniformly random process to isolate anomalous points quickly, and hence in our RRCT anomalous points will tend to correspond to shallower leaf nodes. 
 
@@ -89,21 +89,33 @@ If an anomaly is detected, it will return an error, which will be propagated by 
 
 ## Model Evaluation
 
-We are doing this now.
+The goal of our model evaluation experiment was to ascertain how quickly we could train our RRCF model to reliably detect anomalies. We performed the same experiment for the three different types of anomalies. In our experiment, we modeled 200 sensors using MechWolf. Each sensor makes a discrete 'read' of the raw pump data with a frequency of 50Hz. We define the 'invokation threshold' which is simply an integer corresponding to the number of reads a sensor performs of the pump data before it starts producing anomalies. For example, if the invokation threshold at 200 and we wish to test the success of our model picking up anomaly type $x$, our experiment will deterministically produce anomaly $x$ at read $201$. We then evaluate whether or not our RRCF model, trained on the regular signal data obtained with $200$ reads, can pick up the anomaly at read $201$. Thus, we can vary the number of 'good training points' our model receives by varying the 'invokation threshold'. 
 
-![Anomalyv2](Change-Amplitude.png)
+For each anomaly type we vary the invokation threshold from 200 to 900 and then measure how many anomalies the RRCF model detects. We enforce that each sensor only produces 1 anomaly in its lifetime (that is, the single anomaly induced immediately after the invokation threshold is crossed), thus because we have 200 sensors reading the pump data the maximum number of anomalies our RRCF model can detect is 200, constituting a perfect score. 
 
-
-
-![Anomaly](Anomaly-Detection.png)
-
-### Featurization achieves better results faster.
-
-We tested RRCF on the raw data and the
+We specified two criteria which determined whether or not a given point was an anomaly. The first criteria used the aforementioned collusive displacement measure; if the introduction of a new point $x$ caused the average co-displacement of the set of 50 trees comprising the RRCF to increase beyond a specific threshold, $x$ was classified as an anomaly. The second criteria utilized standard deviation; [COME BACK TO THIS]. 
 
 ### RRCF can identify major anomalies with very little training data.
 
 Because the sinusoidal waves in the signal from spectrographs are highly regular, minimal training data is required to identify anomalous pump actuation.
+
+Our main findings are demonstrated on the graph below. For reference, the x-axis labeled as 'Number of Training Data Points' corresponds to the aforementioned invokation threshold, and hence simply refers to the number of 'good' training points the model received before the anomaly was induced. Our results demonstrate the unsurprising trend that anomaly detection improves as our model receives more training data. We see this trend differently for each anomaly type, however; for the 'speed-up' anomaly, we see a fairly regular upward trend of anomaly detection success as we increase the number of training points, whereas for both the 'change-amp' anomaly and 'slow-down' anomaly we have almost no success detecting anomalies whatsoever until we reach an invokation threshold of 800 after which our model catches every possible anomaly. We estimate that, given the parameters we specified for our pump that can be viewed in our source code, every 100 invokations/reads of the pump data yields approximately 1.6 wavelengths of signal data (prior to an anomaly, of course). Hence, we can quantify our results by stating that at both speed-up and change-amplitude anomalies were detected close to perfectly after our model was trained  approximately 12 'wavelengths' of true signal data, and slow-down anomalies were detected after it was trained on approximately 14 'wavelengths' of true signal data. 
+
+![Anomaly](Anomaly-Detection.png)
+
+In the above graph, we notice a gradual increase in the success rate of our model in detecting speed-up anomalies over the specified spread of invokation thresholds, but sudden jumps in success for both slow-down and change-amp anomalies. Thus, we constrain the invokation thresholds to investigate more closely how success rates increase for the latter two types of anomalies. Because the success of our model detecting 'slow-down' anomalies jumped to 200 from almost 0 between invokation thresholds 800 and 900, we examine the change between thresholds 800 and 900 below and see a relatively sudden jump in model success between thresholds 860 and 880. Similarly, we see a relatively sudden jump in model success detecting change-amp anomalies between thresholds 700 and 720. Statistically it is challenging to characterize why these sudden increases in model success occur, though we did notice that at the thresholds at which model success suddenly increased, the signal data often finished a full 'wavelength' at or near the threshold. 
+
+![Anomalyv2](Slow-Down.png)
+
+Similarly, we see a relatively sudden jump in model success detecting change-amp anomalies between thresholds 700 and 720. Statistically it is challenging to characterize why these sudden increases in model success occur, though we did notice that at the thresholds at which model success suddenly increased, the signal data often finished a full 'wavelength' at or near the threshold. 
+
+![Anomalyv2](Change-Amplitude.png)
+
+As part of our experiment, we also wanted to determine the extent to which our model would detect false-positives, that is, classify points as anomalies when they were in truth not anomalies. Empirically, we noticed that our model produced very few false positives for all invokation thresholds (under 5 for each experiment). 
+
+### Featurization achieves better results faster.
+
+We also benchmarked our results when using featurization (signal peaks and widths) against results obtained when our RRCF model was trained on raw signal data. When we passed raw signal data into the RRCF model, we saw a tremendous number of false positives generated and poor model performance detecting true anomalies even when invokation thresholds were set relatively high. It became quickly clear our approach would not work properly using raw signal data. 
 
 ## Real-Time Performance
 
@@ -113,6 +125,18 @@ We have not done this yet.
 
 # Conclusion
 
- <!-- leave this at the bottom because it writes the references at the end-->
+Through our experiment, we were able to demonstrate the ability for an RRCF model to detect multiple types of anomalies with high success probabilities using minimal training data. After providing only approximately 12-14 full 'wavelengths' of true signal data to our RRCF model for training, it was able to generically detect each type of anomaly with close to 100% success probability. We also found that by featurizing the process, that is providing peak and width feature data instead of raw signal data to our RRCF model, we drastically improved the effectiveness of our model. 
+
+# Next Steps and Discussion:
+
+In this section we analyse the applicability of our findings to real signal anomaly detection tasks, its limitations, and the improvement points that could be explored as next steps. 
+
+Firstly, our approach relied heavily on data featurization. Using a standard scipy method, we transformed raw signal data into data corresponding to signal peaks and widths/wavelengths, before using the transformed data for the anomaly detection task. Necessarily, this meant that anomalies could only possibly be detected when a new 'peak' was obtained and fed into our model. Consider a real-time setting in which the signal data has a very low frequency and peaks occur infrequently. Now consider an anomaly occuring at some point immediately after a given peak. Our model would only detect the anomaly upon the arrival of the next peak, hence producing a delay between the anomaly occuring and being detected. Such a discrepancy could prove costly in a lab depending on the experiment being conducted. Next steps could tackle this problem by either examining how a model could be tuned to properly process raw data, or by adding additional features to the featurized data set which don't depend on peaks (and hence signal frequency). 
+
+Secondly, 
+
+[REAL TIME STUFF CONCLUSION] 
+
+<!-- leave this at the bottom because it writes the references at the end-->
 
 # References
