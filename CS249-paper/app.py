@@ -136,6 +136,7 @@ def hello_world():
     if avg_codisp[index] > codisp_threshold:
         print("Anomaly detected!: ", avg_codisp[index], codisp_threshold, point)
         return "Error!"
+        exit()
     if (
         index > 2
         and mean(avg_codisp.values()) + stdev(avg_codisp.values()) * stdev_threshold
@@ -143,5 +144,6 @@ def hello_world():
     ):
         print("Anomaly detected via stdev!:", index, point, avg_codisp)
         return "Error!"
+        exit()
     index += 1
     return "Got it!"

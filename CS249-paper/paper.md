@@ -43,7 +43,7 @@ One such method is the neuro-inspired hierarchical temporal memory (HTM) method,
 Because the pumps use in chemical systems generate sinusoidal waves when monitored by UV/visible light spectroscopy sensors, we focused on identifying anomalies with the waveforms present in the sensor data.
 Since the devices have limited compute and memory capacity, we decided to use a recently published unsupervised tree-based method, the robust random cut forest (RRCF) for anomaly detection on the data streams [@rrcf].
 RRCF enables us to precisely control the amount of memory used for anomaly detection to ensure that sufficient memory is available for MechWolf.
-We eliminated threshold-based methods as too simple to capture the types of anomalies common to pumps in chemical systems. Similarly, we eliminated any models which were customized for a specific pump type due to the wide variety of pumps in use among MechWolf's users. Thus, we required a computationally efficient, fully unsupervised model capable of performing anomaly detection on streams of sinusoidal .
+We eliminated threshold-based methods as too simple to capture the types of anomalies common to pumps in chemical systems. Similarly, we eliminated any models which were customized for a specific pump type due to the wide variety of pumps in use among MechWolf's users. Thus, we required a computationally efficient, fully unsupervised model capable of performing anomaly detection on streams of sinusoidal.
 
 The source code for our methods is available online at [github.com/MechWolf/MechWolf/tree/CS249](https://github.com/MechWolf/MechWolf/tree/CS249).
 
@@ -72,6 +72,8 @@ To generalize to a Random Robust Cut Forest is relatively straightforward. If an
 To study the performance of the RRCF model, we extended MechWolf by creating a virtual sensor capable of returning simulated data indicative of various known failure modalities: uncommanded increases in pump frequency, uncommanded decreases in pump frequency, and incomplete pump actuation resulting in a decrease in amplitude.
 This virtual sensor inserts noise into the output data stream in order to simulate noise in the spectroscopy reading.
 
+![An example of an anomaly in which the peak amplitude is decreased. Note that the $y$ axis unit is labeled as "dimensionless" to indicate that this simulated data.](example-anomaly.png)
+
 In order to perform peak prominence and width finding on sensor data to use as features for the RRCF model, we relied on SciPy's signal processing routines [@scipy].
 Similarly, to smooth the data, we used a moving average with a window size of 11 as implemented by SciPy [@scipy-cookbook].
 
@@ -80,10 +82,11 @@ To identify collusive displacement values that are indicative of an anomaly, we 
 
 ## Real-Time Implementation
 
-For the real time monitoring capability, we intend to create a Flask local web server to run as a separate process on the device.
-We have already modified the MechWolf `Sensor` object (which is responsible for reading data) to immediately post an asynchronous request to this server upon the receipt of new data.
-The server will perform peak-finding and compute the anomaly score via RRCF.
-If an anomaly is detected, it will return an error, which will be propagated by the `Sensor` object to the MechWolf protocol executor, which will in turn halt the experiment if configured to do so by the user.
+For the real time monitoring capability, we created a local Flask web server running as a separate process on the device ^[We note that this web server does not require an internet connection and that no data ever leaves the device.].
+In MechWolf, reads from `Sensor` objects (the Python representation of the physical sensor) are routed to the `Experiment` object, which is responsible for plotting the data to the user interface and asynchronously writing the data to the disk. We therefore created a plugin which modifies the data reading procedure of all `Sensor` objects by first asynchronously reading serial data (or simulating it for the sake of our experiment) as usual and then asynchronously posting the new data to the anomaly detection server. The server then performs peak-finding and computes the anomaly score via RRCF.
+If an anomaly is detected, the server shuts down and raises an error, which is propagated by the `Sensor` object to the MechWolf protocol executor, which in turn safely halts the experiment by returning all hardware to its predefined base state if configured to do so by the user ^[MechWolf can also send a push notification to alert the user or ask for confirmation of the anomaly before shutting down.].
+
+During the course of our implementation of this feature, we discovered that performing peak-finding in real time yields incorrect results if the decreasing phase of the most recent peak is incomplete. Specifically, the calculated prominence and width is incorrect. Therefore, we had restricted 
 
 # Results
 
@@ -119,9 +122,13 @@ We also benchmarked our results when using featurization (signal peaks and width
 
 ## Real-Time Performance
 
-We have not done this yet.
+We were successfully able to detect simulated anomalies in real time. Because we performed peak-finding on the full simulated dataset when evaluating the amount of training data required for online anomaly detection, we did not anticipate the challenge of online peak-finding. Specially, as shown in figure \ref{incomplete-detection}, performing peak prominence and width calculation on incomplete peaks (*i.e.* when the data reach a minimum) can result in an incorrect result, thereby generating an anomaly where there is none.
 
-![paper](automatic-shutdown.png)
+![Performing online featurization of incomplete peaks results in incorrect results for prominences (vertical orange bar) and widths (horizontal orange bar) but not peak $x$ coordinate (orange "x").\label{incomplete-detection}](incomplete-detection.png)
+
+Therefore, we had to prevent the most recent detected peak from being inserted into the RRCF tree. This results in a delay of one wavelength between the first anomalous peak and its detection in real time, as shown in figure \ref{automatic-shutdown}. 
+
+![A demonstration of the real time detection of an anomaly, which started at the point labeled (A) and resulted in a shutdown at the point labeled (B). Note that the anomaly was not detected before another peak had completed. \label{automatic-shutdown}](automatic-shutdown.png)
 
 # Conclusion
 
