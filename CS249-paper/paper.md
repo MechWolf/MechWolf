@@ -40,10 +40,10 @@ One such method is the neuro-inspired hierarchical temporal memory (HTM) method,
 
 # Methods
 
-Because the pumps use in chemical systems generate sine waves when monitored by UV/visible light spectroscopy sensors, we focused on identifying anomalies with the waveforms present in the sensor data.
-Since the devices have limited compute and memory capacity, we decided to use a recently published tree-based method, the robust random cut forest (RRCF) for anomaly detection on the data streams [@rrcf].
+Because the pumps use in chemical systems generate sinusoidal waves when monitored by UV/visible light spectroscopy sensors, we focused on identifying anomalies with the waveforms present in the sensor data.
+Since the devices have limited compute and memory capacity, we decided to use a recently published unsupervised tree-based method, the robust random cut forest (RRCF) for anomaly detection on the data streams [@rrcf].
 RRCF enables us to precisely control the amount of memory used for anomaly detection to ensure that sufficient memory is available for MechWolf.
-We eliminated threshold-based methods as too simple to capture the types of anomalies common to pumps in chemical systems.
+We eliminated threshold-based methods as too simple to capture the types of anomalies common to pumps in chemical systems. Similarly, we eliminated any models which were customized for a specific pump type due to the wide variety of pumps in use among MechWolf's users. Thus, we required a computationally efficient, fully unsupervised model capable of performing anomaly detection on streams of sinusoidal .
 
 The source code for our methods is available online at [github.com/MechWolf/MechWolf/tree/CS249](https://github.com/MechWolf/MechWolf/tree/CS249).
 
@@ -81,7 +81,7 @@ We tested RRCF on the raw data and the
 
 ### RRCF can identify major anomalies with very little training data.
 
-Because the sine waves in the signal from spectrographs are highly regular, minimal training data is required to identify anomalous pump actuation.
+Because the sinusoidal waves in the signal from spectrographs are highly regular, minimal training data is required to identify anomalous pump actuation.
 
 ## Real-Time Performance
 
