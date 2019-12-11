@@ -7,6 +7,7 @@ abstract: |
 	We find that our model can detect various kinds of generic signal anomalies with high success probability using minimal training data. 
 bibliography: bibliography.bib
 classoption: twocolumn
+date: \today{}
 ---
 
 # Introduction
@@ -36,8 +37,8 @@ There are several frameworks for robotic chemistry.
 However, to the best of our knowledge there have not been any attempts to perform on-device learning in real time to detect anomalies.
 Neither the Chemputer [@Kitson2018] nor Octopus [@octopus] have implemented anomaly detection of any kind.
 
-There are several methods for time series anomaly detection, although only a subset of them are capable of being computed in real time on streaming data.
-One such method is the neuro-inspired hierarchical temporal memory (HTM) method, developed by Numenta to resemble the neocortex [@Ahmad2017].
+Additionally, there are several methods for time series anomaly detection, although only a subset of them are capable of being computed in real time on streaming data.
+One such method is the neuro-inspired hierarchical temporal memory (HTM) method, developed by Numenta to resemble the neocortex [@Ahmad2017]. In this approach, for each new data point $x$ ingested into the HTM model, a measure $s$ of the prediction error is calculated. Throughout the duration of the algorithm a model predicting the probability of being in an anomalous state given a prediction error score is maintained, and if this threshold is crossed an anomaly is considered detected. What binds all anomaly detection methods for streaming data together is they each update some prediction, given the history of data points that have been fed into the model, of an anomalous state being activated. As we will see, this principle holds true in our RRCF approach to anomaly detection.
 
 # Methods
 
@@ -97,13 +98,13 @@ For each anomaly type we vary the invocation threshold from 200 to 900 and then 
 
 Again, the data passed into the RRCF model is 'featurized'. Instead of passing in raw signal data read by each sensor, we process this data and obtain a $1$ x $2$ dimensional array; the first row corresponds to the heights of each peak in the sensor data, and the second row corresponds to the widths between each peak in the sensor data. 
 
-We specified two criteria which determined whether or not a given point was an anomaly. The first criterion used the aforementioned collusive displacement measure; if the introduction of a new point $x$ caused the average co-displacement of the set of 50 trees comprising the RRCF to increase beyond a specific threshold, $x$ was classified as an anomaly. The second criterion utilized standard deviation; [COME BACK TO THIS]. 
+We specified two criteria which determined whether or not a given point was an anomaly. The first criterion used the aforementioned collusive displacement measure; if the introduction of a new point $x$ caused the average co-displacement of the set of 50 trees of size 256 comprising the RRCF to increase beyond a specific threshold, $x$ was classified as an anomaly. The second criterion utilized standard deviation thresholding, in which collusive displacement measurements more than a given number of standard deviations from the mean collusive displacement (3 in our case) are treated as anomalies. 
 
 ### RRCF can identify major anomalies with very little training data.
 
 Because the sinusoidal waves in the signal from spectrographs are highly regular, minimal training data is required to identify anomalous pump actuation.
 
-Our main findings are demonstrated in figure \ref{detection-success}. Our results demonstrate the unsurprising trend that anomaly detection improves as our model receives more training data. We see this trend differently for each anomaly type, however; for the 'speed-up' anomaly, we see a fairly regular upward trend of anomaly detection success as we increase the number of training points, whereas for both the amplitude change anomaly and frequency decrease anomaly we have almost no success detecting anomalies whatsoever until we reach an invocation threshold of 800, after which our model catches every possible anomaly. We estimate that, given the parameters we specified for our pump that can be viewed in our source code, every 100 invocations/reads of the pump data yield approximately 1.6 wavelengths of signal data (prior to an anomaly, of course). Therefore, we can quantify our results by stating that at both speed-up and amplitude change anomalies were detected with nearly perfect accuracy after our model was trained using approximately 12 'wavelengths' of normal signal data. Slow-down anomalies were detected after it was trained on approximately 14 'wavelengths' of normal signal data. 
+Our main findings are demonstrated in figure \ref{detection-success}. Our results demonstrate the unsurprising trend that anomaly detection improves as our model receives more training data. We see this trend differently for each anomaly type, however; for the 'speed-up' anomaly, we see a fairly regular upward trend of anomaly detection success as we increase the number of training points, whereas for both the amplitude change anomaly and frequency decrease anomaly we have almost no success detecting anomalies whatsoever until we reach an invocation threshold of 800, after which our model catches every possible anomaly. We estimate that, given the simulation parameters we specified for our pump that can be viewed in our source code, every 100 invocations/reads of the pump data yield approximately 1.6 wavelengths of signal data (prior to an anomaly, of course). Therefore, we can quantify our results by stating that at both speed-up and amplitude change anomalies were detected with nearly perfect accuracy after our model was trained using approximately 12 'wavelengths' of normal signal data. Slow-down anomalies were detected after it was trained on approximately 14 'wavelengths' of normal signal data. 
 
 ![A characterization of the amount of training data required to adequately perform anomaly detection. For reference, the $x$-axis labeled as 'Number of Training Data Points' corresponds to the invocation threshold, and simply refers to the number of 'good' training points the model received before the anomaly was induced. \label{detection-success}](P1.png)
 
