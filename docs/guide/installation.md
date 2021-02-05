@@ -21,7 +21,7 @@ To do so, follow these steps:
    ![envs](/anaconda_envs.png)
 3. On the bottom click "create" (circled in red) to create a new environment in which MechWolf will live.
    ![create_env_1](/anaconda_create_env_1.png)
-4. Then, enter the details of the environment. You can call it whatever you want, but **be sure to select Python 3.7**.
+4. Then, enter the details of the environment. You can call it whatever you want, but **be sure to select Python 3.7 or above**.
    ![create_env_2](/anaconda_create_env_2.png)
 5. Click the "channels" button.
    ![add_channel_1](/anaconda_add_channel_1.png)
