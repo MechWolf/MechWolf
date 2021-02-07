@@ -1,4 +1,4 @@
-# from datetime import timedelta
+from datetime import timedelta
 from typing import List, Sequence, cast
 
 import mechwolf as mw
@@ -54,26 +54,26 @@ def create_apparatus(
 ) -> mw.Apparatus:
 
     aa_vessels = {
-        "ala": mw.Vessel(name="FmocAla"),
-        "arg": mw.Vessel(name="FmocArg_Pbf"),
-        "asn": mw.Vessel(name="FmocAsn_Trt"),
-        "asp": mw.Vessel(name="FmocAsp_tBu"),
-        "cys": mw.Vessel(name="FmocCys_Trt"),
-        "gln": mw.Vessel(name="FmocGln_Trt"),
-        "glu": mw.Vessel(name="FmocGlu_tBu"),
-        "gly": mw.Vessel(name="FmocGly"),
-        "his": mw.Vessel(name="FmocHis_Trt"),
-        "ile": mw.Vessel(name="FmocIle"),
-        "leu": mw.Vessel(name="FmocLeu"),
-        "lys": mw.Vessel(name="FmocLys_Boc"),
-        "met": mw.Vessel(name="FmocMet"),
-        "phe": mw.Vessel(name="FmocPhe"),
-        "pro": mw.Vessel(name="FmocPro"),
-        "ser": mw.Vessel(name="FmocSer_tBu"),
-        "thr": mw.Vessel(name="FmocThr_tBu"),
-        "trp": mw.Vessel(name="FmocTrp_Boc"),
-        "tyr": mw.Vessel(name="FmocTyr_tBu"),
-        "val": mw.Vessel(name="FmocVal"),
+        "ala": mw.Vessel(name="ala", description="FmocAla"),
+        "arg": mw.Vessel(name="arg", description="FmocArg_Pbf"),
+        "asn": mw.Vessel(name="asn", description="FmocAsn_Trt"),
+        "asp": mw.Vessel(name="asp", description="FmocAsp_tBu"),
+        "cys": mw.Vessel(name="cys", description="FmocCys_Trt"),
+        "gln": mw.Vessel(name="gln", description="FmocGln_Trt"),
+        "glu": mw.Vessel(name="glu", description="FmocGlu_tBu"),
+        "gly": mw.Vessel(name="gly", description="FmocGly"),
+        "his": mw.Vessel(name="his", description="FmocHis_Trt"),
+        "ile": mw.Vessel(name="ile", description="FmocIle"),
+        "leu": mw.Vessel(name="leu", description="FmocLeu"),
+        "lys": mw.Vessel(name="lys", description="FmocLys_Boc"),
+        "met": mw.Vessel(name="met", description="FmocMet"),
+        "phe": mw.Vessel(name="phe", description="FmocPhe"),
+        "pro": mw.Vessel(name="pro", description="FmocPro"),
+        "ser": mw.Vessel(name="ser", description="FmocSer_tBu"),
+        "thr": mw.Vessel(name="thr", description="FmocThr_tBu"),
+        "trp": mw.Vessel(name="trp", description="FmocTrp_Boc"),
+        "tyr": mw.Vessel(name="tyr", description="FmocTyr_tBu"),
+        "val": mw.Vessel(name="val", description="FmocVal"),
     }
 
     # other vessels
@@ -150,149 +150,111 @@ def create_apparatus(
 
 
 def create_protocol(peptide: Sequence, apparatus: mw.Apparatus) -> mw.Protocol:
-    pass
 
+    peptide = validate_peptide(peptide)
 
-#     valve1, valve2, valve3 = apparatus.compon
+    P = mw.Protocol(apparatus)
 
-#     peptide = validate_peptide(peptide)
+    start = timedelta(seconds=0)
+    deprotection_duration = timedelta(seconds=60)
+    wash_duration = timedelta(seconds=30)
+    coupling_duration = timedelta(seconds=60)
+    # how much time to leave the pumps off before and after switching the valve
+    # should be 2 seconds minimum
+    switching_duration = timedelta(seconds=2)
 
-#     P = mw.Protocol(apparatus)
+    valve_mapping = {}
+    for component in apparatus[mw.Valve]:
+        for vessel in component.mapping:
+            valve_mapping[vessel.name] = component
 
-#     start = timedelta(seconds=0)
+    pump_mapping = {}
+    for connection in apparatus.network:
+        if isinstance(connection.to_component, mw.Pump):
+            pump_mapping[connection.from_component] = connection.to_component
 
-#     deprotection_duration = timedelta(seconds=60)
-#     wash_duration = timedelta(seconds=30)
-#     coupling_duration = timedelta(seconds=60)
+    for amino_acid in peptide:
 
-#     # how much time to leave the pumps off before and after switching the valve
-#     # should be 2 seconds minimum
-#     switching_duration = timedelta(seconds=2)
+        # Deprotection
+        P.add(
+            valve_mapping["deprotection"],
+            start=start + (switching_duration / 2),
+            duration=deprotection_duration + switching_duration,
+            setting="deprotection",
+        )
+        P.add(
+            pump_mapping[valve_mapping["deprotection"]],
+            start=start + switching_duration,
+            duration=deprotection_duration,
+            rate="5ml/min",
+        )
 
-#     for FmocAa in peptide:
+        start += deprotection_duration + switching_duration
 
-#         # Deprotection
-#         P.add(
-#             valve3,
-#             start=start + (switching_duration / 2),
-#             duration=deprotection_duration + switching_duration,
-#             setting="deprotection",
-#         )
-#         P.add(
-#             pump3,
-#             start=start + switching_duration,
-#             duration=deprotection_duration,
-#             rate="5ml/min",
-#         )
+        # Wash
+        P.add(
+            valve_mapping["deprotection"],
+            start=start + (switching_duration / 2),
+            duration=wash_duration + switching_duration,
+            setting="solvent",
+        )
+        P.add(
+            pump_mapping[valve_mapping["deprotection"]],
+            start=start + switching_duration,
+            duration=wash_duration,
+            rate="5ml/min",
+        )
 
-#         start = start + deprotection_duration + switching_duration
+        start += wash_duration + switching_duration
 
-#         # Wash
-#         P.add(
-#             valve3,
-#             start=start + (switching_duration / 2),
-#             duration=wash_duration + switching_duration,
-#             setting="solvent",
-#         )
-#         P.add(
-#             pump3,
-#             start=start + switching_duration,
-#             duration=wash_duration,
-#             rate="5ml/min",
-#         )
+        # Coupling
+        P.add(
+            valve_mapping[amino_acid],
+            start=start + (switching_duration / 2),
+            duration=coupling_duration + switching_duration,
+            setting=amino_acid,
+        )
+        other_valves = [
+            valve
+            for valve in apparatus[mw.Valve]
+            if valve is not valve_mapping[amino_acid]
+        ]
+        P.add(
+            other_valves[0],
+            start=start + (switching_duration / 2),
+            duration=coupling_duration + switching_duration,
+            setting="coupling_agent",
+        )
+        P.add(
+            other_valves[1],
+            start=start + (switching_duration / 2),
+            duration=coupling_duration + switching_duration,
+            setting="coupling_base",
+        )
 
-#         start += wash_duration + switching_duration
+        P.add(
+            apparatus[mw.Pump],
+            start=start + switching_duration,
+            duration=coupling_duration,
+            rate="5ml/min",
+        )
 
-#         # Coupling
-#         if FmocAa in valve1_mapping:
-#             print("{} found on valve1.".format(FmocAa))
-#             P.add(
-#                 valve1,
-#                 start=start + (switching_duration / 2),
-#                 duration=coupling_duration + switching_duration,
-#                 setting=FmocAa,
-#             )
-#             P.add(
-#                 valve2,
-#                 start=start + (switching_duration / 2),
-#                 duration=coupling_duration + switching_duration,
-#                 setting="coupling_agent",
-#             )
-#             P.add(
-#                 valve3,
-#                 start=start + (switching_duration / 2),
-#                 duration=coupling_duration + switching_duration,
-#                 setting="coupling_base",
-#             )
+        start += coupling_duration + switching_duration
 
-#         elif FmocAa in valve2_mapping:
-#             print("{} found on valve2.".format(FmocAa))
-#             P.add(
-#                 valve1,
-#                 start=start + (switching_duration / 2),
-#                 duration=coupling_duration + switching_duration,
-#                 setting="coupling_agent",
-#             )
-#             P.add(
-#                 valve2,
-#                 start=start + (switching_duration / 2),
-#                 duration=coupling_duration + switching_duration,
-#                 setting=FmocAa,
-#             )
-#             P.add(
-#                 valve3,
-#                 start=start + (switching_duration / 2),
-#                 duration=coupling_duration + switching_duration,
-#                 setting="coupling_base",
-#             )
+        # # Wash
+        # P.add(
+        #     valve3,
+        #     start=start + (switching_duration / 2),
+        #     duration=wash_duration + switching_duration,
+        #     setting="solvent",
+        # )
+        # P.add(
+        #     pump3,
+        #     start=start + switching_duration,
+        #     duration=wash_duration,
+        #     rate="5ml/min",
+        # )
 
-#         elif FmocAa in valve3_mapping:
-#             print("{} found on valve3.".format(FmocAa))
-#             P.add(
-#                 valve1,
-#                 start=start + (switching_duration / 2),
-#                 duration=coupling_duration + switching_duration,
-#                 setting="coupling_agent",
-#             )
-#             P.add(
-#                 valve2,
-#                 start=start + (switching_duration / 2),
-#                 duration=coupling_duration + switching_duration,
-#                 setting="coupling_base",
-#             )
-#             P.add(
-#                 valve3,
-#                 start=start + (switching_duration / 2),
-#                 duration=coupling_duration + switching_duration,
-#                 setting=FmocAa,
-#             )
+        start += wash_duration + switching_duration
 
-#         else:
-#             raise ValueError("Amino acid {} not found in any valve".format(FmocAa))
-
-#         P.add(
-#             [pump1, pump2, pump3],
-#             start=start + switching_duration,
-#             duration=coupling_duration,
-#             rate="5ml/min",
-#         )
-
-#         start += coupling_duration + switching_duration
-
-#         # Wash
-#         P.add(
-#             valve3,
-#             start=start + (switching_duration / 2),
-#             duration=wash_duration + switching_duration,
-#             setting="solvent",
-#         )
-#         P.add(
-#             pump3,
-#             start=start + switching_duration,
-#             duration=wash_duration,
-#             rate="5ml/min",
-#         )
-
-#         start += wash_duration + switching_duration
-
-#     return P
+    return P
