@@ -1,24 +1,24 @@
+from typing import Optional, Union
+
 from ..stdlib.sensor import Sensor
 
 
 class ArduinoSensor(Sensor):
     """
-    Generic driver for an Arduino based sensor.
+    Generic driver for an Arduino-based sensor.
 
-    These devices connect through serial at 115200 baud
-    They introduce themselves upon first connect/reset
-    They listen for a single byte command in the main loop().
+    These devices connect through serial at 115,200 baud.
+    They introduce themselves upon first connect/reset.
+    They listen for a single byte command in their main `loop()`.
     When commanded, they respond with some ASCII data.
 
     Arguments:
-
     - `serial_port`: Serial port through which device is connected
-    - `command` : Command to be sent to device to request reading. '*' by default.
+    - `name`: The name of the component.
+    - `command`: Command to be sent to device to request reading. `'*'` by default.
 
     Returns:
-
-    ArduinoSensor._read() returns the parsed response, type can be int or float.
-
+    - When read, returns the parsed response, which can be an `int` or `float`.
     """
 
     metadata = {
@@ -35,7 +35,9 @@ class ArduinoSensor(Sensor):
         "supported": True,
     }
 
-    def __init__(self, serial_port, name=None, command="*"):
+    def __init__(
+        self, serial_port: str, name: Optional[str] = None, command: str = "*"
+    ):
         super().__init__(name=name)
         self.serial_port = serial_port
         self.command = command.encode(encoding="ASCII")
@@ -58,7 +60,7 @@ class ArduinoSensor(Sensor):
         # when it is out of context
         del self.ser
 
-    async def _read(self):
+    async def _read(self) -> Union[int, float]:
 
         # flush in buffer in case we have stale data
         self.ser.reset_input_buffer()

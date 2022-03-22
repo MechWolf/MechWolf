@@ -10,7 +10,7 @@ MechWolf
 <a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/DOI-to%20be%20determined-brightgreen.svg" alt="DOI" /></a>
 <a href="https://github.com/MechWolf/MechWolf/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GPLv3 license" /></a>
 <a href="https://github.com/mechwolf/mechwolf/actions"><img src="https://img.shields.io/travis/MechWolf/MechWolf.svg" alt="CI status"/></a>
-<a href="https://mechwolf.netlify.com"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fdeveloper.oswaldlabs.com%2Fnetlify-status%2F39a2d45e-f621-4e8d-afed-3ae2ee4b9364" alt="Netlify"/></a>
+<a href="https://mechwolf.org"><img src="https://img.shields.io/netlify/39a2d45e-f621-4e8d-afed-3ae2ee4b9364?label=docs" alt="Netlify"/></a>
 <a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 <a href="https://mybinder.org/v2/gh/MechWolf/MechWolf/master"><img src="https://mybinder.org/badge_logo.svg"></img></a>
 </div>
@@ -111,11 +111,11 @@ P.execute()
 ```
 
 That's it! You can do this and a whole lot more with MechWolf.
-To learn more, take a look at the [docs](example.com).
+To learn more, take a look at the [docs](https://mechwolf.org).
 
 ## Documentation
 
-[Link will go here](example.com)
+The documentation website is accessible [here](https://mechwolf.org).
 
 ## License
 

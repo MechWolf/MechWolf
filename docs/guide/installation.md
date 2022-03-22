@@ -21,7 +21,7 @@ To do so, follow these steps:
    ![envs](/anaconda_envs.png)
 3. On the bottom click "create" (circled in red) to create a new environment in which MechWolf will live.
    ![create_env_1](/anaconda_create_env_1.png)
-4. Then, enter the details of the environment. You can call it whatever you want, but **be sure to select Python 3.7**.
+4. Then, enter the details of the environment. You can call it whatever you want, but **be sure to select Python 3.7 or above**.
    ![create_env_2](/anaconda_create_env_2.png)
 5. Click the "channels" button.
    ![add_channel_1](/anaconda_add_channel_1.png)
@@ -29,6 +29,7 @@ To do so, follow these steps:
    ![add_channel_2](/anaconda_add_channel_2.png)
 7. Next, click the dropdown (circled in red) and select "all". Then, type `mechwolf` in the search box (circled in magenta), click the checkbox next to MechWolf (circled in green).
    Then click "apply" (circled in blue).
+   It may take a moment for MechWolf to show up in the search results.
    ![install_mw](/anaconda_install_mw.png)
 8. Go back to the homepage by clicking "home" (circled in red) and then launch a Jupyter notebook (circled on green).
    ![launch_nb](/anaconda_launch_nb.png)

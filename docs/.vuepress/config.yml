@@ -8,6 +8,9 @@ themeConfig:
   repo: MechWolf/mechwolf
   editLinks: true
   smoothScroll: true
+  algolia:
+    apiKey: 0ee4e7a30daf5907d02d9d05169415ec
+    indexName: mechwolf
   nav:
     - text: Learn
       link: /about/intro/
