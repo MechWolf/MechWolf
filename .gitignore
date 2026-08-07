@@ -88,6 +88,8 @@ celerybeat-schedule
 .venv
 venv/
 ENV/
+.DS_Store
+.venv-macos/
 
 # Spyder project settings
 .spyderproject
@@ -124,3 +126,4 @@ docs/api/zoo/*
 
 # automatically generated logging
 *.log.json
+.DS_Store
