@@ -16,17 +16,19 @@ MechWolf
 </div>
 <br>
 
-MechWolf is a Python framework for automating continuous flow processes.
-It was developed as a collaboration between computer scientists, chemists, and complete novices to be used by anyone wanting to do better, faster, more reproducible flow-based science.
+MechWolf is a Python framework for automating chemical reaction processes.
+It was developed as a collaboration between computer scientists, chemists, and complete novices to be used by anyone wanting to do better, faster, more reproducible batch or flow-based science.
+
 Features include:
 
-- Natural language description, analysis, and visualization of continuous flow networks
+- Natural language description, analysis, and visualization of continuous flow and batch process networks 
 - Automated execution of protocols
 - Full user extensibility
 - Smart default settings, designed by scientists for scientists
 - Extensive checking to prevent potentially costly and dangerous errors before runtime
 - Natural language parsing of times and quantities
 - Thorough documentation and tutorials
+- An electronic lab notebook framework that wraps around the automation and apparatus protocols.
 
 ## Installation
 
