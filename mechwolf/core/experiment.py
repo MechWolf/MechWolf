@@ -225,9 +225,11 @@ class Experiment(object):
             # automatically configure a logger to persist the logs
             self._file_logger_id = logger.add(
                 log_file,
-                level=verbosity.upper()
-                if log_file_verbosity is None
-                else log_file_verbosity.upper(),
+                level=(
+                    verbosity.upper()
+                    if log_file_verbosity is None
+                    else log_file_verbosity.upper()
+                ),
                 compression=log_file_compression,
                 serialize=True,
                 enqueue=True,

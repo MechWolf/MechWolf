@@ -215,12 +215,14 @@ class Protocol(object):
         # add the procedure to the procedure list
         self.procedures.append(
             dict(
-                start=float(start.to_base_units().magnitude)
-                if start is not None
-                else start,
-                stop=float(stop.to_base_units().magnitude)
-                if stop is not None
-                else stop,
+                start=(
+                    float(start.to_base_units().magnitude)
+                    if start is not None
+                    else start
+                ),
+                stop=(
+                    float(stop.to_base_units().magnitude) if stop is not None else stop
+                ),
                 component=component,
                 params=kwargs,
             )
@@ -514,9 +516,9 @@ class Protocol(object):
                     x="utchoursminutesseconds(start):T",
                     x2="utchoursminutesseconds(stop):T",
                     y="component",
-                    color=alt.Color("params:N", legend=None)
-                    if not legend
-                    else "params",
+                    color=(
+                        alt.Color("params:N", legend=None) if not legend else "params"
+                    ),
                     tooltip=tooltips,
                 )
             )
