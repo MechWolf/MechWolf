@@ -30,8 +30,6 @@ P = mw.Protocol(A, name="notebook execution")
 P.add(pump, rate="5 mL/min", start="0 seconds", stop="3 secs")
 P.add(sensor, rate="5 Hz", start="0 secs", stop="3 secs")
 
-P.visualize()
-
 E = P.execute(confirm=True, dry_run={dry_run}, log_file=None, data_file=None)
 """
 
