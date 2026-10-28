@@ -208,7 +208,7 @@ class Experiment(object):
         self._compiled_protocol = self.protocol._compile(dry_run=bool(dry_run))
 
         # now that we're ready to start, create the time and ID attributes
-        protocol_hash: str = xxh32(str(self.protocol.yaml())).hexdigest()
+        protocol_hash: str = xxh32(str(self.protocol.yaml()).encode()).hexdigest()
         self.experiment_id = f"{self._created_time_local}_{protocol_hash}"
 
         # handle logging to a file
