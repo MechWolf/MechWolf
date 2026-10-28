@@ -44,8 +44,8 @@ assert len(E.data["sensor"]) >= 5, "".join(str(line) for line in log[-30:])
 if {dry_run}:
     assert E.data["sensor"][0].data == "simulated read"
 else:
-    # the dummy sensor returns how many times it has been read
-    assert all(isinstance(d.data, int) for d in E.data["sensor"]), E.data
+    # the dummy sensor returns a random walk
+    assert all(isinstance(d.data, float) for d in E.data["sensor"]), E.data
 """
 
 
