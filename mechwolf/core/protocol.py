@@ -215,12 +215,14 @@ class Protocol(object):
         # add the procedure to the procedure list
         self.procedures.append(
             dict(
-                start=float(start.to_base_units().magnitude)
-                if start is not None
-                else start,
-                stop=float(stop.to_base_units().magnitude)
-                if stop is not None
-                else stop,
+                start=(
+                    float(start.to_base_units().magnitude)
+                    if start is not None
+                    else start
+                ),
+                stop=(
+                    float(stop.to_base_units().magnitude) if stop is not None else stop
+                ),
                 component=component,
                 params=kwargs,
             )
@@ -447,13 +449,13 @@ class Protocol(object):
             return Code(compiled_json, language="json")
         return compiled_json
 
-    def visualize(self, legend: bool = False, width=500, renderer: str = "notebook"):
+    def visualize(self, legend: bool = False, width=500, renderer: str = "default"):
         """
         Generates a Gantt plot visualization of the protocol.
 
         Arguments:
         - `legend`: Whether to show a legend.
-        - `renderer`: Which renderer to use. Defaults to "notebook" but can also be "jupyterlab", or "nteract", depending on the development environment. If not in a Jupyter Notebook, this argument is ignored.
+        - `renderer`: Which renderer to use. Defaults to "default", which displays in Jupyter Notebook and JupyterLab; see Altair's documentation for other renderers. If not in a Jupyter Notebook, this argument is ignored.
         - `width`: The width of the Gantt chart.
 
         Returns:
@@ -477,7 +479,7 @@ class Protocol(object):
                     procedure[k] = v
 
                 # show what the valve is actually connecting to
-                if isinstance(component, Valve) and type(procedure["setting"]) == int:
+                if isinstance(component, Valve) and type(procedure["setting"]) is int:
                     assert isinstance(component.mapping, Mapping)
                     # guess the component, c, which the valve is set to
                     mapped_component = [
@@ -514,9 +516,9 @@ class Protocol(object):
                     x="utchoursminutesseconds(start):T",
                     x2="utchoursminutesseconds(stop):T",
                     y="component",
-                    color=alt.Color("params:N", legend=None)
-                    if not legend
-                    else "params",
+                    color=(
+                        alt.Color("params:N", legend=None) if not legend else "params"
+                    ),
                     tooltip=tooltips,
                 )
             )

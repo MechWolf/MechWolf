@@ -31,7 +31,7 @@ Should you be interested in learning more about Python than just the very basics
 - [The official Python tutorial](https://docs.python.org/3/tutorial/index.html)
 - [Learn Python the Hard Way](https://learnpythonthehardway.org/python3/) (note: despite the name, it isn't actually hard)
 
-## Install Python 3.7 or greater
+## Install Python 3.10 or greater
 
 Although Python is likely already installed on your computer (especially
 if you're using Mac or Linux), you probably don't have a recent enough
@@ -42,8 +42,8 @@ installing
 Python 3](http://docs.python-guide.org/en/latest/starting/installation/).
 
 ::: warning Important
-Be sure to download Python 3.7! MechWolf is written in Python 3.7, which is
-not backwards compatible.
+Be sure to download Python 3.10 or newer! MechWolf does not run on older
+versions of Python.
 :::
 
 ## Learn the Command Line
@@ -78,7 +78,7 @@ Then in the directory you want to use, create a virtualenv named
 mechwolf-env:
 
 ```bash
-$ virtualenv -p python3.7 mechwolf-env
+$ virtualenv -p python3 mechwolf-env
 ```
 
 And then activate the environment with:

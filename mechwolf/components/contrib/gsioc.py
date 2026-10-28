@@ -43,6 +43,7 @@ class GsiocInterface(object):
     def __init__(self, serial_port=None, unit_id=0):
         import aioserial
 
+        self.serial_port = serial_port
         self._ser = aioserial.AioSerial(
             serial_port, baudrate=19200, parity="E", stopbits=1, timeout=0.02
         )
@@ -74,7 +75,7 @@ class GsiocInterface(object):
         # Connect slave with this ID
         max_try = 3
         for i in range(max_try):
-            logger.trace(f"Try {i+1}/{max_try}...")
+            logger.trace(f"Try {i + 1}/{max_try}...")
             self._ser.write([self.gsioc_id])
 
             response = self._ser.read()
@@ -106,7 +107,7 @@ class GsiocInterface(object):
         # Connect slave with this ID
         max_try = 3
         for i in range(max_try):
-            logger.trace(f"Try {i+1}/{max_try}...")
+            logger.trace(f"Try {i + 1}/{max_try}...")
             await self._ser.write_async([self.gsioc_id])
 
             response = await self._ser.read_async()

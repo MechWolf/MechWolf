@@ -225,12 +225,16 @@ class Apparatus(object):
                 else ""
             )
             f.edge(
-                c.from_component.description
-                if isinstance(c.from_component, Vessel) and describe_vessels
-                else c.from_component.name,
-                c.to_component.description
-                if isinstance(c.to_component, Vessel) and describe_vessels
-                else c.to_component.name,
+                (
+                    c.from_component.description
+                    if isinstance(c.from_component, Vessel) and describe_vessels
+                    else c.from_component.name
+                ),
+                (
+                    c.to_component.description
+                    if isinstance(c.to_component, Vessel) and describe_vessels
+                    else c.to_component.name
+                ),
                 label=tube_label,
             )
 

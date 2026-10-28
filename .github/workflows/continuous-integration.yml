@@ -1,20 +1,44 @@
 name: CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   test:
+    # The job names below match the required status checks on master
     name: Test MechWolf on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.7"]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+      - name: Test with pytest
+        run: |
+          pip install pytest
+          pytest
+
+  test-python-versions:
+    name: Test MechWolf on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.13", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -30,11 +54,11 @@ jobs:
     name: Lint the source code with Flake8
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v1
-      - name: Install Python 3.7
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - name: Install Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.7"
+          python-version: "3.12"
       - name: Lint the source code with Flake8
         run: |
           pip install flake8
@@ -44,11 +68,11 @@ jobs:
     name: Ensure code style compliance with Black
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v1
-      - name: Install Python 3.7
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - name: Install Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.7"
+          python-version: "3.12"
       - name: Ensure code style compliance with Black
         run: |
           pip install black
@@ -58,29 +82,29 @@ jobs:
     name: Typecheck with Mypy
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v1
-      - name: Install Python 3.7
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - name: Install Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.7"
+          python-version: "3.12"
       - name: Typecheck with Mypy
         run: |
           pip install mypy
-          mypy mechwolf/ --ignore-missing-import --no-implicit-optional
+          mypy mechwolf/ --ignore-missing-imports --no-implicit-optional
 
   build-docs:
     name: Verify documentation builds
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Install Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 12.x
-      - name: Install Python 3.7
-        uses: actions/setup-python@v1
+      - name: Install Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.7"
+          python-version: "3.12"
       - name: Build the actual docs
         run: |
           cd docs

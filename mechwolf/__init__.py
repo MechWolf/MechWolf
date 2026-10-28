@@ -2,9 +2,9 @@ from pint import UnitRegistry
 
 # unit registry for conversions
 _ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
-import pkg_resources
+from importlib.metadata import version
 
-__version__ = pkg_resources.get_distribution("mechwolf").version
+__version__ = version("mechwolf")
 
 from IPython import get_ipython
 

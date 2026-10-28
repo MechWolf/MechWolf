@@ -75,7 +75,7 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
                     logger.trace(f"Creating sensor monitoring task for {component}")
                     tasks.append(_monitor(component, experiment, bool(dry_run), strict))
                 logger.debug(f"{component} is GO!")
-            logger.debug(f"All components are GO!")
+            logger.debug("All components are GO!")
 
             # Add a task to monitor the stop button
             tasks.append(check_if_cancelled(experiment))
@@ -84,7 +84,7 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
             logger.debug("All tasks are GO!")
 
             # Add a reminder about FF
-            if type(dry_run) == int:
+            if type(dry_run) is int:
                 logger.info(f"Simulating at {dry_run}x speed...")
 
             # begin the experiment
@@ -99,8 +99,12 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
             logger.success(start_msg)
 
             try:
+                # asyncio.wait() stopped accepting bare coroutines in Python 3.11,
+                # so schedule them as tasks here, right before waiting, which is
+                # what asyncio.wait() itself used to do
                 done, pending = await asyncio.wait(
-                    tasks, return_when=asyncio.FIRST_EXCEPTION
+                    [asyncio.ensure_future(task) for task in tasks],
+                    return_when=asyncio.FIRST_EXCEPTION,
                 )
 
                 # when this code block is reached, the tasks will have either all completed or
@@ -141,7 +145,7 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
                 logger.critical(end_msg)
 
             except ProtocolCancelled:
-                logger.error(f"Stop button pressed.")
+                logger.error("Stop button pressed.")
                 logger.error("Protocol execution is stopping NOW!")
                 logger.critical(end_msg)
 
@@ -274,7 +278,7 @@ async def pause_handler(
 
 async def wait(duration: float, experiment: "Experiment", name: str):
     """A pause-aware version of asyncio.sleep"""
-    if type(experiment.dry_run) == int:
+    if type(experiment.dry_run) is int:
         duration /= experiment.dry_run
     await asyncio.sleep(duration)
     logger.trace(f"<{name}> Just woke up from {duration}s nap")

@@ -132,8 +132,8 @@ class Experiment(object):
                     # create the figure object
                     p = figure(
                         title=f"{sensor} data",
-                        plot_height=self._plot_height,
-                        plot_width=600,
+                        height=self._plot_height,
+                        width=600,
                     )
                     r = p.line(
                         source=self._transformed_data[sensor.name],
@@ -200,7 +200,7 @@ class Experiment(object):
 
         # make the user confirm if it's the real deal
         if not self.dry_run and not confirm:
-            confirmation = input(f"Execute? [y/N]: ").lower()
+            confirmation = input("Execute? [y/N]: ").lower()
             if not confirmation or confirmation[0] != "y":
                 logger.critical("Aborting execution...")
                 raise RuntimeError("Execution aborted by user.")
@@ -208,7 +208,7 @@ class Experiment(object):
         self._compiled_protocol = self.protocol._compile(dry_run=bool(dry_run))
 
         # now that we're ready to start, create the time and ID attributes
-        protocol_hash: str = xxh32(str(self.protocol.yaml())).hexdigest()
+        protocol_hash: str = xxh32(str(self.protocol.yaml()).encode()).hexdigest()
         self.experiment_id = f"{self._created_time_local}_{protocol_hash}"
 
         # handle logging to a file
@@ -225,9 +225,11 @@ class Experiment(object):
             # automatically configure a logger to persist the logs
             self._file_logger_id = logger.add(
                 log_file,
-                level=verbosity.upper()
-                if log_file_verbosity is None
-                else log_file_verbosity.upper(),
+                level=(
+                    verbosity.upper()
+                    if log_file_verbosity is None
+                    else log_file_verbosity.upper()
+                ),
                 compression=log_file_compression,
                 serialize=True,
                 enqueue=True,
@@ -326,7 +328,7 @@ class Experiment(object):
 
         # decide whether to show a pause button
         buttons = [self._stop_button]
-        if type(self.dry_run) != int:
+        if type(self.dry_run) is not int:
             buttons.insert(0, self._pause_button)
 
         self._output_widget = widgets.VBox(
@@ -396,7 +398,7 @@ class Experiment(object):
     def paused(self, paused):
 
         # pausing a sped up dry run is meaningless
-        if type(self.dry_run) == int:
+        if type(self.dry_run) is int:
             warn("Pausing a speed run is not supported. This will have no effect.")
 
         # issue a warning if the user overuses the pause button
@@ -404,11 +406,11 @@ class Experiment(object):
             logger.warning("Pausing repeatedly may adversely affect protocol timing.")
 
         if paused and not self._paused:
-            logger.warning(f"Paused execution.")
+            logger.warning("Paused execution.")
             self._pause_times.append(dict(start=time.time()))
         elif not paused and self._paused:
             self._pause_times[-1]["stop"] = time.time()
-            logger.warning(f"Resumed execution.")
+            logger.warning("Resumed execution.")
         self._paused = paused
 
         # control the pause button
