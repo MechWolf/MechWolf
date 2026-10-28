@@ -17,7 +17,9 @@ MechWolf
 <br>
 
 MechWolf is a Python framework for automating chemical reaction processes.
-It was developed as a collaboration between computer scientists, chemists, and complete novices to be used by anyone wanting to do better, faster, more reproducible batch or flow-based science.
+It was developed as a collaboration between computer scientists, chemists, and complete novices to be used by anyone wanting to do better, faster, more reproducible batch or flow-based science. The software not only provides code to control moving parts, but also specifies the reaction setup itself.
+
+This project was started with support from the Radcliffe Institute of Advanced Study in 2017 and developed with support from the US National Science Foundation (CHE-1955936). Any opinions, findings and conclusions expressed in this material are those of the authors and do not necessarily reflect the views of the NSF or the Radcliffe Institute.
 
 Features include:
 
@@ -28,7 +30,6 @@ Features include:
 - Extensive checking to prevent potentially costly and dangerous errors before runtime
 - Natural language parsing of times and quantities
 - Thorough documentation and tutorials
-- An electronic lab notebook framework that wraps around the automation and apparatus protocols.
 
 ## Installation
 
