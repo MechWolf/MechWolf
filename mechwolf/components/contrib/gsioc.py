@@ -43,6 +43,7 @@ class GsiocInterface(object):
     def __init__(self, serial_port=None, unit_id=0):
         import aioserial
 
+        self.serial_port = serial_port
         self._ser = aioserial.AioSerial(
             serial_port, baudrate=19200, parity="E", stopbits=1, timeout=0.02
         )
