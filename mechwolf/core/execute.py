@@ -99,8 +99,12 @@ async def main(experiment: "Experiment", dry_run: Union[bool, int], strict: bool
             logger.success(start_msg)
 
             try:
+                # asyncio.wait() stopped accepting bare coroutines in Python 3.11,
+                # so schedule them as tasks here, right before waiting, which is
+                # what asyncio.wait() itself used to do
                 done, pending = await asyncio.wait(
-                    tasks, return_when=asyncio.FIRST_EXCEPTION
+                    [asyncio.ensure_future(task) for task in tasks],
+                    return_when=asyncio.FIRST_EXCEPTION,
                 )
 
                 # when this code block is reached, the tasks will have either all completed or
