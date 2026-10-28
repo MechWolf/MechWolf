@@ -132,8 +132,8 @@ class Experiment(object):
                     # create the figure object
                     p = figure(
                         title=f"{sensor} data",
-                        plot_height=self._plot_height,
-                        plot_width=600,
+                        height=self._plot_height,
+                        width=600,
                     )
                     r = p.line(
                         source=self._transformed_data[sensor.name],
