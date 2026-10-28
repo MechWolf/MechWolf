@@ -150,7 +150,7 @@ def create_apparatus(
 
 
 def create_protocol(peptide: Sequence, apparatus: mw.Apparatus) -> mw.Protocol:
-    pass
+    raise NotImplementedError("The peptide synthesizer protocol is not written yet")
 
 
 #     valve1, valve2, valve3 = apparatus.compon
