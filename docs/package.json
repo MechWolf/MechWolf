@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "npm run generate && vuepress dev ./",
     "build": "npm run install && npm run generate && vuepress build ./",
-    "install": "python3.7 -V && python3.7 -m pip install -e .. ",
-    "generate": "python3.7 generate_api_docs.py"
+    "install": "python3 -V && python3 -m pip install -e .. ",
+    "generate": "python3 generate_api_docs.py"
   },
   "author": "Benjamin Lee",
   "license": "GPL-3.0",

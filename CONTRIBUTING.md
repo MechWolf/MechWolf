@@ -37,7 +37,7 @@ Anything tagged with "enhancement" and "help wanted" is open to whoever wants to
    ```
 1. Set up your virtualenv:
    ```bash
-   $ virtualenv -p python3.7 mechwolf-dev-env
+   $ virtualenv -p python3 mechwolf-dev-env
    $ source mechwolf-dev-env/bin/activate
    ```
 1. Install MechWolf with the developer dependencies:
@@ -68,4 +68,4 @@ Anything tagged with "enhancement" and "help wanted" is open to whoever wants to
 1. When you're done, create a pull request for us to review.
    As a general request, please ensure that the tests and documentation are updated before submitting your pull request.
    This allows us to review and accept it as quickly as possible.
-   Furthermore, it should be compatible with all supported Python versions, which is currently only Python 3.7.
+   Furthermore, it should be compatible with all supported Python versions, which are currently Python 3.10 through 3.14.

@@ -5,7 +5,7 @@ MechWolf
 </h1>
 
 <div align="center">
-<a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.7-blue.svg" alt="Python version" /></a>
+<a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python version" /></a>
 <a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/chat-on%20gitter-brightgreen.svg" alt="Gitter chat" /></a>
 <a href="https://gitter.im/mechwolf-project"><img src="https://img.shields.io/badge/DOI-to%20be%20determined-brightgreen.svg" alt="DOI" /></a>
 <a href="https://github.com/MechWolf/MechWolf/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GPLv3 license" /></a>

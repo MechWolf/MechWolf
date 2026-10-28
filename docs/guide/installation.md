@@ -14,14 +14,14 @@ If you run into any issues during installation, please contact us [here](https:/
 If you're new to programming, you can get MechWolf up and running _without_ having to use the command line.
 To do so, follow these steps:
 
-1. Install [Anaconda Distribution](https://www.anaconda.com/distribution/) **for Python 3.7**.
+1. Install [Anaconda Distribution](https://www.anaconda.com/distribution/) **for Python 3.10 or newer**.
    Anaconda is an open source set of tools for scientific Python and it includes the Conda package manager that we'll be using to install MechWolf (confusing, we know).
 2. Open the Anaconda Navigator application, a graphical interface to Conda. This should have been installed on your computer by Anaconda.
    Click "environments" on the left side (circled in red).
    ![envs](/anaconda_envs.png)
 3. On the bottom click "create" (circled in red) to create a new environment in which MechWolf will live.
    ![create_env_1](/anaconda_create_env_1.png)
-4. Then, enter the details of the environment. You can call it whatever you want, but **be sure to select Python 3.7 or above**.
+4. Then, enter the details of the environment. You can call it whatever you want, but **be sure to select Python 3.10 or above**.
    ![create_env_2](/anaconda_create_env_2.png)
 5. Click the "channels" button.
    ![add_channel_1](/anaconda_add_channel_1.png)
