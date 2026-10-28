@@ -74,7 +74,7 @@ class GsiocInterface(object):
         # Connect slave with this ID
         max_try = 3
         for i in range(max_try):
-            logger.trace(f"Try {i+1}/{max_try}...")
+            logger.trace(f"Try {i + 1}/{max_try}...")
             self._ser.write([self.gsioc_id])
 
             response = self._ser.read()
@@ -106,7 +106,7 @@ class GsiocInterface(object):
         # Connect slave with this ID
         max_try = 3
         for i in range(max_try):
-            logger.trace(f"Try {i+1}/{max_try}...")
+            logger.trace(f"Try {i + 1}/{max_try}...")
             await self._ser.write_async([self.gsioc_id])
 
             response = await self._ser.read_async()

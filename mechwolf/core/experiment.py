@@ -200,7 +200,7 @@ class Experiment(object):
 
         # make the user confirm if it's the real deal
         if not self.dry_run and not confirm:
-            confirmation = input(f"Execute? [y/N]: ").lower()
+            confirmation = input("Execute? [y/N]: ").lower()
             if not confirmation or confirmation[0] != "y":
                 logger.critical("Aborting execution...")
                 raise RuntimeError("Execution aborted by user.")
@@ -328,7 +328,7 @@ class Experiment(object):
 
         # decide whether to show a pause button
         buttons = [self._stop_button]
-        if type(self.dry_run) != int:
+        if type(self.dry_run) is not int:
             buttons.insert(0, self._pause_button)
 
         self._output_widget = widgets.VBox(
@@ -398,7 +398,7 @@ class Experiment(object):
     def paused(self, paused):
 
         # pausing a sped up dry run is meaningless
-        if type(self.dry_run) == int:
+        if type(self.dry_run) is int:
             warn("Pausing a speed run is not supported. This will have no effect.")
 
         # issue a warning if the user overuses the pause button
@@ -406,11 +406,11 @@ class Experiment(object):
             logger.warning("Pausing repeatedly may adversely affect protocol timing.")
 
         if paused and not self._paused:
-            logger.warning(f"Paused execution.")
+            logger.warning("Paused execution.")
             self._pause_times.append(dict(start=time.time()))
         elif not paused and self._paused:
             self._pause_times[-1]["stop"] = time.time()
-            logger.warning(f"Resumed execution.")
+            logger.warning("Resumed execution.")
         self._paused = paused
 
         # control the pause button

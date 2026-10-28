@@ -479,7 +479,7 @@ class Protocol(object):
                     procedure[k] = v
 
                 # show what the valve is actually connecting to
-                if isinstance(component, Valve) and type(procedure["setting"]) == int:
+                if isinstance(component, Valve) and type(procedure["setting"]) is int:
                     assert isinstance(component.mapping, Mapping)
                     # guess the component, c, which the valve is set to
                     mapped_component = [
