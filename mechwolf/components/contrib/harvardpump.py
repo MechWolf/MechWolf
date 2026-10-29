@@ -43,7 +43,7 @@ class HarvardSyringePump(Pump):
             },
             {
                 "first_name": "Murat",
-                "last_name": "Ozturkme",
+                "last_name": "Ozturk",
                 "email": "muzcuk@gmail.com",
                 "institution": "Indiana University, School of Informatics, Computing and Engineering",
                 "github_username": "littleblackfish",
