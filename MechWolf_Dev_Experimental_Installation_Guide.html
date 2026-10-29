@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MechWolf - Installation & Jupyter Notebook Setup Guide</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #7A3FEF;
+            --primary-hover: #6434D0;
+            --secondary: #2b2d42;
+            --light: #f8f9fa;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-800: #343a40;
+            --success: #06d6a0;
+            --radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 12px 20px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s ease;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+        
+        h1, h2 {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 0.75rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 90%;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        
+        ol {
+            margin-left: 20px;
+            padding-left: 1rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+        
+        code {
+            background-color: var(--gray-100);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--primary);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .code-block {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        pre {
+            background-color: #f0f4f9;
+            color: #333;
+            padding: 1.2rem;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.95rem;
+            font-weight: 500;
+            line-height: 1.5;
+            margin: 0;
+            border: 1px solid #e0e6ed;
+        }
+        
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            border: none;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            padding: 0.35rem 0.7rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .copy-btn:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        .step-container {
+            margin-bottom: 2rem;
+            padding: 1.2rem;
+            background-color: var(--gray-100);
+            border-radius: var(--radius);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Tab styling */
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--gray-200);
+            overflow-x: hidden; /* Changed from auto to hidden since we're making it fit */
+            justify-content: space-between; /* Distribute space evenly */
+        }
+        
+        .tab-btn {
+            padding: 0.75rem 0.9rem; /* Reduced padding */
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 700; /* Increased from 600 to 700 */
+            font-size: 0.9rem; /* Slightly smaller font */
+            color: var(--gray-800);
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            white-space: nowrap;
+            letter-spacing: -0.2px; /* Tighter letter spacing */
+            position: relative; /* For the hover effect */
+            flex: 1; /* Make tabs take equal width */
+            text-align: center;
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary);
+            background-color: rgba(122, 63, 239, 0.05); /* Light purple background on hover */
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: rgba(122, 63, 239, 0.08); /* Light purple background when active */
+        }
+        
+        .tab-btn i {
+            display: block; /* Make icon display on its own line */
+            margin-bottom: 5px; /* Space between icon and text */
+            font-size: 1.1rem; /* Larger icon */
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .coming-soon {
+            text-align: center;
+            padding: 4rem 0;
+            color: var(--gray-800);
+        }
+        
+        .coming-soon i {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .coming-soon h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .tab-btn {
+                padding: 0.6rem 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+        <h1 style="margin-bottom: 0; border-bottom: none;">MechWolf & Jupyter Notebook Setup Guide</h1>
+        <img src="https://github.com/MechWolf/MechWolf/blob/master/logo/words10x.png?raw=true" alt="MechWolf Logo" style="height: 75px; margin-left: 1rem;">
+    </div>
+    <hr style="border: 0; height: 2px; background-color: var(--gray-200); margin-bottom: 1.5rem;">
+    
+    <!-- Tab Navigation -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="install">
+            <i class="fab fa-windows"></i> Windows
+        </button>
+        <button class="tab-btn" data-tab="mac">
+            <i class="fab fa-apple"></i> macOS
+        </button>
+        <button class="tab-btn" data-tab="run">
+            <i class="fas fa-play"></i> Jupyter
+        </button>
+        <button class="tab-btn" data-tab="update">
+            <i class="fas fa-sync"></i> Updates
+        </button>
+        <button class="tab-btn" data-tab="contact">
+            <i class="fas fa-envelope"></i> Contact
+        </button>
+        <button class="tab-btn" data-tab="credits">
+            <i class="fas fa-award"></i> Credits
+        </button>
+    </div>
+    
+    <!-- Tab A: Installation -->
+    <div id="tab-install" class="tab-content active">
+        <p>Follow these steps to install MechWolf on your Windows system:</p>
+
+        <div class="step-container">
+            <h2><i class="fas fa-download"></i> Step 1: Download the Shell Script</h2>
+            <ol>
+                <li>Download the shell script file (attached with the email that contained this HTML file): <code>MechWolf_Windows_Installation_beta.ps1</code>.</li>
+            </ol>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-folder-open"></i> Step 2: Locate the Shell Script</h2>
+            <ol>
+                <li>Locate the downloaded script on your system. It is usually found in the <strong>Downloads</strong> folder.</li>
+            </ol>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-terminal"></i> Step 3: Open PowerShell</h2>
+            <ol>
+                <li>Press the <strong>Start</strong> or <strong>Windows key</strong> on your keyboard.</li>
+                <li>Search for <strong>PowerShell</strong> and open it.</li>
+            </ol>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-folder-tree"></i> Step 4: Change Directory to the Script Location</h2>
+            <ol>
+                <li>In PowerShell, type the following command by replacing <code>path-to-the-shell-script</code> with the path of your shell script and press <strong>Enter</strong>:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>cd path-to-the-shell-script</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('cd path-to-the-shell-script')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+            <p>For example, if the script is in the Downloads folder, type:</p>
+            <div class="code-block">
+                <pre><code>cd Downloads</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('cd Downloads')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+            
+            <p><strong>Troubleshooting:</strong> If you're not sure about the path to your script:</p>
+            <ol>
+                <li>Right-click on the script file in File Explorer.</li>
+                <li>Select "Properties".</li>
+                <li>Look for "Location" - this is the path you need to navigate to.</li>
+                <li>Or, you can copy the file path by holding Shift while right-clicking the file and selecting "Copy as path".</li>
+                <li>Common Windows path examples:
+                    <ul>
+                        <li><code>C:\Users\username\Documents\MechWolf</code></li>
+                        <li><code>C:\Users\username\Downloads\MechWolf_projects</code></li>
+                        <li>For paths with spaces: <code>"C:\My Projects\MechWolf"</code> (include the quotes)</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-play"></i> Step 5: Run the Script</h2>
+            <ol>
+                <li>Copy-paste the following commands into PowerShell and press <strong>Enter</strong>:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>Set-ExecutionPolicy Bypass -Scope CurrentUser
+./MechWolf_Windows_Installation_beta.ps1</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('Set-ExecutionPolicy Bypass -Scope CurrentUser\n./MechWolf_Windows_Installation_beta.ps1')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-shield-alt"></i> Step 6: Restore Default Execution Policy</h2>
+            <ol>
+                <li>After running the script, close PowerShell and re-open it.</li>
+                <li>To restore the default execution policy, run the following command in PowerShell:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>conda deactivate
+Set-ExecutionPolicy Restricted -Scope CurrentUser</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('conda deactivate\nSet-ExecutionPolicy Restricted -Scope CurrentUser')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+            <ol start="3">
+                <li>Close the terminal.</li>
+            </ol>
+            <p style="margin-top: 1.5rem; font-weight: bold; color: var(--primary); text-align: center; font-size: 1.1rem;">
+                <i class="fas fa-check-circle"></i> Installation is complete!
+            </p>
+        </div>
+    </div>
+
+    <!-- Add macOS tab content after the Windows installation tab -->
+    <!-- After closing div of tab-install and before opening div of tab-run -->
+    <div id="tab-mac" class="tab-content">
+        <p>Follow these steps to install MechWolf on your macOS system:</p>
+
+        <div class="step-container">
+            <h2><i class="fas fa-download"></i> Step 1: Download the Shell Script</h2>
+            <ol>
+                <li>Download the shell script file (attached with the email that contained this HTML file): <code>MechWolf_MacOS_Installation_beta.sh</code>.</li>
+            </ol>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-folder-open"></i> Step 2: Locate the Shell Script</h2>
+            <ol>
+                <li>Locate the downloaded script on your system. It is usually found in the <strong>Downloads</strong> folder.</li>
+            </ol>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-terminal"></i> Step 3: Open Terminal</h2>
+            <ol>
+                <li>You can find Terminal by searching for it using Spotlight (press <strong>Cmd + Space</strong> and type "Terminal").</li>
+            </ol>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-folder-tree"></i> Step 4: Navigate to the Script Location</h2>
+            <ol>
+                <li>In Terminal, type the following command by replacing <code>path-to-the-shell-script</code> with the path of your shell script and press <strong>Enter</strong>:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>cd path-to-the-shell-script</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('cd path-to-the-shell-script')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+            <p>For example, if the script is in the Downloads folder, type:</p>
+            <div class="code-block">
+                <pre><code>cd ~/Downloads</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('cd ~/Downloads')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+            
+            <p><strong>Troubleshooting:</strong> If you're not sure about the path to your script:</p>
+            <ol>
+                <li>Open a Finder window and navigate to where your script is located.</li>
+                <li>Right-click (or Control+click) on the script file.</li>
+                <li>Hold the Option key and select "Copy [filename] as Pathname".</li>
+                <li>In Terminal, type <code>cd</code> followed by a space, then paste the path (excluding the filename itself).</li>
+                <li>Alternatively, you can drag and drop the folder containing the script into the Terminal window after typing <code>cd</code> to automatically insert the path.</li>
+                <li>Common macOS path examples:
+                    <ul>
+                        <li><code>~/Documents/MechWolf</code></li>
+                        <li><code>~/Downloads/MechWolf_projects</code></li>
+                        <li>For paths with spaces: <code>"~/My Projects/MechWolf"</code> (include the quotes)</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-lock"></i> Step 5: Make the Script Executable</h2>
+            <ol>
+                <li>Type the following command and press <strong>Enter</strong>:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>chmod +x MechWolf_MacOS_Installation_beta.sh</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('chmod +x MechWolf_MacOS_Installation_beta.sh')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-play"></i> Step 6: Run the Script</h2>
+            <ol>
+                <li>Type the following command and press <strong>Enter</strong>:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>./MechWolf_MacOS_Installation_beta.sh</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('./MechWolf_MacOS_Installation_beta.sh')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-sync-alt"></i> Step 7: Restart Terminal</h2>
+            <ol>
+                <li>After the installation is complete, close and reopen Terminal.</li>
+                <li>This ensures that all environment changes take effect.</li>
+            </ol>
+            <p style="margin-top: 1.5rem; font-weight: bold; color: var(--primary); text-align: center; font-size: 1.1rem;">
+                <i class="fas fa-check-circle"></i> Installation is complete!
+            </p>
+        </div>
+    </div>
+    
+    <!-- Tab B: Running Jupyter -->
+    <div id="tab-run" class="tab-content">
+        <p>Follow these steps to run Jupyter Notebook with MechWolf on your system:</p>
+    
+        <div class="step-container">
+            <h2><i class="fas fa-laptop-code"></i> Windows Instructions</h2>
+            <ol>
+                <li>Press the <strong>Start</strong> or <strong>Windows key</strong> on your keyboard.</li>
+                <li>Search for <strong>Anaconda Prompt</strong> and open it.</li>
+                <li>Type or copy the following command and press <strong>Enter</strong>:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>start_notebook</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('start_notebook')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+        </div>
+        
+        <div class="step-container">
+            <h2><i class="fab fa-apple"></i> macOS Instructions</h2>
+            <ol>
+                <li>Open Terminal using Spotlight (press <strong>Cmd + Space</strong> and type "Terminal").</li>
+                <li>Type or copy the following command and press <strong>Enter</strong>:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>conda activate mechwolf_env</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('conda activate mechwolf_env')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+        </div>
+        
+        <div style="background-color: #f0f8ff; padding: 15px; border-left: 4px solid #7A3FEF; border-radius: 5px; margin: 20px 0 30px; text-align: center;">
+            <p style="font-weight: 600; font-size: 1.1rem; color: var(--primary); margin-bottom: 8px;">
+                <i class="fas fa-laptop-code"></i> Jupyter Notebook should be running in your browser now!
+            </p>
+            <p style="color: var(--secondary); margin-top: 0; text-align: left;">
+                Checkout the jupyter notebook templates folder for your next chemistry experiment and use the electronic lab notebook pages!
+            </p>
+        </div>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-exclamation-triangle"></i> Troubleshooting</h2>
+            <p>If Jupyter Notebook doesn't open automatically, try these alternative methods:</p>
+            
+            <h3>Windows Troubleshooting:</h3>
+            <ol>
+                <li>If <code>start_notebook</code> command gives an error, try the following:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>conda activate mechwolf_env
+cd MechWolf_dev
+jupyter notebook --NotebookApp.token=''</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('conda activate mechwolf_env\ncd MechWolf_dev\njupyter notebook --NotebookApp.token=\'\'')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+            
+            <h3>macOS Troubleshooting:</h3>
+            <div class="code-block">
+                <pre><code>cd MechWolf_dev
+jupyter notebook --NotebookApp.token=''</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('cd MechWolf_dev\njupyter notebook --NotebookApp.token=\'\'')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+            
+            <p><strong>Note:</strong> If you're still encountering issues, make sure that:</p>
+            <ul>
+                <li>The MechWolf environment was properly installed</li>
+                <li>You have navigated to the correct directory</li>
+                <li>Your Anaconda/Miniconda installation is up to date</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Tab C: Updates -->
+    <div id="tab-update" class="tab-content">
+        <p>Follow these steps to update your MechWolf installation:</p>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-terminal"></i> Step 1: Open Terminal</h2>
+            
+            <h3><i class="fab fa-windows"></i> For Windows Users:</h3>
+            <ol>
+                <li>Press the <strong>Start</strong> or <strong>Windows key</strong> on your keyboard.</li>
+                <li>Search for <strong>Anaconda Prompt</strong> and open it.</li>
+            </ol>
+            
+            <h3><i class="fab fa-apple"></i> For macOS Users:</h3>
+            <ol>
+                <li>Open Terminal using Spotlight (press <strong>Cmd + Space</strong> and type "Terminal").</li>
+            </ol>
+        </div>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-layer-group"></i> Step 2: Start MechWolf Update Environment</h2>
+            <ol>
+                <li>Type or copy the following command and press <strong>Enter</strong>:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>conda activate mechwolf_env</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('conda activate mechwolf_env')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+        </div>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-code-branch"></i> Step 3: Update MechWolf from Git</h2>
+            <ol>
+                <li>After activating the environment, run the following commands in sequence:</li>
+            </ol>
+            <div class="code-block">
+                <pre><code>cd MechWolf_dev
+git pull origin master
+pip install -e .</code></pre>
+                <button class="copy-btn" onclick="copyToClipboard('cd MechWolf_dev\ngit pull origin master\npip install -e .')"><i class="far fa-copy"></i> Copy</button>
+            </div>
+        </div>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-info-circle"></i> What This Does</h2>
+            <p>This update process:</p>
+            <ul>
+                <li>Activates the MechWolf environment where all dependencies are installed.</li>
+                <li>Gets the latest code from the MechWolf development repository (<a href="https://github.com/Prashant-Kumar-IU/MechWolf_dev" target="_blank">https://github.com/Prashant-Kumar-IU/MechWolf_dev</a>), which is based on the <a href="https://github.com/MechWolf/MechWolf" target="_blank">original MechWolf repository</a>. See the <a href="#" onclick="document.querySelector('.tab-btn[data-tab=\'credits\']').click(); return false;">Credits</a> section for all contributors.</li>
+                <li>Reinstalls the package in development mode to apply changes.</li>
+                <li>Preserves your setup so Jupyter continues to launch automatically on regular activation.</li>
+            </ul>
+        </div>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-calendar-alt"></i> When to Update</h2>
+            <p>It's recommended to update your MechWolf installation:</p>
+            <ul>
+                <li>Once every few weeks to get the latest features.</li>
+                <li>When you encounter an issue that might be fixed in a newer version.</li>
+                <li>When instructed by the MechWolf development team.</li>
+            </ul>
+            <p style="margin-top: 1.5rem; font-weight: bold; color: var(--primary); text-align: center; font-size: 1.1rem;">
+                <i class="fas fa-check-circle"></i> Update complete!
+            </p>
+        </div>
+    </div>
+
+    <!-- Tab D: Contact Us -->
+    <div id="tab-contact" class="tab-content">
+        <p>Need help with MechWolf or want to contribute? Here's how to reach us:</p>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-user-circle"></i> Primary Contacts</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h3><span style="background-color: #FFD700; padding: 2px 5px; border-radius: 3px; font-size: 0.8em; vertical-align: middle;">PRIMARY</span> Dr. Nicola Pohl</h3>
+                    <p><i class="fas fa-university"></i> Indiana University Bloomington, Department of Chemistry</p>
+                    <p><i class="fas fa-envelope"></i> <a href="mailto:npohl@iu.edu">npohl@iu.edu</a></p>
+                    <p><i class="fab fa-github"></i> <a href="https://github.com/NLPohl" target="_blank">NLPohl</a></p>
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <h3>Prashant Kumar</h3>
+                    <p><i class="fas fa-university"></i> Indiana University Bloomington, Department of Chemistry</p>
+                    <p><i class="fas fa-envelope"></i> <a href="mailto:pprashan@iu.edu">pprashan@iu.edu</a></p>
+                    <p><i class="fab fa-github"></i> <a href="https://github.com/Prashant-Kumar-IU" target="_blank">Prashant-Kumar-IU</a></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-bug"></i> Report Issues</h2>
+            <p>If you encounter any problems with MechWolf, please raise an issue in our GitHub repository:</p>
+            <p style="text-align: center; margin: 1rem 0;">
+                <a href="https://github.com/Prashant-Kumar-IU/MechWolf_dev/issues" target="_blank" class="btn">
+                    <i class="fab fa-github"></i> Report an Issue
+                </a>
+            </p>
+            <p>When reporting an issue, please include:</p>
+            <ul>
+                <li>A clear description of the problem.</li>
+                <li>Steps to reproduce the issue.</li>
+                <li>Your operating system and MechWolf version.</li>
+                <li>Any error messages or screenshots.</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Tab E: Credits -->
+    <div id="tab-credits" class="tab-content">
+        <p>Recognition for those who made MechWolf and this documentation possible. This documentation is for the development version based on the <a href="https://github.com/MechWolf/MechWolf" target="_blank">original MechWolf repository</a>.</p>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-award"></i> MechWolf Original Developers</h2>
+            <p>MechWolf development branch is based on the original stable branch created by:</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div class="credit-card" style="border: 1px solid #e0e6ed; border-radius: var(--radius); padding: 1rem; background-color: #fff;">
+                    <h3>Benjamin Lee</h3>
+                    <p><i class="fas fa-university"></i> Harvard University</p>
+                    <p><i class="fab fa-github"></i> <a href="https://github.com/Benjamin-Lee" target="_blank">Benjamin-Lee</a></p>
+                </div>
+                
+                <div class="credit-card" style="border: 1px solid #e0e6ed; border-radius: var(--radius); padding: 1rem; background-color: #fff;">
+                    <h3>Alex Mijalis</h3>
+                    <p><i class="fas fa-university"></i> Harvard Medical School</p>
+                    <p><i class="fab fa-github"></i> <a href="https://github.com/amijalis" target="_blank">amijalis</a></p>
+                </div>
+                
+                <div class="credit-card" style="border: 1px solid #e0e6ed; border-radius: var(--radius); padding: 1rem; background-color: #fff;">
+                    <h3>Murat Ozturkme</h3>
+                    <p><i class="fas fa-university"></i> Indiana University, School of Informatics, Computing and Engineering</p>
+                    <p><i class="fab fa-github"></i> <a href="https://github.com/littleblackfish" target="_blank">littleblackfish</a></p>
+                </div>
+                
+                <div class="credit-card" style="border: 1px solid #e0e6ed; border-radius: var(--radius); padding: 1rem; background-color: #fff;">
+                    <h3>Nicola Pohl</h3>
+                    <p><i class="fas fa-university"></i> Indiana University Bloomington, Department of Chemistry</p>
+                    <p><i class="fab fa-github"></i> <a href="https://github.com/NLPohl" target="_blank">NLPohl</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <h2><i class="fas fa-code-branch"></i> Development and Contributions</h2>
+            <p>Current development and enhancements to MechWolf:</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div class="credit-card" style="border: 1px solid #e0e6ed; border-radius: var(--radius); padding: 1rem; background-color: #fff;">
+                    <h3>Prashant Kumar</h3>
+                    <p><i class="fas fa-university"></i> Indiana University Bloomington, Department of Chemistry</p>
+                    <p><i class="fas fa-tasks"></i> Documentation, MechWolf functionality improvements, and Jupyter notebook user-friendliness</p>
+                    <p><i class="fab fa-github"></i> <a href="https://github.com/Prashant-Kumar-IU" target="_blank">Prashant-Kumar-IU</a></p>
+                </div>
+                
+                <div class="credit-card" style="border: 1px solid #e0e6ed; border-radius: var(--radius); padding: 1rem; background-color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <h3><i class="fas fa-user-plus"></i> This could be you!</h3>
+                    <p style="margin: 1rem 0;">Interested in contributing to MechWolf?</p>
+                    <p>Fork the repository and submit a pull request to join the community of contributors.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="step-container">
+            <h2><i class="fas fa-laptop-code"></i> Documentation & Design</h2>
+            <p>The design and implementation of this documentation were made possible by:</p>
+            <ul>
+                <li><strong>Font Awesome</strong> - Icons used throughout the interface</li>
+                <li><strong>Google Fonts</strong> - Inter font family for typography</li>
+                <li><strong>GitHub Copilot</strong> - AI assistance for HTML and CSS development</li>
+                <li><strong>Bootstrap</strong> - Inspiration for UI components and responsive design patterns</li>
+                <li><strong>Modern CSS</strong> - CSS variables and flexible layout techniques</li>
+            </ul>
+            <p style="margin-top: 1.5rem; font-style: italic; text-align: center;">
+                Thank you to everyone who contributed to making MechWolf more accessible to the scientific community!
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<div id="toast" class="toast">
+    <i class="fas fa-check-circle"></i> Command copied to clipboard!
+</div>
+
+<script>
+    // Tab functionality
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and contents
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to current button and content
+            button.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        });
+    });
+    
+    // Function to show main tabs
+    function showMainTabs() {
+        // This function doesn't need to do anything as we're just using the button
+        // for semantic purposes - the tabs are always visible
+    }
+    
+    // Clipboard functionality
+    function copyToClipboard(text) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        // Show toast notification
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>

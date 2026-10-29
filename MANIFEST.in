@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+recursive-include mechwolf *.py
+recursive-include mechwolf *.yaml
+recursive-include mechwolf *.json
+recursive-include mechwolf *.txt
+recursive-include mechwolf *.csv
